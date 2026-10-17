@@ -1132,8 +1132,8 @@ function Enable-VxGlass {
         $hr = [VeloxPC.Native]::EnableBackdrop($hwnd, 3)
         if ($hr -ne 0) { Write-VxLog "glass: backdrop hr=$hr" 'WARN'; return }
         $script:Window.Background = [System.Windows.Media.Brushes]::Transparent
-        $ui.Root.Background = New-VxBrush '#8C07080C'
-        $ui.Blobs.Opacity = 0.55
+        $ui.Root.Background = New-VxBrush '#9E07090F'
+        $ui.Blobs.Opacity = 0.72
         $script:GlassOn = $true
         Write-VxLog 'glass: acrylic on'
     } catch { Write-VxLog "glass: $($_.Exception.Message)" 'WARN' }
@@ -1330,7 +1330,7 @@ function Set-VxAutoStart {
 # =====================================================================
 #  NAVIGATION
 # =====================================================================
-$script:PageNames = @('Home', 'Health', 'Optimize', 'Processes', 'Network', 'Ae', 'Cleanup', 'Restore', 'Settings')
+$script:PageNames = @('Home', 'Health', 'Optimize', 'Processes', 'Network', 'Remote', 'Ae', 'Cleanup', 'Restore', 'Settings')
 function Show-VxPage {
     param([string]$Name)
     if (-not $Name) { return }
@@ -1352,6 +1352,30 @@ function Show-VxPage {
     }
 }
 
+# remote assistance: Microsoft Quick Assist (free, encrypted, works over the Internet like AnyDesk)
+function Start-VxQuickAssist {
+    try {
+        $hasProto = Test-Path -LiteralPath 'Registry::HKEY_CLASSES_ROOT\ms-quick-assist'
+        $exe = Join-Path $env:WINDIR 'System32\quickassist.exe'
+        if ($hasProto) {
+            # through explorer so it runs as the normal user, not elevated like this app
+            Start-Process -FilePath 'explorer.exe' -ArgumentList 'ms-quick-assist:'
+        } elseif (Test-Path -LiteralPath $exe) {
+            Start-Process -FilePath 'explorer.exe' -ArgumentList $exe
+        } else {
+            Start-Process -FilePath 'explorer.exe' -ArgumentList 'ms-windows-store://pdp/?productid=9P7BP5VNWKX5'
+            $ui.RemoteStatus.Text = T 'remote.install'
+            Write-VxLog 'remote: Quick Assist missing, opened Store'
+            return
+        }
+        $ui.RemoteStatus.Text = T 'remote.opened'
+        Write-VxLog 'remote: Quick Assist started'
+    } catch {
+        $ui.RemoteStatus.Text = (T 'common.error') + ' ' + $_.Exception.Message
+        Write-VxLog "remote: $($_.Exception.Message)" 'WARN'
+    }
+}
+
 function Hide-VxSplash {
     $a = New-Object System.Windows.Media.Animation.DoubleAnimation(1, 0, [TimeSpan]::FromMilliseconds(350))
     $a.add_Completed({ $ui.SplashOverlay.Visibility = 'Collapsed' })
@@ -1363,6 +1387,8 @@ function Hide-VxSplash {
 #  EVENT WIRING
 # =====================================================================
 $ui.BtnMin.add_Click({ $script:Window.WindowState = 'Minimized' })
+$ui.BtnRemoteGet.add_Click({ Start-VxQuickAssist })
+$ui.BtnRemoteGive.add_Click({ Start-VxQuickAssist })
 $ui.BtnMax.add_Click({ if ($script:Window.WindowState -eq 'Maximized') { $script:Window.WindowState = 'Normal' } else { $script:Window.WindowState = 'Maximized' } })
 $ui.BtnClose.add_Click({ $script:Window.Close() })
 $ui.SplashClose.add_Click({ $script:Window.Close() })

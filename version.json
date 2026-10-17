@@ -1,8 +1,8 @@
 {
-  "version": "1.4.0",
+  "version": "1.5.0",
   "notes": {
-    "it": "Ora in 9 lingue: italiano, inglese, spagnolo, francese, tedesco, portoghese, russo, cinese e giapponese.",
-    "en": "Now in 9 languages: Italian, English, Spanish, French, German, Portuguese, Russian, Chinese and Japanese."
+    "it": "Testi più grandi e leggibili, nuovo effetto vetro stile iPhone e nuova sezione Assistenza remota (come AnyDesk).",
+    "en": "Bigger, more readable text, new iPhone-style glass effect and a new Remote help section (like AnyDesk)."
   },
   "files": [
     {
@@ -37,8 +37,8 @@
     },
     {
       "path": "app/VeloxPC.ps1",
-      "sha256": "9cbcf9cff719ecd191ddb826c44b3fc30485a7394fb7259619c50ff69adae123",
-      "size": 90660
+      "sha256": "40d47d7896081ccc063c5a5ed0fdd22bc51705fcf019656faa15cfdb4b1f8e74",
+      "size": 91935
     },
     {
       "path": "app/assets/logo.png",
@@ -102,53 +102,53 @@
     },
     {
       "path": "app/lang/de.json",
-      "sha256": "86199b700ae9617e96f0d00d4e9b0e8f2a86ac4643fb0714cce979d8910c1132",
-      "size": 19188
+      "sha256": "9d6bc11984f508b46fbf6abf37e132128c5b350fe0a80f30b198f32fb0d75787",
+      "size": 20394
     },
     {
       "path": "app/lang/en.json",
-      "sha256": "1c10169e76c4e5ab53f3b42e90b9b3c35ca9822ee03cc7f971da18bcdd6d51b7",
-      "size": 17555
+      "sha256": "5258103a105166423374b17d8d963c4d77673b0d982f859dd413911e30cb4d00",
+      "size": 18625
     },
     {
       "path": "app/lang/es.json",
-      "sha256": "fed204fc2c5d7802332bf26acf966c2f86db89423a9095ead9ef2c939033bdcc",
-      "size": 18542
+      "sha256": "35ed574cc32d843c241d85e7a1b929fc928c174d8d4cdcd30d955c591045c5d7",
+      "size": 19723
     },
     {
       "path": "app/lang/fr.json",
-      "sha256": "f9b39278f0b1b6514a50f4bc105ab89cc5660f229fea4fb73bb981827cb672f6",
-      "size": 19396
+      "sha256": "964df18826a545c551fba7df73c9a62dfad43ef1733eeb663cc4389f71d26964",
+      "size": 20689
     },
     {
       "path": "app/lang/it.json",
-      "sha256": "2616376692774072adadefa5a8a8bb3d8f065c7fb701862dc9d51b0c43fa6142",
-      "size": 18506
+      "sha256": "06605804c6ee031046547d1a4cd7e6f502a6505e57fa8f9954a397fe87e32f77",
+      "size": 19683
     },
     {
       "path": "app/lang/ja.json",
-      "sha256": "a7abcd7964c066053bfc843253c0c478cdf7f2babe7a9c238bc944a79f57883a",
-      "size": 21768
+      "sha256": "bc152052a19364ba5e850d6d3fb4697be8d5e051243f90686acb814e9bc735c9",
+      "size": 23270
     },
     {
       "path": "app/lang/pt.json",
-      "sha256": "07b46fd5b4580b2f352d6cbbe5d247b536049f1a244776f4e971076bc2f880bb",
-      "size": 18503
+      "sha256": "6ea4a5cf2332cab8280fe25e402b8b44d8118ce81af2a10e679beb5cc326e919",
+      "size": 19681
     },
     {
       "path": "app/lang/ru.json",
-      "sha256": "e7ecccbbaf19bb09cf9b44daca4dd0a0902d4fb8c877407dbe2078709bba508d",
-      "size": 26446
+      "sha256": "fe405989a5824ca89920fa4388c6db28129751c5af011ca766cab50520ac81ff",
+      "size": 28315
     },
     {
       "path": "app/lang/zh.json",
-      "sha256": "2f2ffb47ec598e5625f57f20a3c770d4112a9ea67daf39795b3836632ad2c688",
-      "size": 17224
+      "sha256": "d50759eb0262a2c32bdf6ed9db0ec6c43b3e3d6d65c4ab67c018db44739b0a3d",
+      "size": 18288
     },
     {
       "path": "app/ui/MainWindow.xaml",
-      "sha256": "182358c4b436a5479a871c72f84d1920d1251c0f1bafd46d33c3912ecccd5aa2",
-      "size": 117305
+      "sha256": "4cf02a12556b2ef5fe363d9fff04a15b12a1849ddb805b3e789c08e0731fb59d",
+      "size": 123152
     },
     {
       "path": "config.json",

@@ -324,5 +324,18 @@
   "net.boost.busy": "正在优化网络连接",
   "net.boost.done": "已启用 {0} 项网络优化。",
   "net.boost.dns": "已设置最快的 DNS：{0}。",
-  "net.boost.next": "现在运行延迟测试查看效果。如果“负载下”测试结果为 C 或更差，瓶颈在路由器（请开启 QoS/SQM）。"
+  "net.boost.next": "现在运行延迟测试查看效果。如果“负载下”测试结果为 C 或更差，瓶颈在路由器（请开启 QoS/SQM）。",
+  "nav.remote": "远程协助",
+  "remote.title": "远程协助",
+  "remote.sub": "像 AnyDesk 一样远程控制另一台电脑，或让别人帮助你。使用 Microsoft 快速助手：免费、加密，且已内置于 Windows。",
+  "remote.get": "获取帮助",
+  "remote.get.d": "你信任的人将看到并控制这台电脑。对方会给你一个 6 位代码：输入后点击接受。你可以随时断开连接。",
+  "remote.get.btn": "获取帮助",
+  "remote.give": "帮助他人",
+  "remote.give.d": "查看并控制朋友的电脑。使用 Microsoft 帐户登录，选择“帮助他人”，并把代码告诉对方。",
+  "remote.give.btn": "帮助他人",
+  "remote.warn.title": "谨防诈骗",
+  "remote.warn": "微软、银行或冒充的“技术人员”绝不会打电话向你索要远程访问代码。只把代码给你真正认识的人。",
+  "remote.opened": "快速助手已打开：请按照窗口中的说明操作。",
+  "remote.install": "未安装快速助手：已打开 Microsoft Store，点击“获取”后再试一次。"
 }

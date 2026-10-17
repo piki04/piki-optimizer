@@ -324,5 +324,18 @@
   "net.boost.busy": "Verbindung wird optimiert",
   "net.boost.done": "{0} Netzwerk-Optimierungen aktiviert.",
   "net.boost.dns": "Schnellster DNS eingestellt: {0}.",
-  "net.boost.next": "Mach jetzt den Ping-Test, um das Ergebnis zu sehen. Wenn der Test „unter Last“ C oder schlechter ergibt, ist der Router der Engpass (QoS/SQM aktivieren)."
+  "net.boost.next": "Mach jetzt den Ping-Test, um das Ergebnis zu sehen. Wenn der Test „unter Last“ C oder schlechter ergibt, ist der Router der Engpass (QoS/SQM aktivieren).",
+  "nav.remote": "Fernhilfe",
+  "remote.title": "Fernhilfe",
+  "remote.sub": "Steuere einen anderen PC aus der Ferne oder lass dir helfen, wie mit AnyDesk. Nutzt Microsoft Remotehilfe: kostenlos, verschlüsselt und bereits in Windows enthalten.",
+  "remote.get": "Hilfe erhalten",
+  "remote.get.d": "Eine Person deines Vertrauens sieht und steuert diesen PC. Sie gibt dir einen 6-stelligen Code: eingeben und annehmen. Du kannst die Verbindung jederzeit beenden.",
+  "remote.get.btn": "Hilfe erhalten",
+  "remote.give": "Jemandem helfen",
+  "remote.give.d": "Sieh und steuere den PC eines Freundes. Melde dich mit einem Microsoft-Konto an, wähle „Jemandem helfen“ und gib der anderen Person den Code.",
+  "remote.give.btn": "Jemandem helfen",
+  "remote.warn.title": "Vorsicht vor Betrug",
+  "remote.warn": "Microsoft, deine Bank oder falsche „Techniker“ rufen dich nie an, um einen Fernzugriffscode zu verlangen. Gib den Code nur Menschen, die du wirklich kennst.",
+  "remote.opened": "Remotehilfe ist geöffnet: Folge den Anweisungen im Fenster.",
+  "remote.install": "Remotehilfe ist nicht installiert: Der Microsoft Store wurde geöffnet, tippe auf „Herunterladen“ und versuche es erneut."
 }

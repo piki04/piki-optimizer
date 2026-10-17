@@ -2,7 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Piki Optimizer" Width="1240" Height="820" MinWidth="1060" MinHeight="690"
         WindowStartupLocation="CenterScreen" Background="#0A0C11" Foreground="#ECEFF6"
-        FontFamily="Segoe UI Variable Text, Segoe UI" FontSize="13"
+        FontFamily="Segoe UI Variable Text, Segoe UI" FontSize="14"
         TextOptions.TextFormattingMode="Ideal" UseLayoutRounding="True" SnapsToDevicePixels="True">
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="46" ResizeBorderThickness="6" GlassFrameThickness="0" CornerRadius="0" UseAeroCaptionButtons="False"/>
@@ -15,18 +15,30 @@
 
         <SolidColorBrush x:Key="BgBrush" Color="#0A0C11"/>
         <SolidColorBrush x:Key="PanelBrush" Color="#66101420"/>
-        <LinearGradientBrush x:Key="CardBrush" StartPoint="0,0" EndPoint="0.4,1">
-            <GradientStop Color="#2EFFFFFF" Offset="0"/>
-            <GradientStop Color="#12FFFFFF" Offset="1"/>
-        </LinearGradientBrush>
-        <SolidColorBrush x:Key="CardHoverBrush" Color="#33FFFFFF"/>
-        <LinearGradientBrush x:Key="LineBrush" StartPoint="0,0" EndPoint="0,1">
-            <GradientStop Color="#59FFFFFF" Offset="0"/>
+        <!-- liquid glass: frosted fill brighter at the top, rim light on the top-left and bottom-right edges -->
+        <LinearGradientBrush x:Key="CardBrush" StartPoint="0,0" EndPoint="0.6,1">
+            <GradientStop Color="#3DFFFFFF" Offset="0"/>
+            <GradientStop Color="#1FFFFFFF" Offset="0.45"/>
             <GradientStop Color="#14FFFFFF" Offset="1"/>
         </LinearGradientBrush>
-        <SolidColorBrush x:Key="TextBrush" Color="#ECEFF6"/>
-        <SolidColorBrush x:Key="SubBrush" Color="#8E96AB"/>
-        <SolidColorBrush x:Key="FaintBrush" Color="#5A6279"/>
+        <LinearGradientBrush x:Key="GlassBtnBrush" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#40FFFFFF" Offset="0"/>
+            <GradientStop Color="#1FFFFFFF" Offset="1"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="GlassBtnHover" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#59FFFFFF" Offset="0"/>
+            <GradientStop Color="#2EFFFFFF" Offset="1"/>
+        </LinearGradientBrush>
+        <SolidColorBrush x:Key="CardHoverBrush" Color="#33FFFFFF"/>
+        <LinearGradientBrush x:Key="LineBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#B3FFFFFF" Offset="0"/>
+            <GradientStop Color="#33FFFFFF" Offset="0.3"/>
+            <GradientStop Color="#12FFFFFF" Offset="0.62"/>
+            <GradientStop Color="#59FFFFFF" Offset="1"/>
+        </LinearGradientBrush>
+        <SolidColorBrush x:Key="TextBrush" Color="#F6F8FC"/>
+        <SolidColorBrush x:Key="SubBrush" Color="#BCC3D3"/>
+        <SolidColorBrush x:Key="FaintBrush" Color="#929BB0"/>
         <SolidColorBrush x:Key="AccentBrush" Color="#7C5CFF"/>
         <SolidColorBrush x:Key="Accent2Brush" Color="#22D3EE"/>
         <SolidColorBrush x:Key="GoodBrush" Color="#2ED47A"/>
@@ -62,42 +74,41 @@
         <Style x:Key="Sub" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{StaticResource SubBrush}"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
-            <Setter Property="LineHeight" Value="19"/>
+            <Setter Property="LineHeight" Value="21"/>
         </Style>
         <Style x:Key="IconText" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource Icons}"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
         <Style x:Key="Card" TargetType="Border">
-            <Setter Property="Effect"><Setter.Value><DropShadowEffect BlurRadius="30" ShadowDepth="6" Opacity="0.28" Color="#000000"/></Setter.Value></Setter>
+            <Setter Property="Effect"><Setter.Value><DropShadowEffect BlurRadius="40" ShadowDepth="10" Direction="270" Opacity="0.30" Color="#000000"/></Setter.Value></Setter>
             <Setter Property="Background" Value="{StaticResource CardBrush}"/>
             <Setter Property="BorderBrush" Value="{StaticResource LineBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="20"/>
-            <Setter Property="Padding" Value="20"/>
+            <Setter Property="BorderThickness" Value="1.2"/>
+            <Setter Property="CornerRadius" Value="26"/>
+            <Setter Property="Padding" Value="22"/>
         </Style>
 
         <!-- Buttons -->
         <Style x:Key="Btn" TargetType="Button">
             <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
-            <Setter Property="Background" Value="#21FFFFFF"/>
-            <Setter Property="BorderBrush" Value="#3DFFFFFF"/>
-            <Setter Property="Padding" Value="16,9"/>
+            <Setter Property="Background" Value="{StaticResource GlassBtnBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource LineBrush}"/>
+            <Setter Property="Padding" Value="18,10"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="{TemplateBinding Padding}">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="14" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#33FFFFFF"/>
-                                <Setter TargetName="Bd" Property="BorderBrush" Value="#59FFFFFF"/>
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource GlassBtnHover}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#151a26"/>
+                                <Setter TargetName="Bd" Property="Background" Value="#14FFFFFF"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.4"/>
@@ -113,13 +124,21 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Grid>
-                            <Border x:Name="Glow" CornerRadius="12" Background="{StaticResource AccentGrad}" Opacity="0.35" Margin="-2">
+                            <Border x:Name="Glow" CornerRadius="16" Background="{StaticResource AccentGrad}" Opacity="0.4" Margin="-2">
                                 <Border.Effect>
                                     <BlurEffect Radius="14"/>
                                 </Border.Effect>
                             </Border>
-                            <Border x:Name="Bd" Background="{StaticResource AccentGrad}" CornerRadius="10" Padding="{TemplateBinding Padding}">
+                            <Border x:Name="Bd" Background="{StaticResource AccentGrad}" CornerRadius="14" Padding="{TemplateBinding Padding}">
                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <Border CornerRadius="14" BorderThickness="1" IsHitTestVisible="False">
+                                <Border.BorderBrush>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#99FFFFFF" Offset="0"/>
+                                        <GradientStop Color="#00FFFFFF" Offset="0.55"/>
+                                    </LinearGradientBrush>
+                                </Border.BorderBrush>
                             </Border>
                         </Grid>
                         <ControlTemplate.Triggers>
@@ -138,13 +157,13 @@
             </Setter>
         </Style>
         <Style x:Key="BtnDanger" TargetType="Button" BasedOn="{StaticResource Btn}">
-            <Setter Property="Foreground" Value="#FF8A9B"/>
-            <Setter Property="Background" Value="#2A141B"/>
-            <Setter Property="BorderBrush" Value="#4A2230"/>
+            <Setter Property="Foreground" Value="#FFA3B0"/>
+            <Setter Property="Background" Value="#33FF5D73"/>
+            <Setter Property="BorderBrush" Value="#66FF5D73"/>
         </Style>
         <Style x:Key="BtnSmall" TargetType="Button" BasedOn="{StaticResource Btn}">
-            <Setter Property="Padding" Value="12,6"/>
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="13,7"/>
+            <Setter Property="FontSize" Value="13"/>
         </Style>
         <Style x:Key="TitleBtn" TargetType="Button">
             <Setter Property="Width" Value="46"/>
@@ -222,7 +241,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
-                        <Border x:Name="Bd" CornerRadius="18" Background="#1AFFFFFF" BorderBrush="#33FFFFFF" BorderThickness="1" Padding="16,8">
+                        <Border x:Name="Bd" CornerRadius="18" Background="{StaticResource GlassBtnBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="16,8">
                             <ContentPresenter HorizontalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -248,7 +267,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
-                        <Border x:Name="Bd" CornerRadius="14" Background="#1AFFFFFF" BorderBrush="#2EFFFFFF" BorderThickness="1.5" Padding="16,16">
+                        <Border x:Name="Bd" CornerRadius="20" Background="{StaticResource CardBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1.2" Padding="16,16">
                             <ContentPresenter/>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -329,7 +348,7 @@
                                 <Thumb>
                                     <Thumb.Template>
                                         <ControlTemplate TargetType="Thumb">
-                                            <Border CornerRadius="4" Background="#2A3042" Margin="2"/>
+                                            <Border CornerRadius="4" Background="#40FFFFFF" Margin="2"/>
                                         </ControlTemplate>
                                     </Thumb.Template>
                                 </Thumb>
@@ -351,7 +370,7 @@
                                         <Thumb>
                                             <Thumb.Template>
                                                 <ControlTemplate TargetType="Thumb">
-                                                    <Border CornerRadius="4" Background="#2A3042" Margin="2"/>
+                                                    <Border CornerRadius="4" Background="#40FFFFFF" Margin="2"/>
                                                 </ControlTemplate>
                                             </Thumb.Template>
                                         </Thumb>
@@ -386,7 +405,7 @@
             </Style.Triggers>
         </Style>
         <Style x:Key="RiskText" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="{StaticResource InfoBrush}"/>
             <Style.Triggers>
@@ -409,7 +428,7 @@
             </Style.Triggers>
         </Style>
         <Style x:Key="BadgeText" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="{StaticResource InfoBrush}"/>
             <Style.Triggers>
@@ -442,8 +461,8 @@
             <Setter Property="Background" Value="{StaticResource CardBrush}"/>
             <Setter Property="BorderBrush" Value="{StaticResource LineBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="16"/>
-            <Setter Property="Padding" Value="16,14"/>
+            <Setter Property="CornerRadius" Value="20"/>
+            <Setter Property="Padding" Value="18,15"/>
             <Setter Property="Margin" Value="0,0,0,8"/>
         </Style>
         <Style x:Key="OptCard" TargetType="Border" BasedOn="{StaticResource RowCard}">
@@ -469,10 +488,10 @@
                             <Border Style="{StaticResource RiskChip}"><TextBlock Text="{Binding RiskLabel}" Style="{StaticResource RiskText}"/></Border>
                             <Border Style="{StaticResource BadgeChip}" Visibility="{Binding HasBadge, Converter={StaticResource B2V}}"><TextBlock Text="{Binding Badge}" Style="{StaticResource BadgeText}"/></Border>
                             <Border CornerRadius="6" Padding="7,2" Margin="8,0,0,0" Background="#1E2ED47A" VerticalAlignment="Center" Visibility="{Binding IsApplied, Converter={StaticResource B2V}}">
-                                <TextBlock Text="{Binding Status}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource GoodBrush}"/>
+                                <TextBlock Text="{Binding Status}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource GoodBrush}"/>
                             </Border>
                             <Border CornerRadius="6" Padding="7,2" Margin="8,0,0,0" Background="#1F5AA9FF" VerticalAlignment="Center" Visibility="{Binding NeedsReboot, Converter={StaticResource B2V}}">
-                                <TextBlock Text="{Binding RebootLabel}" FontSize="11" Foreground="{StaticResource InfoBrush}"/>
+                                <TextBlock Text="{Binding RebootLabel}" FontSize="12" Foreground="{StaticResource InfoBrush}"/>
                             </Border>
                         </WrapPanel>
                         <TextBlock Text="{Binding Description}" Style="{StaticResource Sub}" Margin="0,5,0,0"/>
@@ -480,7 +499,7 @@
                             <TextBlock Text="&#xE7BA;" FontFamily="{StaticResource Icons}" Foreground="{StaticResource WarnBrush}" FontSize="12" Margin="0,2,7,0" VerticalAlignment="Top"/>
                             <TextBlock Text="{Binding Warning}" Foreground="#E8C38A" TextWrapping="Wrap" MaxWidth="760" FontSize="12.5"/>
                         </StackPanel>
-                        <TextBlock Text="{Binding Extra}" Foreground="{StaticResource FaintBrush}" FontSize="11.5" Margin="0,6,0,0" TextWrapping="Wrap" Visibility="{Binding HasExtra, Converter={StaticResource B2V}}"/>
+                        <TextBlock Text="{Binding Extra}" Foreground="{StaticResource FaintBrush}" FontSize="12.5" Margin="0,6,0,0" TextWrapping="Wrap" Visibility="{Binding HasExtra, Converter={StaticResource B2V}}"/>
                     </StackPanel>
                     <CheckBox Grid.Column="1" Style="{StaticResource Switch}" VerticalAlignment="Center" IsChecked="{Binding IsChecked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsSelectable}"/>
                 </Grid>
@@ -498,10 +517,10 @@
                         <WrapPanel>
                             <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
                             <Border Style="{StaticResource RiskChip}"><TextBlock Text="{Binding RiskLabel}" Style="{StaticResource RiskText}"/></Border>
-                            <TextBlock Text="{Binding Status}" Foreground="{StaticResource FaintBrush}" FontSize="11.5" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding Status}" Foreground="{StaticResource FaintBrush}" FontSize="12.5" Margin="10,0,0,0" VerticalAlignment="Center"/>
                         </WrapPanel>
                         <TextBlock Text="{Binding Description}" Style="{StaticResource Sub}" Margin="0,5,0,0"/>
-                        <TextBlock Text="{Binding Extra}" Foreground="{StaticResource FaintBrush}" FontSize="11.5" Margin="0,5,0,0" TextTrimming="CharacterEllipsis" Visibility="{Binding HasExtra, Converter={StaticResource B2V}}"/>
+                        <TextBlock Text="{Binding Extra}" Foreground="{StaticResource FaintBrush}" FontSize="12.5" Margin="0,5,0,0" TextTrimming="CharacterEllipsis" Visibility="{Binding HasExtra, Converter={StaticResource B2V}}"/>
                     </StackPanel>
                     <CheckBox Grid.Column="1" Style="{StaticResource Switch}" VerticalAlignment="Center" IsChecked="{Binding IsChecked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsSelectable}"/>
                 </Grid>
@@ -543,7 +562,7 @@
                     <StackPanel Grid.Column="1" Margin="14,0,12,0" VerticalAlignment="Center">
                         <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap"/>
                         <TextBlock Text="{Binding Detail}" Style="{StaticResource Sub}" Margin="0,3,0,0"/>
-                        <TextBlock Text="{Binding Status}" Foreground="{StaticResource GoodBrush}" Margin="0,4,0,0" FontSize="12"/>
+                        <TextBlock Text="{Binding Status}" Foreground="{StaticResource GoodBrush}" Margin="0,4,0,0" FontSize="13"/>
                     </StackPanel>
                     <Button Grid.Column="2" Style="{StaticResource BtnSmall}" VerticalAlignment="Center" Content="{Binding ActionLabel}" Tag="{Binding ActionId}" Visibility="{Binding HasAction, Converter={StaticResource B2V}}"/>
                 </Grid>
@@ -557,11 +576,11 @@
                         <Border Width="30" Height="30" CornerRadius="8" Background="#29FFFFFF">
                             <TextBlock Text="{Binding Glyph}" FontFamily="{StaticResource Icons}" FontSize="14" Foreground="#A996FF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
-                        <TextBlock Text="{Binding Label}" Foreground="{StaticResource SubBrush}" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                        <TextBlock Text="{Binding Label}" Foreground="{StaticResource SubBrush}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" Margin="10,0,0,0"/>
                     </StackPanel>
                     <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold" Margin="0,12,0,0" TextWrapping="Wrap"/>
-                    <TextBlock Text="{Binding Sub}" Foreground="{StaticResource SubBrush}" FontSize="12" Margin="0,4,0,0" TextWrapping="Wrap"/>
-                    <TextBlock Text="{Binding Detail}" Foreground="{StaticResource FaintBrush}" FontSize="11.5" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding Sub}" Foreground="{StaticResource SubBrush}" FontSize="13" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding Detail}" Foreground="{StaticResource FaintBrush}" FontSize="12.5" Margin="0,2,0,0" TextWrapping="Wrap"/>
                 </StackPanel>
             </Border>
         </DataTemplate>
@@ -578,13 +597,13 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
-                        <TextBlock Text="{Binding Description}" Foreground="{StaticResource FaintBrush}" FontSize="11.5" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{Binding Description}" Foreground="{StaticResource FaintBrush}" FontSize="12.5" TextTrimming="CharacterEllipsis"/>
                     </StackPanel>
                     <TextBlock Grid.Column="1" Text="{Binding MemText}" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,14,0"/>
                     <TextBlock Grid.Column="2" Text="{Binding CpuText}" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,14,0" Foreground="{StaticResource SubBrush}"/>
                     <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
                         <Border Style="{StaticResource RiskChip}" Margin="0,0,8,0"><TextBlock Text="{Binding RiskLabel}" Style="{StaticResource RiskText}"/></Border>
-                        <TextBlock Text="{Binding Advice}" Foreground="{StaticResource SubBrush}" FontSize="12" TextWrapping="Wrap" MaxWidth="330" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding Advice}" Foreground="{StaticResource SubBrush}" FontSize="13" TextWrapping="Wrap" MaxWidth="330" VerticalAlignment="Center"/>
                     </StackPanel>
                     <Button Grid.Column="4" Style="{StaticResource BtnSmall}" Content="&#xE711;" FontFamily="Segoe MDL2 Assets" Tag="{Binding Name}" IsEnabled="{Binding CanEnd}" VerticalAlignment="Center" Margin="10,0,0,0" ToolTip="Chiudi / Close"/>
                 </Grid>
@@ -609,7 +628,7 @@
                 <TextBlock Grid.Column="3" Text="{Binding Jitter}" Foreground="{StaticResource SubBrush}" VerticalAlignment="Center"/>
                 <TextBlock Grid.Column="4" Text="{Binding Loss}" Foreground="{StaticResource SubBrush}" VerticalAlignment="Center"/>
                 <Border Grid.Column="5" CornerRadius="6" Padding="8,3" HorizontalAlignment="Left" Background="#1E5AA9FF" x:Name="QBd">
-                    <TextBlock Text="{Binding Quality}" FontSize="11.5" FontWeight="SemiBold" Foreground="{StaticResource InfoBrush}" x:Name="QTx"/>
+                    <TextBlock Text="{Binding Quality}" FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource InfoBrush}" x:Name="QTx"/>
                 </Border>
             </Grid>
             <DataTemplate.Triggers>
@@ -640,7 +659,7 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel>
                         <TextBlock Text="{Binding Provider}" FontWeight="SemiBold"/>
-                        <TextBlock Foreground="{StaticResource FaintBrush}" FontSize="11.5"><Run Text="{Binding Primary, Mode=OneWay}"/><Run Text="  "/><Run Text="{Binding Secondary, Mode=OneWay}"/></TextBlock>
+                        <TextBlock Foreground="{StaticResource FaintBrush}" FontSize="12.5"><Run Text="{Binding Primary, Mode=OneWay}"/><Run Text="  "/><Run Text="{Binding Secondary, Mode=OneWay}"/></TextBlock>
                     </StackPanel>
                     <TextBlock Grid.Column="1" Text="{Binding Ms}" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center"/>
                 </Grid>
@@ -663,7 +682,7 @@
                     <TextBlock Text="{Binding Key}" Foreground="{StaticResource SubBrush}" TextWrapping="Wrap" Margin="0,0,12,0"/>
                     <StackPanel Grid.Column="1">
                         <TextBlock Text="{Binding Value}" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                        <TextBlock Text="{Binding Hint}" Foreground="{StaticResource FaintBrush}" FontSize="11.5" TextWrapping="Wrap" Margin="0,3,0,0" Visibility="{Binding HasHint, Converter={StaticResource B2V}}"/>
+                        <TextBlock Text="{Binding Hint}" Foreground="{StaticResource FaintBrush}" FontSize="12.5" TextWrapping="Wrap" Margin="0,3,0,0" Visibility="{Binding HasHint, Converter={StaticResource B2V}}"/>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -680,7 +699,7 @@
                     <TextBlock Text="{Binding Time}" Foreground="{StaticResource FaintBrush}" VerticalAlignment="Center"/>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                         <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                        <TextBlock Text="{Binding Detail}" Foreground="{StaticResource SubBrush}" FontSize="12"/>
+                        <TextBlock Text="{Binding Detail}" Foreground="{StaticResource SubBrush}" FontSize="13"/>
                     </StackPanel>
                     <Button Grid.Column="2" Style="{StaticResource BtnSmall}" Content="@{common.undo}" Tag="{Binding Id}" Visibility="{Binding CanUndo, Converter={StaticResource B2V}}"/>
                 </Grid>
@@ -702,14 +721,14 @@
         <Image x:Name="BgImage" Grid.ColumnSpan="2" Stretch="UniformToFill" Opacity="0.35" Visibility="Collapsed" IsHitTestVisible="False" Margin="-60"><Image.Effect><BlurEffect Radius="28" KernelType="Gaussian"/></Image.Effect></Image>
         <!-- colourful blurred blobs behind the glass -->
         <Grid x:Name="Blobs" Grid.ColumnSpan="2" IsHitTestVisible="False" Opacity="0.85" ClipToBounds="True">
-            <Grid.Effect><BlurEffect Radius="90" KernelType="Gaussian"/></Grid.Effect>
+            <Grid.Effect><BlurEffect Radius="110" KernelType="Gaussian"/></Grid.Effect>
             <Ellipse Width="620" Height="520" Fill="#7C5CFF" Opacity="0.55" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-180,-120,0"/>
             <Ellipse Width="520" Height="440" Fill="#22D3EE" Opacity="0.35" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="120,0,0,-160"/>
             <Ellipse Width="420" Height="380" Fill="#FF4FA3" Opacity="0.25" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="260,40,0,0"/>
         </Grid>
 
         <!-- ============================ SIDEBAR -->
-        <Border x:Name="Sidebar" Background="{StaticResource PanelBrush}" BorderBrush="#161A24" BorderThickness="0,0,1,0">
+        <Border x:Name="Sidebar" Background="{StaticResource PanelBrush}" BorderBrush="#26FFFFFF" BorderThickness="0,0,1,0">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="76"/>
@@ -725,7 +744,7 @@
                     </Grid>
                     <StackPanel Margin="11,0,0,0" VerticalAlignment="Center">
                         <TextBlock FontFamily="{StaticResource Display}" FontSize="18" FontWeight="Bold"><Run Text="Piki "/><Run Text="Optimizer" Foreground="#22D3EE"/></TextBlock>
-                        <TextBlock x:Name="VersionText" Text="v1.0.0" Foreground="{StaticResource FaintBrush}" FontSize="11"/>
+                        <TextBlock x:Name="VersionText" Text="v1.0.0" Foreground="{StaticResource FaintBrush}" FontSize="12"/>
                     </StackPanel>
                 </StackPanel>
 
@@ -737,7 +756,7 @@
                         <Grid>
                             <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE95E;" Style="{StaticResource IconText}" FontSize="16" Width="26"/><TextBlock Text="@{nav.health}" FontSize="14" Margin="6,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/></StackPanel>
                             <Border x:Name="HealthBadge" HorizontalAlignment="Right" CornerRadius="9" MinWidth="20" Height="18" Background="#FF5D73" Padding="5,0" Visibility="Collapsed">
-                                <TextBlock x:Name="HealthBadgeText" Text="0" FontSize="11" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="HealthBadgeText" Text="0" FontSize="12" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                         </Grid>
                     </RadioButton>
@@ -749,6 +768,9 @@
                     </RadioButton>
                     <RadioButton x:Name="NavNetwork" Style="{StaticResource Nav}" Tag="Network">
                         <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE968;" Style="{StaticResource IconText}" FontSize="16" Width="26"/><TextBlock Text="@{nav.network}" FontSize="14" Margin="6,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/></StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="NavRemote" Style="{StaticResource Nav}" Tag="Remote">
+                        <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE7F4;" Style="{StaticResource IconText}" FontSize="16" Width="26"/><TextBlock Text="@{nav.remote}" FontSize="14" Margin="6,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/></StackPanel>
                     </RadioButton>
                     <RadioButton x:Name="NavAe" Style="{StaticResource Nav}" Tag="Ae">
                         <StackPanel Orientation="Horizontal">
@@ -770,18 +792,18 @@
                 </StackPanel>
 
                 <!-- live mini monitor -->
-                <Border Grid.Row="2" Margin="14,0,14,16" CornerRadius="12" Background="#D9121620" BorderBrush="#24FFFFFF" BorderThickness="1" Padding="14,12">
+                <Border Grid.Row="2" Margin="14,0,14,16" CornerRadius="18" Background="{StaticResource CardBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="14,12">
                     <StackPanel>
                         <Grid>
-                            <TextBlock Text="CPU" Foreground="{StaticResource SubBrush}" FontSize="11.5" FontWeight="SemiBold"/>
-                            <TextBlock x:Name="SideCpuText" Text="0%" HorizontalAlignment="Right" FontSize="11.5" FontWeight="SemiBold"/>
+                            <TextBlock Text="CPU" Foreground="{StaticResource SubBrush}" FontSize="12.5" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="SideCpuText" Text="0%" HorizontalAlignment="Right" FontSize="12.5" FontWeight="SemiBold"/>
                         </Grid>
                         <Border Height="5" CornerRadius="3" Background="#24FFFFFF" Margin="0,5,0,10">
                             <Border x:Name="SideCpuBar" HorizontalAlignment="Left" Width="0" CornerRadius="3" Background="#22D3EE"/>
                         </Border>
                         <Grid>
-                            <TextBlock Text="RAM" Foreground="{StaticResource SubBrush}" FontSize="11.5" FontWeight="SemiBold"/>
-                            <TextBlock x:Name="SideRamText" Text="0%" HorizontalAlignment="Right" FontSize="11.5" FontWeight="SemiBold"/>
+                            <TextBlock Text="RAM" Foreground="{StaticResource SubBrush}" FontSize="12.5" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="SideRamText" Text="0%" HorizontalAlignment="Right" FontSize="12.5" FontWeight="SemiBold"/>
                         </Grid>
                         <Border Height="5" CornerRadius="3" Background="#24FFFFFF" Margin="0,5,0,0">
                             <Border x:Name="SideRamBar" HorizontalAlignment="Left" Width="0" CornerRadius="3" Background="#7C5CFF"/>
@@ -802,7 +824,7 @@
 
             <!-- title bar -->
             <Grid Background="Transparent">
-                <TextBlock x:Name="TitlePc" Text="" Foreground="{StaticResource FaintBrush}" FontSize="12" VerticalAlignment="Center" Margin="28,0,0,0"/>
+                <TextBlock x:Name="TitlePc" Text="" Foreground="{StaticResource FaintBrush}" FontSize="13" VerticalAlignment="Center" Margin="28,0,0,0"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button x:Name="BtnMin" Style="{StaticResource TitleBtn}" Content="&#xE921;"/>
                     <Button x:Name="BtnMax" Style="{StaticResource TitleBtn}" Content="&#xE922;"/>
@@ -897,13 +919,13 @@
                                     <Grid Grid.Row="2">
                                         <StackPanel Orientation="Horizontal">
                                             <Ellipse Width="8" Height="8" Fill="#22D3EE"/>
-                                            <TextBlock Text="CPU" Foreground="{StaticResource SubBrush}" Margin="6,0,6,0" FontSize="12"/>
-                                            <TextBlock x:Name="LiveCpuText" Text="0%" FontWeight="SemiBold" FontSize="12"/>
+                                            <TextBlock Text="CPU" Foreground="{StaticResource SubBrush}" Margin="6,0,6,0" FontSize="13"/>
+                                            <TextBlock x:Name="LiveCpuText" Text="0%" FontWeight="SemiBold" FontSize="13"/>
                                             <Ellipse Width="8" Height="8" Fill="#7C5CFF" Margin="18,0,0,0"/>
-                                            <TextBlock Text="RAM" Foreground="{StaticResource SubBrush}" Margin="6,0,6,0" FontSize="12"/>
-                                            <TextBlock x:Name="LiveRamText" Text="0%" FontWeight="SemiBold" FontSize="12"/>
+                                            <TextBlock Text="RAM" Foreground="{StaticResource SubBrush}" Margin="6,0,6,0" FontSize="13"/>
+                                            <TextBlock x:Name="LiveRamText" Text="0%" FontWeight="SemiBold" FontSize="13"/>
                                         </StackPanel>
-                                        <TextBlock x:Name="LiveProcText" HorizontalAlignment="Right" Foreground="{StaticResource FaintBrush}" FontSize="12"/>
+                                        <TextBlock x:Name="LiveProcText" HorizontalAlignment="Right" Foreground="{StaticResource FaintBrush}" FontSize="13"/>
                                     </Grid>
                                 </Grid>
                             </Border>
@@ -970,19 +992,19 @@
                         <TextBlock Style="{StaticResource Sub}" FontSize="14" Margin="0,4,0,18" Text="@{opt.sub}"/>
                         <UniformGrid x:Name="PresetPanel" Columns="5" Margin="0,0,-12,0">
                             <RadioButton x:Name="PresetGaming" Style="{StaticResource ChoiceCard}" GroupName="preset" Tag="gaming">
-                                <StackPanel><TextBlock Text="&#x1F3AE;" FontFamily="Segoe UI Emoji" FontSize="24"/><TextBlock Text="@{preset.gaming}" FontWeight="Bold" FontSize="14" Margin="0,10,0,4"/><TextBlock Text="@{preset.gaming.d}" Style="{StaticResource Sub}" FontSize="12"/></StackPanel>
+                                <StackPanel><TextBlock Text="&#x1F3AE;" FontFamily="Segoe UI Emoji" FontSize="24"/><TextBlock Text="@{preset.gaming}" FontWeight="Bold" FontSize="14" Margin="0,10,0,4"/><TextBlock Text="@{preset.gaming.d}" Style="{StaticResource Sub}" FontSize="13"/></StackPanel>
                             </RadioButton>
                             <RadioButton x:Name="PresetCompetitive" Style="{StaticResource ChoiceCard}" GroupName="preset" Tag="competitive">
-                                <StackPanel><TextBlock Text="&#x1F3C6;" FontFamily="Segoe UI Emoji" FontSize="24"/><TextBlock Text="@{preset.competitive}" FontWeight="Bold" FontSize="14" Margin="0,10,0,4"/><TextBlock Text="@{preset.competitive.d}" Style="{StaticResource Sub}" FontSize="12"/></StackPanel>
+                                <StackPanel><TextBlock Text="&#x1F3C6;" FontFamily="Segoe UI Emoji" FontSize="24"/><TextBlock Text="@{preset.competitive}" FontWeight="Bold" FontSize="14" Margin="0,10,0,4"/><TextBlock Text="@{preset.competitive.d}" Style="{StaticResource Sub}" FontSize="13"/></StackPanel>
                             </RadioButton>
                             <RadioButton x:Name="PresetCreator" Style="{StaticResource ChoiceCard}" GroupName="preset" Tag="creator">
-                                <StackPanel><TextBlock Text="&#x1F3AC;" FontFamily="Segoe UI Emoji" FontSize="24"/><TextBlock Text="@{preset.creator}" FontWeight="Bold" FontSize="14" Margin="0,10,0,4"/><TextBlock Text="@{preset.creator.d}" Style="{StaticResource Sub}" FontSize="12"/></StackPanel>
+                                <StackPanel><TextBlock Text="&#x1F3AC;" FontFamily="Segoe UI Emoji" FontSize="24"/><TextBlock Text="@{preset.creator}" FontWeight="Bold" FontSize="14" Margin="0,10,0,4"/><TextBlock Text="@{preset.creator.d}" Style="{StaticResource Sub}" FontSize="13"/></StackPanel>
                             </RadioButton>
                             <RadioButton x:Name="PresetBalanced" Style="{StaticResource ChoiceCard}" GroupName="preset" Tag="balanced">
-                                <StackPanel><TextBlock Text="&#x2696;" FontFamily="Segoe UI Emoji" FontSize="24"/><TextBlock Text="@{preset.balanced}" FontWeight="Bold" FontSize="14" Margin="0,10,0,4"/><TextBlock Text="@{preset.balanced.d}" Style="{StaticResource Sub}" FontSize="12"/></StackPanel>
+                                <StackPanel><TextBlock Text="&#x2696;" FontFamily="Segoe UI Emoji" FontSize="24"/><TextBlock Text="@{preset.balanced}" FontWeight="Bold" FontSize="14" Margin="0,10,0,4"/><TextBlock Text="@{preset.balanced.d}" Style="{StaticResource Sub}" FontSize="13"/></StackPanel>
                             </RadioButton>
                             <RadioButton x:Name="PresetLaptop" Style="{StaticResource ChoiceCard}" GroupName="preset" Tag="laptop">
-                                <StackPanel><TextBlock Text="&#x1F50B;" FontFamily="Segoe UI Emoji" FontSize="24"/><TextBlock Text="@{preset.laptop}" FontWeight="Bold" FontSize="14" Margin="0,10,0,4"/><TextBlock Text="@{preset.laptop.d}" Style="{StaticResource Sub}" FontSize="12"/></StackPanel>
+                                <StackPanel><TextBlock Text="&#x1F50B;" FontFamily="Segoe UI Emoji" FontSize="24"/><TextBlock Text="@{preset.laptop}" FontWeight="Bold" FontSize="14" Margin="0,10,0,4"/><TextBlock Text="@{preset.laptop.d}" Style="{StaticResource Sub}" FontSize="13"/></StackPanel>
                             </RadioButton>
                         </UniformGrid>
                         <Border CornerRadius="12" Background="#101820" BorderBrush="#1D3340" BorderThickness="1" Padding="16,12" Margin="0,4,0,0">
@@ -1005,10 +1027,10 @@
                         <TextBlock Style="{StaticResource H1}" Text="@{proc.title}"/>
                         <TextBlock Style="{StaticResource Sub}" FontSize="14" Margin="0,4,0,16" Text="@{proc.sub}"/>
                         <UniformGrid Columns="4" Margin="0,0,-12,0">
-                            <Border Style="{StaticResource Card}" Margin="0,0,12,12" Padding="16,14"><StackPanel><TextBlock x:Name="StatProcs" Text="-" FontFamily="{StaticResource Display}" FontSize="26" FontWeight="Bold"/><TextBlock Text="@{proc.stat.procs}" Foreground="{StaticResource SubBrush}" FontSize="12"/></StackPanel></Border>
-                            <Border Style="{StaticResource Card}" Margin="0,0,12,12" Padding="16,14"><StackPanel><TextBlock x:Name="StatSvcs" Text="-" FontFamily="{StaticResource Display}" FontSize="26" FontWeight="Bold"/><TextBlock Text="@{proc.stat.svcs}" Foreground="{StaticResource SubBrush}" FontSize="12"/></StackPanel></Border>
-                            <Border Style="{StaticResource Card}" Margin="0,0,12,12" Padding="16,14"><StackPanel><TextBlock x:Name="StatStartup" Text="-" FontFamily="{StaticResource Display}" FontSize="26" FontWeight="Bold"/><TextBlock Text="@{proc.stat.startup}" Foreground="{StaticResource SubBrush}" FontSize="12"/></StackPanel></Border>
-                            <Border Style="{StaticResource Card}" Margin="0,0,12,12" Padding="16,14"><StackPanel><TextBlock x:Name="StatRam" Text="-" FontFamily="{StaticResource Display}" FontSize="26" FontWeight="Bold"/><TextBlock Text="@{proc.stat.ram}" Foreground="{StaticResource SubBrush}" FontSize="12"/></StackPanel></Border>
+                            <Border Style="{StaticResource Card}" Margin="0,0,12,12" Padding="16,14"><StackPanel><TextBlock x:Name="StatProcs" Text="-" FontFamily="{StaticResource Display}" FontSize="26" FontWeight="Bold"/><TextBlock Text="@{proc.stat.procs}" Foreground="{StaticResource SubBrush}" FontSize="13"/></StackPanel></Border>
+                            <Border Style="{StaticResource Card}" Margin="0,0,12,12" Padding="16,14"><StackPanel><TextBlock x:Name="StatSvcs" Text="-" FontFamily="{StaticResource Display}" FontSize="26" FontWeight="Bold"/><TextBlock Text="@{proc.stat.svcs}" Foreground="{StaticResource SubBrush}" FontSize="13"/></StackPanel></Border>
+                            <Border Style="{StaticResource Card}" Margin="0,0,12,12" Padding="16,14"><StackPanel><TextBlock x:Name="StatStartup" Text="-" FontFamily="{StaticResource Display}" FontSize="26" FontWeight="Bold"/><TextBlock Text="@{proc.stat.startup}" Foreground="{StaticResource SubBrush}" FontSize="13"/></StackPanel></Border>
+                            <Border Style="{StaticResource Card}" Margin="0,0,12,12" Padding="16,14"><StackPanel><TextBlock x:Name="StatRam" Text="-" FontFamily="{StaticResource Display}" FontSize="26" FontWeight="Bold"/><TextBlock Text="@{proc.stat.ram}" Foreground="{StaticResource SubBrush}" FontSize="13"/></StackPanel></Border>
                         </UniformGrid>
                         <StackPanel Orientation="Horizontal" Margin="0,6,0,14">
                             <RadioButton x:Name="ProcTabReduce" Style="{StaticResource Pill}" GroupName="proctab" IsChecked="True" Content="@{proc.tab.reduce}"/>
@@ -1020,13 +1042,13 @@
                             <TextBlock Text="@{proc.level.q}" FontWeight="SemiBold" Margin="0,0,0,10"/>
                             <UniformGrid Columns="3" Margin="0,0,-12,0">
                                 <RadioButton x:Name="LevelLight" Style="{StaticResource ChoiceCard}" GroupName="level" Tag="1">
-                                    <StackPanel><StackPanel Orientation="Horizontal"><Ellipse Width="10" Height="10" Fill="#2ED47A"/><TextBlock Text="@{proc.level.1}" FontWeight="Bold" FontSize="14" Margin="8,0,0,0"/></StackPanel><TextBlock Text="@{proc.level.1.d}" Style="{StaticResource Sub}" FontSize="12" Margin="0,6,0,0"/></StackPanel>
+                                    <StackPanel><StackPanel Orientation="Horizontal"><Ellipse Width="10" Height="10" Fill="#2ED47A"/><TextBlock Text="@{proc.level.1}" FontWeight="Bold" FontSize="14" Margin="8,0,0,0"/></StackPanel><TextBlock Text="@{proc.level.1.d}" Style="{StaticResource Sub}" FontSize="13" Margin="0,6,0,0"/></StackPanel>
                                 </RadioButton>
                                 <RadioButton x:Name="LevelBalanced" Style="{StaticResource ChoiceCard}" GroupName="level" Tag="2">
-                                    <StackPanel><StackPanel Orientation="Horizontal"><Ellipse Width="10" Height="10" Fill="#FFB547"/><TextBlock Text="@{proc.level.2}" FontWeight="Bold" FontSize="14" Margin="8,0,0,0"/></StackPanel><TextBlock Text="@{proc.level.2.d}" Style="{StaticResource Sub}" FontSize="12" Margin="0,6,0,0"/></StackPanel>
+                                    <StackPanel><StackPanel Orientation="Horizontal"><Ellipse Width="10" Height="10" Fill="#FFB547"/><TextBlock Text="@{proc.level.2}" FontWeight="Bold" FontSize="14" Margin="8,0,0,0"/></StackPanel><TextBlock Text="@{proc.level.2.d}" Style="{StaticResource Sub}" FontSize="13" Margin="0,6,0,0"/></StackPanel>
                                 </RadioButton>
                                 <RadioButton x:Name="LevelMax" Style="{StaticResource ChoiceCard}" GroupName="level" Tag="3">
-                                    <StackPanel><StackPanel Orientation="Horizontal"><Ellipse Width="10" Height="10" Fill="#FF5D73"/><TextBlock Text="@{proc.level.3}" FontWeight="Bold" FontSize="14" Margin="8,0,0,0"/></StackPanel><TextBlock Text="@{proc.level.3.d}" Style="{StaticResource Sub}" FontSize="12" Margin="0,6,0,0"/></StackPanel>
+                                    <StackPanel><StackPanel Orientation="Horizontal"><Ellipse Width="10" Height="10" Fill="#FF5D73"/><TextBlock Text="@{proc.level.3}" FontWeight="Bold" FontSize="14" Margin="8,0,0,0"/></StackPanel><TextBlock Text="@{proc.level.3.d}" Style="{StaticResource Sub}" FontSize="13" Margin="0,6,0,0"/></StackPanel>
                                 </RadioButton>
                             </UniformGrid>
                             <ItemsControl x:Name="ProcOptList" ItemTemplate="{StaticResource OptionTpl}">
@@ -1057,10 +1079,10 @@
                                     <ColumnDefinition Width="2.6*"/>
                                     <ColumnDefinition Width="44"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="@{proc.col.name}" Foreground="{StaticResource FaintBrush}" FontSize="12"/>
-                                <TextBlock Grid.Column="1" Text="RAM" Foreground="{StaticResource FaintBrush}" FontSize="12" HorizontalAlignment="Right" Margin="0,0,14,0"/>
-                                <TextBlock Grid.Column="2" Text="CPU" Foreground="{StaticResource FaintBrush}" FontSize="12" HorizontalAlignment="Right" Margin="0,0,14,0"/>
-                                <TextBlock Grid.Column="3" Text="@{proc.col.advice}" Foreground="{StaticResource FaintBrush}" FontSize="12"/>
+                                <TextBlock Text="@{proc.col.name}" Foreground="{StaticResource FaintBrush}" FontSize="13"/>
+                                <TextBlock Grid.Column="1" Text="RAM" Foreground="{StaticResource FaintBrush}" FontSize="13" HorizontalAlignment="Right" Margin="0,0,14,0"/>
+                                <TextBlock Grid.Column="2" Text="CPU" Foreground="{StaticResource FaintBrush}" FontSize="13" HorizontalAlignment="Right" Margin="0,0,14,0"/>
+                                <TextBlock Grid.Column="3" Text="@{proc.col.advice}" Foreground="{StaticResource FaintBrush}" FontSize="13"/>
                             </Grid>
                             <ItemsControl x:Name="ProcList" ItemTemplate="{StaticResource ProcTpl}"/>
                         </StackPanel>
@@ -1153,11 +1175,11 @@
                                         <ColumnDefinition Width="70"/>
                                         <ColumnDefinition Width="130"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="1" Text="@{net.ping.target}" Foreground="{StaticResource FaintBrush}" FontSize="12"/>
-                                    <TextBlock Grid.Column="2" Text="Ping" Foreground="{StaticResource FaintBrush}" FontSize="12"/>
-                                    <TextBlock Grid.Column="3" Text="Jitter" Foreground="{StaticResource FaintBrush}" FontSize="12"/>
-                                    <TextBlock Grid.Column="4" Text="@{net.ping.loss}" Foreground="{StaticResource FaintBrush}" FontSize="12"/>
-                                    <TextBlock Grid.Column="5" Text="@{net.ping.quality}" Foreground="{StaticResource FaintBrush}" FontSize="12"/>
+                                    <TextBlock Grid.Column="1" Text="@{net.ping.target}" Foreground="{StaticResource FaintBrush}" FontSize="13"/>
+                                    <TextBlock Grid.Column="2" Text="Ping" Foreground="{StaticResource FaintBrush}" FontSize="13"/>
+                                    <TextBlock Grid.Column="3" Text="Jitter" Foreground="{StaticResource FaintBrush}" FontSize="13"/>
+                                    <TextBlock Grid.Column="4" Text="@{net.ping.loss}" Foreground="{StaticResource FaintBrush}" FontSize="13"/>
+                                    <TextBlock Grid.Column="5" Text="@{net.ping.quality}" Foreground="{StaticResource FaintBrush}" FontSize="13"/>
                                 </Grid>
                                 <ItemsControl x:Name="PingRows" ItemTemplate="{StaticResource PingTpl}"/>
                             </StackPanel>
@@ -1311,6 +1333,50 @@
                         <TextBlock x:Name="ActiveEmpty" Style="{StaticResource Sub}" Text="@{restore.none}" Visibility="Collapsed"/>
                         <TextBlock Style="{StaticResource H2}" Text="@{restore.history}"/>
                         <ItemsControl x:Name="HistoryList" ItemTemplate="{StaticResource HistTpl}"/>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- REMOTE ASSISTANCE -->
+                <ScrollViewer x:Name="PageRemote" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Visibility="Collapsed">
+                    <StackPanel Margin="28,4,28,28" MaxWidth="900" HorizontalAlignment="Left">
+                        <TextBlock Style="{StaticResource H1}" Text="@{remote.title}"/>
+                        <TextBlock Style="{StaticResource Sub}" Text="@{remote.sub}" Margin="0,6,0,0" FontSize="14"/>
+                        <UniformGrid Columns="2" Margin="0,20,0,0">
+                            <Border Style="{StaticResource Card}" Margin="0,0,10,0">
+                                <DockPanel LastChildFill="False">
+                                    <StackPanel DockPanel.Dock="Top">
+                                        <Border Width="52" Height="52" CornerRadius="16" Background="#332ED47A" HorizontalAlignment="Left">
+                                            <TextBlock Text="&#xE8E1;" Style="{StaticResource IconText}" FontSize="24" Foreground="{StaticResource GoodBrush}" HorizontalAlignment="Center"/>
+                                        </Border>
+                                        <TextBlock Text="@{remote.get}" FontFamily="{StaticResource Display}" FontSize="19" FontWeight="SemiBold" Margin="0,16,0,6"/>
+                                        <TextBlock Text="@{remote.get.d}" Style="{StaticResource Sub}"/>
+                                    </StackPanel>
+                                    <Button x:Name="BtnRemoteGet" DockPanel.Dock="Bottom" Style="{StaticResource BtnPrimary}" Content="@{remote.get.btn}" HorizontalAlignment="Left" Margin="0,18,0,0"/>
+                                </DockPanel>
+                            </Border>
+                            <Border Style="{StaticResource Card}" Margin="10,0,0,0">
+                                <DockPanel LastChildFill="False">
+                                    <StackPanel DockPanel.Dock="Top">
+                                        <Border Width="52" Height="52" CornerRadius="16" Background="#337C5CFF" HorizontalAlignment="Left">
+                                            <TextBlock Text="&#xE7F4;" Style="{StaticResource IconText}" FontSize="24" Foreground="#B9A8FF" HorizontalAlignment="Center"/>
+                                        </Border>
+                                        <TextBlock Text="@{remote.give}" FontFamily="{StaticResource Display}" FontSize="19" FontWeight="SemiBold" Margin="0,16,0,6"/>
+                                        <TextBlock Text="@{remote.give.d}" Style="{StaticResource Sub}"/>
+                                    </StackPanel>
+                                    <Button x:Name="BtnRemoteGive" DockPanel.Dock="Bottom" Style="{StaticResource Btn}" Content="@{remote.give.btn}" HorizontalAlignment="Left" Margin="0,18,0,0"/>
+                                </DockPanel>
+                            </Border>
+                        </UniformGrid>
+                        <TextBlock x:Name="RemoteStatus" Text="" Foreground="{StaticResource Accent2Brush}" FontWeight="SemiBold" Margin="2,14,0,0" TextWrapping="Wrap"/>
+                        <Border Style="{StaticResource Card}" Margin="0,16,0,0" Background="#26FFB547" BorderBrush="#66FFB547">
+                            <DockPanel>
+                                <TextBlock Text="&#xE7BA;" Style="{StaticResource IconText}" FontSize="22" Foreground="{StaticResource WarnBrush}" VerticalAlignment="Top" Margin="0,2,16,0"/>
+                                <StackPanel>
+                                    <TextBlock Text="@{remote.warn.title}" FontWeight="SemiBold" FontSize="15"/>
+                                    <TextBlock Text="@{remote.warn}" Style="{StaticResource Sub}" Margin="0,6,0,0"/>
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
                     </StackPanel>
                 </ScrollViewer>
 
@@ -1485,19 +1551,19 @@
                     <TextBlock Text="@{wiz.sub}" Style="{StaticResource Sub}" FontSize="14" Margin="0,6,0,20"/>
                     <UniformGrid Columns="5" Margin="0,0,-12,0">
                         <RadioButton x:Name="WizGaming" Style="{StaticResource ChoiceCard}" GroupName="wiz" Tag="gaming">
-                            <StackPanel><TextBlock Text="&#x1F3AE;" FontFamily="Segoe UI Emoji" FontSize="28"/><TextBlock Text="@{preset.gaming}" FontWeight="Bold" FontSize="14" Margin="0,10,0,4"/><TextBlock Text="@{preset.gaming.d}" Style="{StaticResource Sub}" FontSize="12"/></StackPanel>
+                            <StackPanel><TextBlock Text="&#x1F3AE;" FontFamily="Segoe UI Emoji" FontSize="28"/><TextBlock Text="@{preset.gaming}" FontWeight="Bold" FontSize="14" Margin="0,10,0,4"/><TextBlock Text="@{preset.gaming.d}" Style="{StaticResource Sub}" FontSize="13"/></StackPanel>
                         </RadioButton>
                         <RadioButton x:Name="WizCompetitive" Style="{StaticResource ChoiceCard}" GroupName="wiz" Tag="competitive">
-                            <StackPanel><TextBlock Text="&#x1F3C6;" FontFamily="Segoe UI Emoji" FontSize="28"/><TextBlock Text="@{preset.competitive}" FontWeight="Bold" FontSize="14" Margin="0,10,0,4"/><TextBlock Text="@{preset.competitive.d}" Style="{StaticResource Sub}" FontSize="12"/></StackPanel>
+                            <StackPanel><TextBlock Text="&#x1F3C6;" FontFamily="Segoe UI Emoji" FontSize="28"/><TextBlock Text="@{preset.competitive}" FontWeight="Bold" FontSize="14" Margin="0,10,0,4"/><TextBlock Text="@{preset.competitive.d}" Style="{StaticResource Sub}" FontSize="13"/></StackPanel>
                         </RadioButton>
                         <RadioButton x:Name="WizCreator" Style="{StaticResource ChoiceCard}" GroupName="wiz" Tag="creator">
-                            <StackPanel><TextBlock Text="&#x1F3AC;" FontFamily="Segoe UI Emoji" FontSize="28"/><TextBlock Text="@{preset.creator}" FontWeight="Bold" FontSize="14" Margin="0,10,0,4"/><TextBlock Text="@{preset.creator.d}" Style="{StaticResource Sub}" FontSize="12"/></StackPanel>
+                            <StackPanel><TextBlock Text="&#x1F3AC;" FontFamily="Segoe UI Emoji" FontSize="28"/><TextBlock Text="@{preset.creator}" FontWeight="Bold" FontSize="14" Margin="0,10,0,4"/><TextBlock Text="@{preset.creator.d}" Style="{StaticResource Sub}" FontSize="13"/></StackPanel>
                         </RadioButton>
                         <RadioButton x:Name="WizBalanced" Style="{StaticResource ChoiceCard}" GroupName="wiz" Tag="balanced">
-                            <StackPanel><TextBlock Text="&#x2696;" FontFamily="Segoe UI Emoji" FontSize="28"/><TextBlock Text="@{preset.balanced}" FontWeight="Bold" FontSize="14" Margin="0,10,0,4"/><TextBlock Text="@{preset.balanced.d}" Style="{StaticResource Sub}" FontSize="12"/></StackPanel>
+                            <StackPanel><TextBlock Text="&#x2696;" FontFamily="Segoe UI Emoji" FontSize="28"/><TextBlock Text="@{preset.balanced}" FontWeight="Bold" FontSize="14" Margin="0,10,0,4"/><TextBlock Text="@{preset.balanced.d}" Style="{StaticResource Sub}" FontSize="13"/></StackPanel>
                         </RadioButton>
                         <RadioButton x:Name="WizLaptop" Style="{StaticResource ChoiceCard}" GroupName="wiz" Tag="laptop">
-                            <StackPanel><TextBlock Text="&#x1F50B;" FontFamily="Segoe UI Emoji" FontSize="28"/><TextBlock Text="@{preset.laptop}" FontWeight="Bold" FontSize="14" Margin="0,10,0,4"/><TextBlock Text="@{preset.laptop.d}" Style="{StaticResource Sub}" FontSize="12"/></StackPanel>
+                            <StackPanel><TextBlock Text="&#x1F50B;" FontFamily="Segoe UI Emoji" FontSize="28"/><TextBlock Text="@{preset.laptop}" FontWeight="Bold" FontSize="14" Margin="0,10,0,4"/><TextBlock Text="@{preset.laptop.d}" Style="{StaticResource Sub}" FontSize="13"/></StackPanel>
                         </RadioButton>
                     </UniformGrid>
                     <Border CornerRadius="12" Background="#33000000" Padding="18,14" Margin="0,8,0,0">

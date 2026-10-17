@@ -324,5 +324,18 @@
   "net.boost.busy": "Otimizando a conexão",
   "net.boost.done": "{0} otimizações de rede ativadas.",
   "net.boost.dns": "DNS mais rápido definido: {0}.",
-  "net.boost.next": "Agora faça o teste de ping para ver o resultado. Se o teste \"sob carga\" der C ou pior, o gargalo é o roteador (ative QoS/SQM)."
+  "net.boost.next": "Agora faça o teste de ping para ver o resultado. Se o teste \"sob carga\" der C ou pior, o gargalo é o roteador (ative QoS/SQM).",
+  "nav.remote": "Ajuda remota",
+  "remote.title": "Ajuda remota",
+  "remote.sub": "Controle outro PC à distância ou deixe alguém ajudar você, como no AnyDesk. Usa a Assistência Rápida da Microsoft: grátis, criptografada e já incluída no Windows.",
+  "remote.get": "Receber ajuda",
+  "remote.get.d": "Uma pessoa de confiança verá e controlará este PC. Ela passa um código de 6 caracteres: digite-o e aceite. Você pode encerrar a conexão quando quiser.",
+  "remote.get.btn": "Receber ajuda",
+  "remote.give": "Ajudar alguém",
+  "remote.give.d": "Veja e controle o PC de um amigo. Entre com uma conta Microsoft, escolha \"Ajudar alguém\" e passe o código para a outra pessoa.",
+  "remote.give.btn": "Ajudar alguém",
+  "remote.warn.title": "Cuidado com golpes",
+  "remote.warn": "A Microsoft, seu banco ou falsos \"técnicos\" nunca vão ligar pedindo um código de acesso remoto. Só passe o código para pessoas que você realmente conhece.",
+  "remote.opened": "Assistência Rápida aberta: siga as instruções na janela.",
+  "remote.install": "A Assistência Rápida não está instalada: a Microsoft Store foi aberta, clique em \"Obter\" e tente de novo."
 }

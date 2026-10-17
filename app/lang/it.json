@@ -324,5 +324,18 @@
   "net.boost.busy": "Ottimizzo la connessione",
   "net.boost.done": "{0} ottimizzazioni di rete attivate.",
   "net.boost.dns": "DNS più veloce impostato: {0}.",
-  "net.boost.next": "Ora fai il test ping per vedere il risultato. Se il test \"sotto carico\" dà C o peggio, il collo di bottiglia è il router (attiva QoS/SQM)."
+  "net.boost.next": "Ora fai il test ping per vedere il risultato. Se il test \"sotto carico\" dà C o peggio, il collo di bottiglia è il router (attiva QoS/SQM).",
+  "nav.remote": "Assistenza remota",
+  "remote.title": "Assistenza remota",
+  "remote.sub": "Controlla un altro PC a distanza o fatti aiutare da qualcuno, come con AnyDesk. Usa Assistenza rapida di Microsoft: gratuita, crittografata e già inclusa in Windows.",
+  "remote.get": "Ricevi aiuto",
+  "remote.get.d": "Una persona di cui ti fidi vedrà e controllerà questo PC. Ti darà un codice di 6 caratteri: inseriscilo, poi accetta. Puoi chiudere la connessione quando vuoi.",
+  "remote.get.btn": "Ricevi aiuto",
+  "remote.give": "Aiuta qualcuno",
+  "remote.give.d": "Vedi e controlla il PC di un amico. Accedi con un account Microsoft, scegli «Aiuta qualcuno» e comunica il codice all'altra persona.",
+  "remote.give.btn": "Aiuta qualcuno",
+  "remote.warn.title": "Attenzione alle truffe",
+  "remote.warn": "Microsoft, la banca o finti «tecnici» non ti chiameranno mai per chiederti un codice di accesso remoto. Dai il codice solo a persone che conosci davvero.",
+  "remote.opened": "Assistenza rapida aperta: segui le istruzioni nella finestra.",
+  "remote.install": "Assistenza rapida non è installata: si è aperto Microsoft Store, premi «Ottieni» e poi riprova."
 }

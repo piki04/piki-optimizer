@@ -324,5 +324,18 @@
   "net.boost.busy": "Optimizing the connection",
   "net.boost.done": "{0} network optimizations enabled.",
   "net.boost.dns": "Fastest DNS set: {0}.",
-  "net.boost.next": "Now run the ping test to see the result. If the \"under load\" test scores C or worse, the bottleneck is the router (enable QoS/SQM)."
+  "net.boost.next": "Now run the ping test to see the result. If the \"under load\" test scores C or worse, the bottleneck is the router (enable QoS/SQM).",
+  "nav.remote": "Remote help",
+  "remote.title": "Remote help",
+  "remote.sub": "Control another PC remotely or let someone help you, like AnyDesk. Uses Microsoft Quick Assist: free, encrypted and already part of Windows.",
+  "remote.get": "Get help",
+  "remote.get.d": "Someone you trust will see and control this PC. They give you a 6-character code: enter it, then accept. You can end the connection at any time.",
+  "remote.get.btn": "Get help",
+  "remote.give": "Help someone",
+  "remote.give.d": "See and control a friend's PC. Sign in with a Microsoft account, choose \"Help someone\" and give the code to the other person.",
+  "remote.give.btn": "Help someone",
+  "remote.warn.title": "Beware of scams",
+  "remote.warn": "Microsoft, your bank or fake \"technicians\" will never call you to ask for a remote access code. Only give the code to people you really know.",
+  "remote.opened": "Quick Assist is open: follow the instructions in its window.",
+  "remote.install": "Quick Assist is not installed: Microsoft Store has opened, press \"Get\" and try again."
 }
