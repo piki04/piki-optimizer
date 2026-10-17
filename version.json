@@ -1,0 +1,129 @@
+{
+  "version": "1.3.0",
+  "notes": {
+    "it": "Nuovo stile vetro, il check-up ora risolve i problemi (dischi, RAM, BIOS, driver, aggiornamenti) e aggiornamenti più affidabili.",
+    "en": "New glass style, the check-up now fixes problems (disks, RAM, BIOS, drivers, updates) and more reliable updates."
+  },
+  "files": [
+    {
+      "path": "Avvia Piki Optimizer.cmd",
+      "sha256": "21bf82b57e55d2763ba0a5f2da79b2bd643722b6ee4366f43bf7c933d43e6592",
+      "size": 707
+    },
+    {
+      "path": "Installa Piki Optimizer.cmd",
+      "sha256": "1f24b74cbcf797aae25a8dcfba96d36fb8dcc03e8a0d835d994f9ce9004e766e",
+      "size": 393
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "b368a4d4404adc0bf8847be47ce5adf6595a7667fd8c8cfb2581d97131f2f50d",
+      "size": 710
+    },
+    {
+      "path": "README.md",
+      "sha256": "d1d113bef6f5624923006d96118d08a994b7b7cd32a4a2405d0102e68b97653a",
+      "size": 2055
+    },
+    {
+      "path": "app/Setup.ps1",
+      "sha256": "2ee5454197670178178ead1e139a10db5cdad4858522880cf1e777544e06a894",
+      "size": 7515
+    },
+    {
+      "path": "app/Uninstall.ps1",
+      "sha256": "14af8715a84fbb6c9d9b2bdcb3283c7629a3e6a47e91f85abf83b1426ed5a786",
+      "size": 1970
+    },
+    {
+      "path": "app/VeloxPC.ps1",
+      "sha256": "961c6a39d35df93a0b0f942e1f981a478431a5da59aae6d4bf9e024d22d87c6e",
+      "size": 89404
+    },
+    {
+      "path": "app/assets/logo.png",
+      "sha256": "4021baa174ff1f4b5dffeaa17482c819b02b5c8ea1b015b3bdf57d562f2b665f",
+      "size": 14939
+    },
+    {
+      "path": "app/assets/veloxpc.ico",
+      "sha256": "adb26ffac6e550528fc3db677ca2690b787042828c3124c8b5077911a82b79a6",
+      "size": 31821
+    },
+    {
+      "path": "app/core/AfterEffects.ps1",
+      "sha256": "05704b574205398548bd097cfa10c334310af99e7e0d825a741631f8c3aedcd2",
+      "size": 17420
+    },
+    {
+      "path": "app/core/Cleanup.ps1",
+      "sha256": "2ae3cd92e4d8df40b7f0869d928dcf3074efe4b9396f651e589131951f5c6eea",
+      "size": 6622
+    },
+    {
+      "path": "app/core/Common.ps1",
+      "sha256": "2a82606c97c1e70a3ab7d0feda8aec6f85dd8875b70d15489d6111130e117650",
+      "size": 19782
+    },
+    {
+      "path": "app/core/Hardware.ps1",
+      "sha256": "59866ad113d77223384037abe007f39a231f1f1b0e06f0d2df930bcdadc7c0e4",
+      "size": 17122
+    },
+    {
+      "path": "app/core/Health.ps1",
+      "sha256": "37a4b3a6ccea8d36d2ec320497747cb1dcbd3cd70fb5304d2e54107e541252f8",
+      "size": 41577
+    },
+    {
+      "path": "app/core/Native.cs",
+      "sha256": "03880d569deb8f026892303a56352f0b0c10da1d011429ee8c288704f16562e0",
+      "size": 35986
+    },
+    {
+      "path": "app/core/Network.ps1",
+      "sha256": "940cf861218a7982294ef68d6985ab14fdb66562464b4c7cba6597d4aa632562",
+      "size": 6405
+    },
+    {
+      "path": "app/core/Services.ps1",
+      "sha256": "f184a4b0fe3f4d7fbce9f04d0d1cdc49e49335ebf65a95f4c7f87df54de0c05c",
+      "size": 39154
+    },
+    {
+      "path": "app/core/Tweaks.ps1",
+      "sha256": "40b87b304c0327a9256a77d2a51a1f60b6bbc531c89a0771ef5ac448bf8dc213",
+      "size": 42313
+    },
+    {
+      "path": "app/core/Updater.ps1",
+      "sha256": "bede093182c9cbfc96960b01456b37bd01ac916d6942957674d4a54d61612f73",
+      "size": 4602
+    },
+    {
+      "path": "app/lang/en.json",
+      "sha256": "1c10169e76c4e5ab53f3b42e90b9b3c35ca9822ee03cc7f971da18bcdd6d51b7",
+      "size": 17555
+    },
+    {
+      "path": "app/lang/it.json",
+      "sha256": "2616376692774072adadefa5a8a8bb3d8f065c7fb701862dc9d51b0c43fa6142",
+      "size": 18506
+    },
+    {
+      "path": "app/ui/MainWindow.xaml",
+      "sha256": "b5eab56df72492edb097cd15ec063b9775c3afe08ff270affcc880685a33cb1f",
+      "size": 117670
+    },
+    {
+      "path": "config.json",
+      "sha256": "c0df778422b113ac0840094c1dab05f82dc6298e794e0542e91e02c2d8693a65",
+      "size": 58
+    },
+    {
+      "path": "install.ps1",
+      "sha256": "79adf51042ce588b23e6154edcb58afc126e8490ca8532d10405dc32b7943e81",
+      "size": 2197
+    }
+  ]
+}
