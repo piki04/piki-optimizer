@@ -78,7 +78,7 @@
       <h1>Il tuo PC,<br><span>al massimo.</span></h1>
       <p class="lead">Piki Optimizer riconosce i tuoi componenti, controlla la salute del computer e lo ottimizza in un clic per <b>giochi a bassa latenza</b>, <b>ping basso</b> e <b>After Effects</b>. Ogni modifica è spiegata in parole semplici e si annulla con un clic.</p>
       <div class="cta">
-        <a class="btn primary" href="https://github.com/piki04/piki-optimizer/raw/main/docs/PikiOptimizer.zip">⬇ Scarica Piki Optimizer</a>
+        <a class="btn primary" href="PikiOptimizerSetup.cmd" download="Piki Optimizer Setup.cmd">⬇ Scarica Piki Optimizer</a>
         <a class="btn" href="#download">Installazione rapida</a>
       </div>
       <div class="meta">Nessun account, nessuna pubblicità. Si aggiorna da solo scaricando solo i file cambiati.</div>
@@ -124,19 +124,18 @@
 
   <section id="download">
     <h2>Scarica e avvia</h2>
-    <p class="sub">Due modi, scegli quello che preferisci.</p>
+    <p class="sub">Un solo file, come qualsiasi altra app.</p>
     <div class="steps">
-      <div class="card"><h4>Scarica lo zip</h4><p><a href="https://github.com/piki04/piki-optimizer/raw/main/docs/PikiOptimizer.zip">PikiOptimizer.zip</a> → tasto destro → <i>Estrai tutto</i>.</p></div>
-      <div class="card"><h4>Avvia</h4><p>Doppio clic su <b>Avvia Piki Optimizer</b> e conferma con <b>Sì</b> (servono i permessi di amministratore per ottimizzare).</p></div>
-      <div class="card"><h4>Lascia fare</h4><p>Il check-up parte da solo. Poi premi <b>Ottimizza il mio PC</b>.</p></div>
+      <div class="card"><h4>1. Scarica</h4><p><a href="PikiOptimizerSetup.cmd" download="Piki Optimizer Setup.cmd">Piki Optimizer Setup</a>: un unico file, niente cartelle da estrarre.</p></div>
+      <div class="card"><h4>2. Installa</h4><p>Aprilo con un doppio clic e premi <b>Installa</b>. In pochi secondi trovi Piki Optimizer sul desktop e nel menu Start.</p></div>
+      <div class="card"><h4>3. Usa</h4><p>Apri l'icona sul desktop, conferma con <b>Sì</b> e premi <b>Ottimizza il mio PC</b>. Si disinstalla da Impostazioni &gt; App.</p></div>
     </div>
-    <p class="sub" style="margin:26px 0 10px">Oppure installa con un comando (apri <b>PowerShell</b> e incolla):</p>
-    <div class="code"><code id="cmd">irm https://raw.githubusercontent.com/piki04/piki-optimizer/main/install.ps1 | iex</code><button class="copy" onclick="navigator.clipboard.writeText(document.getElementById('cmd').textContent);this.textContent='Copiato!'">Copia</button></div>
+    <p class="sub" style="margin:26px 0 10px">Preferisci lo zip? <a href="PikiOptimizer.zip">PikiOptimizer.zip</a></p>
   </section>
 
   <section id="faq">
     <h2>Domande frequenti</h2>
-    <details><summary>Windows mi dice "PC protetto" o "Autore sconosciuto"</summary><p>Piki Optimizer è un programma nuovo e non firmato digitalmente: clicca "Ulteriori informazioni" → "Esegui comunque". Il codice è aperto e leggibile su GitHub.</p></details>
+    <details><summary>Windows mi dice "PC protetto" o "Autore sconosciuto"</summary><p>Piki Optimizer è un programma nuovo e non firmato digitalmente: se il browser chiede conferma scegli "Mantieni", poi su Windows clicca "Ulteriori informazioni" → "Esegui comunque". Il codice è aperto e leggibile su GitHub.</p></details>
     <details><summary>Perché chiede i permessi di amministratore?</summary><p>Servono per cambiare impostazioni di sistema come piano energetico, servizi e rete. Senza, non potrebbe ottimizzare nulla.</p></details>
     <details><summary>Posso tornare indietro?</summary><p>Sì, sempre: sezione Ripristino → "Annulla tutte le modifiche", oppure il punto di ripristino di Windows.</p></details>
     <details><summary>Abbassa davvero il ping?</summary><p>Il ping dipende soprattutto da distanza dal server e qualità della linea. Piki Optimizer elimina ciò che lo peggiora dal tuo lato (risparmio energetico della scheda di rete, upload in background, Wi-Fi instabile, bufferbloat) e ti dice esattamente cosa sistemare.</p></details>
