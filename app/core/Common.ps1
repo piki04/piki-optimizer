@@ -20,6 +20,7 @@ function L {
     if ($null -eq $Text) { return '' }
     if ($Text -is [hashtable]) {
         if ($Text.ContainsKey($script:VxLang) -and $Text[$script:VxLang]) { return [string]$Text[$script:VxLang] }
+        if ($Text.ContainsKey('en') -and $Text['en']) { return [string]$Text['en'] }
         if ($Text.ContainsKey('it')) { return [string]$Text['it'] }
         return ''
     }

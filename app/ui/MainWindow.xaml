@@ -1324,10 +1324,7 @@
                                     <TextBlock Text="@{set.lang}" FontWeight="SemiBold" FontSize="15"/>
                                     <TextBlock Text="@{set.lang.sub}" Style="{StaticResource Sub}" Margin="0,4,0,0"/>
                                 </StackPanel>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                    <RadioButton x:Name="LangIt" Style="{StaticResource Pill}" GroupName="lang" Content="Italiano"/>
-                                    <RadioButton x:Name="LangEn" Style="{StaticResource Pill}" GroupName="lang" Content="English" Margin="0"/>
-                                </StackPanel>
+                                <WrapPanel x:Name="LangPanel" Margin="0,46,0,0"/>
                             </Grid>
                         </Border>
                         <Border Style="{StaticResource Card}" Margin="0,12,0,0">

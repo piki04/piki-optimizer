@@ -81,13 +81,27 @@ try { if (Test-Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\P
 
 $script:Settings = Get-VxSettings
 if (-not $script:Settings.lang) {
-    $script:Settings.lang = if ((Get-Culture).TwoLetterISOLanguageName -eq 'it') { 'it' } else { 'en' }
+    $cul = (Get-UICulture).TwoLetterISOLanguageName
+    if (-not (Test-Path -LiteralPath (Join-Path $AppDir "lang\$cul.json"))) { $cul = (Get-Culture).TwoLetterISOLanguageName }
+    $script:Settings.lang = if (Test-Path -LiteralPath (Join-Path $AppDir "lang\$cul.json")) { $cul } else { 'en' }
 }
+if (-not (Test-Path -LiteralPath (Join-Path $AppDir "lang\$($script:Settings.lang).json"))) { $script:Settings.lang = 'en' }
 $script:VxLang = $script:Settings.lang
 $script:Expert = [bool]$script:Settings.expert
 
 $langFile = Join-Path $AppDir "lang\$($script:VxLang).json"
 $script:Lang = ConvertTo-VxHashtable ([System.IO.File]::ReadAllText($langFile, [System.Text.Encoding]::UTF8) | ConvertFrom-Json)
+if ($script:VxLang -ne 'en') {
+    # any key missing in this language falls back to English
+    try {
+        $enLang = ConvertTo-VxHashtable ([System.IO.File]::ReadAllText((Join-Path $AppDir 'lang\en.json'), [System.Text.Encoding]::UTF8) | ConvertFrom-Json)
+        foreach ($k in @($enLang.Keys)) { if (-not $script:Lang.ContainsKey($k)) { $script:Lang[$k] = $enLang[$k] } }
+    } catch { }
+}
+$script:Languages = @(
+    @('it', 'Italiano'), @('en', 'English'), @('es', 'Español'), @('fr', 'Français'), @('de', 'Deutsch'),
+    @('pt', 'Português'), @('ru', 'Русский'), @('zh', '中文'), @('ja', '日本語')
+)
 function T {
     param([string]$Key, [object[]]$Fmt)
     $s = $Key
@@ -1559,19 +1573,28 @@ $ui.ActiveList.AddHandler([System.Windows.Controls.Button]::ClickEvent, [System.
 })
 
 # settings
-if ($script:VxLang -eq 'it') { $ui.LangIt.IsChecked = $true } else { $ui.LangEn.IsChecked = $true }
+foreach ($lg in $script:Languages) {
+    if (-not (Test-Path -LiteralPath (Join-Path $AppDir "lang\$($lg[0]).json"))) { continue }
+    $rb = New-Object System.Windows.Controls.RadioButton
+    $rb.Style = $script:Window.FindResource('Pill')
+    $rb.GroupName = 'lang'
+    $rb.Content = $lg[1]
+    $rb.Tag = $lg[0]
+    $rb.Margin = '0,0,8,8'
+    if ($lg[0] -eq $script:VxLang) { $rb.IsChecked = $true }
+    [void]$ui.LangPanel.Children.Add($rb)
+}
 $ui.ExpertSwitch.IsChecked = $script:Expert
 $ui.AutoUpdateSwitch.IsChecked = [bool]$script:Settings.autoUpdate
 $langHandler = {
     param($s, $e)
-    $new = if ($s -eq $ui.LangIt) { 'it' } else { 'en' }
+    $new = [string]$s.Tag
     if ($new -eq $script:VxLang) { return }
     $script:Settings.lang = $new
     Save-VxSettings $script:Settings
     Restart-VxApp
 }
-$ui.LangIt.add_Click($langHandler)
-$ui.LangEn.add_Click($langHandler)
+foreach ($rb in @($ui.LangPanel.Children)) { $rb.add_Click($langHandler) }
 $ui.ExpertSwitch.add_Click({
     $script:Expert = [bool]$ui.ExpertSwitch.IsChecked
     $script:Settings.expert = $script:Expert
