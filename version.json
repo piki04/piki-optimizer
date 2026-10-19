@@ -1,8 +1,8 @@
 {
-  "version": "1.6.4",
+  "version": "1.6.5",
   "notes": {
-    "it": "Corretto un errore che impediva di caricare la nuova grafica: ora vedi davvero animazioni, luci e interruttori in stile Mac.",
-    "en": "Fixed an error that prevented the new look from loading: animations, lighting and Mac-style switches now really show up."
+    "it": "Animazioni in stile macOS: le finestre interne si aprono dal pulsante che premi e si chiudono risucchiate verso di lui. Corretto il caricamento della nuova grafica.",
+    "en": "macOS-style animations: in-app windows open from the button you press and close by flowing back into it. Fixed loading of the new look."
   },
   "files": [
     {
@@ -37,8 +37,8 @@
     },
     {
       "path": "app/VeloxPC.ps1",
-      "sha256": "2b8ee37e1c41929e5b72e536fb060f10ba27856db9c864d096900844e375fed1",
-      "size": 103640
+      "sha256": "ccaad3f4d25378f5709ce55b6c5436a90fe6a6e45b036f85892768ff5f347361",
+      "size": 105508
     },
     {
       "path": "app/assets/logo.png",

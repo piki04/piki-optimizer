@@ -283,27 +283,49 @@ function Get-VxTransform {
     param($El, [string]$Kind = 'Translate')
     $type = if ($Kind -eq 'Scale') { [System.Windows.Media.ScaleTransform] } else { [System.Windows.Media.TranslateTransform] }
     if (-not ($El.RenderTransform -is $type) -or $El.RenderTransform.IsFrozen) {
-        $El.RenderTransformOrigin = New-Object System.Windows.Point(0.5, 0.5)
+        if ($El.RenderTransformOrigin.X -eq 0 -and $El.RenderTransformOrigin.Y -eq 0) { $El.RenderTransformOrigin = New-Object System.Windows.Point(0.5, 0.5) }
         $El.RenderTransform = New-Object $type
     }
     return $El.RenderTransform
 }
 
-# popups (dialog, busy, wizard): backdrop fades, the panel grows from 94% with a soft deceleration
+# popups (dialog, busy, wizard), macOS style: they grow out of the button you clicked
+# and, when closed, are sucked back towards it (height first, then width, like the "genie").
+$script:EaseIn = New-Object System.Windows.Media.Animation.CubicEase
+$script:EaseIn.EasingMode = 'EaseIn'; $script:EaseIn.Freeze()
+$script:ClickPt = $null; $script:ClickAt = [DateTime]::MinValue
+
+function Get-VxOverlayPanel {
+    param($Grid)
+    foreach ($c in $Grid.Children) { if ($c -is [System.Windows.FrameworkElement] -and $c.VerticalAlignment -eq 'Center') { return $c } }
+    return $null
+}
+
 function Show-VxOverlay {
     param($Grid)
     $wasOpen = ($Grid.Visibility -eq 'Visible' -and $Grid.Tag -ne 'closing')
     $Grid.Tag = 'open'
     $Grid.Visibility = 'Visible'
     if ($wasOpen) { return }
-    $Grid.BeginAnimation($script:OpacityP, (New-VxAnim 1 200 0))
-    $panel = $null
-    foreach ($c in $Grid.Children) { if ($c -is [System.Windows.FrameworkElement] -and $c.VerticalAlignment -eq 'Center') { $panel = $c; break } }
-    if ($panel) {
-        $sc = Get-VxTransform $panel 'Scale'
-        $sc.BeginAnimation([System.Windows.Media.ScaleTransform]::ScaleXProperty, (New-VxAnim 1 360 0.94 $script:EaseOutStrong))
-        $sc.BeginAnimation([System.Windows.Media.ScaleTransform]::ScaleYProperty, (New-VxAnim 1 360 0.94 $script:EaseOutStrong))
+    $Grid.BeginAnimation($script:OpacityP, (New-VxAnim 1 220 0))
+    $panel = Get-VxOverlayPanel $Grid
+    if (-not $panel) { return }
+    $sc = Get-VxTransform $panel 'Scale'
+    # origin = the point you just clicked (if the click was a moment ago), otherwise the centre
+    $origin = New-Object System.Windows.Point(0.5, 0.5)
+    if ($script:ClickPt -and ([DateTime]::Now - $script:ClickAt).TotalSeconds -lt 1.5) {
+        try {
+            $Grid.UpdateLayout()
+            if ($panel.ActualWidth -gt 0 -and $panel.ActualHeight -gt 0) {
+                $p = $ui.Root.TranslatePoint($script:ClickPt, $panel)
+                $origin = New-Object System.Windows.Point(([math]::Max(-1, [math]::Min(2, $p.X / $panel.ActualWidth))), ([math]::Max(-1, [math]::Min(2, $p.Y / $panel.ActualHeight))))
+            }
+        } catch { }
     }
+    $panel.RenderTransformOrigin = $origin
+    $panel.BeginAnimation($script:OpacityP, (New-VxAnim 1 260 0))
+    $sc.BeginAnimation([System.Windows.Media.ScaleTransform]::ScaleXProperty, (New-VxAnim 1 520 0.06 $script:EaseOutStrong))
+    $sc.BeginAnimation([System.Windows.Media.ScaleTransform]::ScaleYProperty, (New-VxAnim 1 460 0.06 $script:EaseOutStrong))
 }
 
 function Hide-VxOverlay {
@@ -311,7 +333,15 @@ function Hide-VxOverlay {
     if ($Grid.Visibility -ne 'Visible' -or $Grid.Tag -eq 'closing') { return }
     $Grid.Tag = 'closing'
     $g = $Grid
-    $a = New-VxAnim 0 170
+    $panel = Get-VxOverlayPanel $Grid
+    if ($panel) {
+        $sc = Get-VxTransform $panel 'Scale'
+        # genie: the height collapses first, the width follows
+        $sc.BeginAnimation([System.Windows.Media.ScaleTransform]::ScaleYProperty, (New-VxAnim 0.04 260 $null $script:EaseIn))
+        $sc.BeginAnimation([System.Windows.Media.ScaleTransform]::ScaleXProperty, (New-VxAnim 0.04 330 $null $script:EaseIn))
+        $panel.BeginAnimation($script:OpacityP, (New-VxAnim 0 330 $null $script:EaseIn))
+    }
+    $a = New-VxAnim 0 340
     $a.add_Completed({ if ($g.Tag -eq 'closing') { $g.Visibility = 'Collapsed'; $g.Tag = $null } }.GetNewClosure())
     $Grid.BeginAnimation($script:OpacityP, $a)
 }
@@ -1610,6 +1640,7 @@ function Hide-VxSplash {
 #  EVENT WIRING
 # =====================================================================
 $ui.BtnMin.add_Click({ $script:Window.WindowState = 'Minimized' })
+$script:Window.add_PreviewMouseLeftButtonDown({ param($s, $e) try { $script:ClickPt = $e.GetPosition($ui.Root); $script:ClickAt = [DateTime]::Now } catch { } })
 $ui.BtnRemoteGet.add_Click({ Start-VxQuickAssist })
 $ui.BtnRemoteGive.add_Click({ Start-VxQuickAssist })
 $ui.BtnMax.add_Click({ if ($script:Window.WindowState -eq 'Maximized') { $script:Window.WindowState = 'Normal' } else { $script:Window.WindowState = 'Maximized' } })
