@@ -1163,6 +1163,11 @@
                             </Grid.ColumnDefinitions>
                             <Border CornerRadius="26" Background="{StaticResource HeroGrad}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1.2" Padding="26,22" ClipToBounds="False">
                                 <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
                                     <!-- accent light from the top-left corner, inside the rounded card -->
                                     <Border Grid.ColumnSpan="3" Margin="-26,-22" CornerRadius="25" IsHitTestVisible="False">
                                         <Border.Background>
@@ -1173,11 +1178,6 @@
                                             </RadialGradientBrush>
                                         </Border.Background>
                                     </Border>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
                                     <StackPanel>
                                         <Grid Width="118" Height="118">
                                             <Ellipse Stroke="#1FFFFFFF" StrokeThickness="11"/>
