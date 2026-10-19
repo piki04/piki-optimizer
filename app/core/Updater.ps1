@@ -20,10 +20,26 @@ function Get-VxLocalManifest {
 }
 
 function Get-VxRawUrl {
-    param([string]$RelPath)
+    param([string]$RelPath, [string]$Ref)
     $cfg = Get-VxConfig
+    if (-not $Ref) { $Ref = $cfg.branch }
     $enc = (($RelPath -replace '\\', '/').Split('/') | ForEach-Object { [Uri]::EscapeDataString($_) }) -join '/'
-    return "https://raw.githubusercontent.com/$($cfg.repo)/$($cfg.branch)/$enc"
+    return "https://raw.githubusercontent.com/$($cfg.repo)/$Ref/$enc"
+}
+
+# The exact id of the latest published version: files addressed by it are never served stale by the CDN
+# (addressing by branch name can return the previous version for a few minutes after a release).
+function Get-VxLatestRef {
+    $cfg = Get-VxConfig
+    $wc = $null
+    try {
+        $wc = New-VxWebClient
+        $wc.Headers['Accept'] = 'application/vnd.github.sha'
+        $sha = ($wc.DownloadString("https://api.github.com/repos/$($cfg.repo)/commits/$($cfg.branch)")).Trim()
+        if ($sha -match '^[0-9a-f]{40}$') { return $sha }
+    } catch { Write-VxLog "update: latest ref lookup failed ($($_.Exception.Message)), using branch" 'WARN' }
+    finally { if ($wc) { $wc.Dispose() } }
+    return $cfg.branch
 }
 
 function New-VxWebClient {
@@ -38,11 +54,12 @@ function New-VxWebClient {
 function Get-VxRemoteManifest {
     $cfg = Get-VxConfig
     if (-not $cfg.repo -or $cfg.repo -match 'OWNER') { throw 'Update source not configured' }
+    $ref = Get-VxLatestRef
     $wc = New-VxWebClient
     try {
-        $raw = $wc.DownloadString((Get-VxRawUrl 'version.json') + '?t=' + [DateTime]::UtcNow.Ticks)
+        $raw = $wc.DownloadString((Get-VxRawUrl 'version.json' $ref) + '?t=' + [DateTime]::UtcNow.Ticks)
         $m = $raw | ConvertFrom-Json
-        return @{ manifest = $m; raw = $raw }
+        return @{ manifest = $m; raw = $raw; ref = $ref }
     } finally { $wc.Dispose() }
 }
 
@@ -83,7 +100,7 @@ function Invoke-VxUpdate {
             $i++
             if ($Sync) { $Sync.Step = [string]$f.path; $Sync.Pct = [int](80 * $i / $changed.Count) }
             $dest = Join-Path $tmpDir ([string]$i)
-            $wc.DownloadFile((Get-VxRawUrl ([string]$f.path)) + '?t=' + [DateTime]::UtcNow.Ticks, $dest)
+            $wc.DownloadFile((Get-VxRawUrl ([string]$f.path) ([string]$Remote.ref)) + '?t=' + [DateTime]::UtcNow.Ticks, $dest)
             if ((Get-VxFileSha256 $dest) -ne ([string]$f.sha256).ToLower()) { throw "Checksum mismatch: $($f.path)" }
         }
         # 2) swap files in

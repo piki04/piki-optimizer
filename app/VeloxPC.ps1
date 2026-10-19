@@ -1302,12 +1302,29 @@ function Show-VxUpdateNotice {
 }
 
 function Start-VxUpdate {
-    if (-not $script:Remote) { Start-VxUpdateCheck -Manual; Show-VxToast (T 'update.checking') 'info'; return }
-    Show-VxBusy (T 'update.installing') (T 'busy.wait')
-    Start-VxJob -Name 'update' -Arguments @($script:Remote) -Script { param($Sync, $Remote) return @{ n = (Invoke-VxUpdate $Remote $Sync) } } -OnDone {
+    # always re-reads the latest version first (never installs from an old check)
+    Show-VxBusy (T 'update.installing') (T 'update.checking')
+    Start-VxJob -Name 'update' -Arguments @($script:Version) -Script {
+        param($Sync, $Current)
+        $r = Get-VxRemoteManifest
+        $v = [string]$r.manifest.version
+        if (-not (Test-VxNewer $v $Current)) { return @{ n = 0; v = $v; latest = $true } }
+        return @{ n = (Invoke-VxUpdate $r $Sync); v = $v; latest = $false }
+    } -OnDone {
         param($r)
         Hide-VxBusy
+        if ($r.latest) {
+            $ui.UpdateStatus.Text = T 'update.latest' @($script:Version)
+            Show-VxToast (T 'update.latest' @($script:Version)) 'info'
+            return
+        }
+        $ui.UpdateBanner.Visibility = 'Collapsed'
         Show-VxDialog -Title (T 'update.done') -Text (T 'update.done.text' @($r.n)) -YesText (T 'update.restart') -OnYes { Restart-VxApp }
+    } -OnError {
+        param($e)
+        Hide-VxBusy
+        $ui.UpdateStatus.Text = T 'update.offline'
+        Show-VxToast ((T 'update.offline') + ' (' + $e.Message + ')') 'warn'
     }
 }
 

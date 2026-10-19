@@ -1,8 +1,8 @@
 {
-  "version": "1.6.1",
+  "version": "1.6.2",
   "notes": {
-    "it": "Vetro scuro smerigliato: testi sempre leggibili anche con uno sfondo personalizzato chiaro.",
-    "en": "Dark frosted glass: text is always readable, even on a bright custom background."
+    "it": "Vetro scuro smerigliato per testi sempre leggibili e aggiornamenti più affidabili (subito disponibili, senza attese).",
+    "en": "Dark frosted glass for always readable text and more reliable updates (available right away)."
   },
   "files": [
     {
@@ -37,8 +37,8 @@
     },
     {
       "path": "app/VeloxPC.ps1",
-      "sha256": "a2d482b0961675c142d51d62db5580b4f4ddeb10a7bda437cbb683e5c80a4a1a",
-      "size": 103025
+      "sha256": "2b8ee37e1c41929e5b72e536fb060f10ba27856db9c864d096900844e375fed1",
+      "size": 103640
     },
     {
       "path": "app/assets/logo.png",
@@ -97,8 +97,8 @@
     },
     {
       "path": "app/core/Updater.ps1",
-      "sha256": "bede093182c9cbfc96960b01456b37bd01ac916d6942957674d4a54d61612f73",
-      "size": 4602
+      "sha256": "ee848235a66116294217663533f62744124eebb7665c9d5ca36f5f4bfb6be5fd",
+      "size": 5431
     },
     {
       "path": "app/lang/de.json",
