@@ -320,7 +320,7 @@ function Show-VxOverlay {
     $Grid.Tag = 'open'
     $Grid.Visibility = 'Visible'
     if ($wasOpen) { return }
-    $Grid.BeginAnimation($script:OpacityP, (New-VxAnim 1 220 0))
+    $Grid.BeginAnimation($script:OpacityP, (New-VxAnim 1 160 0))
     $panel = Get-VxOverlayPanel $Grid
     if (-not $panel) { return }
     $sc = Get-VxTransform $panel 'Scale'
@@ -338,11 +338,11 @@ function Show-VxOverlay {
     $panel.RenderTransformOrigin = $origin
     $panel.CacheMode = New-Object System.Windows.Media.BitmapCache
     $pnl = $panel
-    $ax = New-VxAnim 1 520 0.06 $script:EaseOutStrong
+    $ax = New-VxAnim 1 380 0.06 $script:EaseOutStrong
     $ax.add_Completed({ $pnl.CacheMode = $null }.GetNewClosure())
-    $panel.BeginAnimation($script:OpacityP, (New-VxAnim 1 260 0))
+    $panel.BeginAnimation($script:OpacityP, (New-VxAnim 1 180 0))
     $sc.BeginAnimation([System.Windows.Media.ScaleTransform]::ScaleXProperty, $ax)
-    $sc.BeginAnimation([System.Windows.Media.ScaleTransform]::ScaleYProperty, (New-VxAnim 1 460 0.06 $script:EaseOutStrong))
+    $sc.BeginAnimation([System.Windows.Media.ScaleTransform]::ScaleYProperty, (New-VxAnim 1 340 0.06 $script:EaseOutStrong))
 }
 
 function Hide-VxOverlay {
@@ -355,11 +355,11 @@ function Hide-VxOverlay {
         $sc = Get-VxTransform $panel 'Scale'
         $panel.CacheMode = New-Object System.Windows.Media.BitmapCache
         # genie: the height collapses first, the width follows
-        $sc.BeginAnimation([System.Windows.Media.ScaleTransform]::ScaleYProperty, (New-VxAnim 0.04 260 $null $script:EaseIn))
-        $sc.BeginAnimation([System.Windows.Media.ScaleTransform]::ScaleXProperty, (New-VxAnim 0.04 330 $null $script:EaseIn))
-        $panel.BeginAnimation($script:OpacityP, (New-VxAnim 0 330 $null $script:EaseIn))
+        $sc.BeginAnimation([System.Windows.Media.ScaleTransform]::ScaleYProperty, (New-VxAnim 0.04 200 $null $script:EaseIn))
+        $sc.BeginAnimation([System.Windows.Media.ScaleTransform]::ScaleXProperty, (New-VxAnim 0.04 250 $null $script:EaseIn))
+        $panel.BeginAnimation($script:OpacityP, (New-VxAnim 0 250 $null $script:EaseIn))
     }
-    $a = New-VxAnim 0 340
+    $a = New-VxAnim 0 260
     $p2 = $panel
     $a.add_Completed({ if ($g.Tag -eq 'closing') { $g.Visibility = 'Collapsed'; $g.Tag = $null }; if ($p2) { $p2.CacheMode = $null } }.GetNewClosure())
     $Grid.BeginAnimation($script:OpacityP, $a)
@@ -602,7 +602,7 @@ function Update-VxPendingBar {
     # many switches can change at once (presets): recount once, after the current frame
     if ($script:PendingQueued) { return }
     $script:PendingQueued = $true
-    [void]$script:Window.Dispatcher.BeginInvoke([Action] { $script:PendingQueued = $false; Update-VxPendingBarNow }, [System.Windows.Threading.DispatcherPriority]::Background)
+    [void]$script:Window.Dispatcher.BeginInvoke([Action] { $script:PendingQueued = $false; Update-VxPendingBarNow }, [System.Windows.Threading.DispatcherPriority]::Loaded)
 }
 
 function Update-VxPendingBarNow {
@@ -1628,8 +1628,8 @@ function Move-VxNavIndicator {
             $ind.BeginAnimation($script:OpacityP, (New-VxAnim 1 260 0))
             return
         }
-        $tt.BeginAnimation([System.Windows.Media.TranslateTransform]::YProperty, (New-VxAnim $y 480 $null $script:EaseSlide))
-        $ind.BeginAnimation([System.Windows.FrameworkElement]::HeightProperty, (New-VxAnim $h 300))
+        $tt.BeginAnimation([System.Windows.Media.TranslateTransform]::YProperty, (New-VxAnim $y 340 $null $script:EaseSlide))
+        $ind.BeginAnimation([System.Windows.FrameworkElement]::HeightProperty, (New-VxAnim $h 220))
     } catch { Write-VxLog "nav indicator: $($_.Exception.Message)" 'WARN' }
 }
 
@@ -1645,11 +1645,11 @@ function Start-VxStagger {
         foreach ($c in $panel.Children) {
             if ($i -ge 6) { break }
             if (-not ($c -is [System.Windows.FrameworkElement]) -or $c.Visibility -ne 'Visible') { continue }
-            $delay = 30 + 40 * $i
+            $delay = 26 * $i
             $op = New-Object System.Windows.Media.Animation.DoubleAnimationUsingKeyFrames
             [void]$op.KeyFrames.Add((New-Object System.Windows.Media.Animation.DiscreteDoubleKeyFrame(0, [System.Windows.Media.Animation.KeyTime]::FromTimeSpan([TimeSpan]::Zero))))
             [void]$op.KeyFrames.Add((New-Object System.Windows.Media.Animation.DiscreteDoubleKeyFrame(0, [System.Windows.Media.Animation.KeyTime]::FromTimeSpan([TimeSpan]::FromMilliseconds($delay)))))
-            [void]$op.KeyFrames.Add((New-Object System.Windows.Media.Animation.EasingDoubleKeyFrame(1, [System.Windows.Media.Animation.KeyTime]::FromTimeSpan([TimeSpan]::FromMilliseconds($delay + 300)), $script:EaseOut)))
+            [void]$op.KeyFrames.Add((New-Object System.Windows.Media.Animation.EasingDoubleKeyFrame(1, [System.Windows.Media.Animation.KeyTime]::FromTimeSpan([TimeSpan]::FromMilliseconds($delay + 220)), $script:EaseOut)))
             $el = $c
             $op.add_Completed({ $el.BeginAnimation([System.Windows.UIElement]::OpacityProperty, $null) }.GetNewClosure())
             # fading a tall list means redrawing all of it every frame: only small blocks fade, big ones just glide
@@ -1658,7 +1658,7 @@ function Start-VxStagger {
                 $mv = New-Object System.Windows.Media.Animation.DoubleAnimationUsingKeyFrames
                 [void]$mv.KeyFrames.Add((New-Object System.Windows.Media.Animation.DiscreteDoubleKeyFrame((14 * $Dir), [System.Windows.Media.Animation.KeyTime]::FromTimeSpan([TimeSpan]::Zero))))
                 [void]$mv.KeyFrames.Add((New-Object System.Windows.Media.Animation.DiscreteDoubleKeyFrame((14 * $Dir), [System.Windows.Media.Animation.KeyTime]::FromTimeSpan([TimeSpan]::FromMilliseconds($delay)))))
-                [void]$mv.KeyFrames.Add((New-Object System.Windows.Media.Animation.EasingDoubleKeyFrame(0, [System.Windows.Media.Animation.KeyTime]::FromTimeSpan([TimeSpan]::FromMilliseconds($delay + 420)), $script:EaseOutStrong)))
+                [void]$mv.KeyFrames.Add((New-Object System.Windows.Media.Animation.EasingDoubleKeyFrame(0, [System.Windows.Media.Animation.KeyTime]::FromTimeSpan([TimeSpan]::FromMilliseconds($delay + 320)), $script:EaseOutStrong)))
                 (Get-VxTransform $c).BeginAnimation([System.Windows.Media.TranslateTransform]::YProperty, $mv)
             }
             $i++
@@ -1682,7 +1682,7 @@ $script:ScrollTick = [EventHandler] {
         [System.Windows.Media.CompositionTarget]::remove_Rendering($script:ScrollTick); $fx.On = $false
         return
     }
-    $k = 1 - [math]::Exp(-$dt * 16)       # time-based easing: same feel at 60, 144 or 360 Hz
+    $k = 1 - [math]::Exp(-$dt * 20)       # time-based easing: same feel at 60, 144 or 360 Hz
     $sv.ScrollToVerticalOffset($cur + $diff * $k)
 }
 function Enable-VxSmoothScroll {
@@ -1717,11 +1717,18 @@ function Show-VxPage {
     $dir = if ($null -ne $script:PageIdx -and $idx -lt $script:PageIdx) { -1 } else { 1 }
     $script:PageIdx = $idx
     # the blocks themselves fade/slide in (Start-VxStagger); the page only does a short glide
-    (Get-VxTransform $page).BeginAnimation([System.Windows.Media.TranslateTransform]::YProperty, (New-VxAnim 0 380 (10 * $dir) $script:EaseOutStrong))
+    (Get-VxTransform $page).BeginAnimation([System.Windows.Media.TranslateTransform]::YProperty, (New-VxAnim 0 300 (8 * $dir) $script:EaseOutStrong))
     Start-VxStagger $page $dir
     Move-VxNavIndicator $Name
     $script:CurrentPage = $Name
     if (-not $script:Hw) { return }
+    $script:PageToLoad = $Name
+    [void]$script:Window.Dispatcher.BeginInvoke([Action] { Invoke-VxPageLoad $script:PageToLoad }, [System.Windows.Threading.DispatcherPriority]::Loaded)
+}
+
+function Invoke-VxPageLoad {
+    param([string]$Name)
+    if ($Name -ne $script:CurrentPage) { return }
     switch ($Name) {
         'Processes' { if (-not $script:Loaded.Processes) { $script:Loaded.Processes = $true; Update-VxStartupList; Update-VxProcList }; Update-VxProcStats }
         'Network' { if (-not $script:Loaded.Network) { $script:Loaded.Network = $true; Update-VxNetworkPage } }
@@ -2049,7 +2056,8 @@ $ui.DialogNo.add_Click({ Hide-VxOverlay $ui.DialogOverlay; $cb = $script:DialogN
 # =====================================================================
 #  TIMERS
 # =====================================================================
-$script:JobTimer = New-Object System.Windows.Threading.DispatcherTimer([System.Windows.Threading.DispatcherPriority]::Normal)
+# Input priority: below rendering and above idle work, so clicks are never kept waiting by the job poller
+$script:JobTimer = New-Object System.Windows.Threading.DispatcherTimer([System.Windows.Threading.DispatcherPriority]::Input)
 $script:JobTimer.Interval = [TimeSpan]::FromMilliseconds(120)
 $script:LastTick = [DateTime]::Now
 $script:JobTimer.add_Tick({

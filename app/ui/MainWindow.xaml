@@ -91,10 +91,10 @@
 
         <!-- ============================ DESIGN TOKENS: motion, light, depth -->
         <!-- one set of durations and curves for the whole app -->
-        <Duration x:Key="DurFast">0:0:0.14</Duration>
-        <Duration x:Key="DurBase">0:0:0.22</Duration>
-        <Duration x:Key="DurSlow">0:0:0.34</Duration>
-        <Duration x:Key="DurPress">0:0:0.08</Duration>
+        <Duration x:Key="DurFast">0:0:0.10</Duration>
+        <Duration x:Key="DurBase">0:0:0.17</Duration>
+        <Duration x:Key="DurSlow">0:0:0.27</Duration>
+        <Duration x:Key="DurPress">0:0:0.05</Duration>
         <CubicEase x:Key="EaseOut" EasingMode="EaseOut"/>
         <QuinticEase x:Key="EaseOutStrong" EasingMode="EaseOut"/>
         <BackEase x:Key="EaseSpring" EasingMode="EaseOut" Amplitude="0.35"/>
@@ -490,9 +490,9 @@
                                 </Storyboard></BeginStoryboard></Trigger.EnterActions>
                                 <Trigger.ExitActions><BeginStoryboard><Storyboard>
                                     <DoubleAnimation Storyboard.TargetName="Knob" Storyboard.TargetProperty="Width" To="23" Duration="{StaticResource DurSlow}" EasingFunction="{StaticResource EaseSpring}"/>
-                                    <DoubleAnimation Storyboard.TargetName="Pulse" Storyboard.TargetProperty="Opacity" From="0.9" To="0" Duration="0:0:0.55" EasingFunction="{StaticResource EaseOut}"/>
-                                    <DoubleAnimation Storyboard.TargetName="Pulse" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" From="1" To="1.28" Duration="0:0:0.55" EasingFunction="{StaticResource EaseOutStrong}"/>
-                                    <DoubleAnimation Storyboard.TargetName="Pulse" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" From="1" To="1.55" Duration="0:0:0.55" EasingFunction="{StaticResource EaseOutStrong}"/>
+                                    <DoubleAnimation Storyboard.TargetName="Pulse" Storyboard.TargetProperty="Opacity" From="0.9" To="0" Duration="0:0:0.42" EasingFunction="{StaticResource EaseOut}"/>
+                                    <DoubleAnimation Storyboard.TargetName="Pulse" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" From="1" To="1.28" Duration="0:0:0.42" EasingFunction="{StaticResource EaseOutStrong}"/>
+                                    <DoubleAnimation Storyboard.TargetName="Pulse" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" From="1" To="1.55" Duration="0:0:0.42" EasingFunction="{StaticResource EaseOutStrong}"/>
                                 </Storyboard></BeginStoryboard></Trigger.ExitActions>
                             </Trigger>
                             <!-- pressed while on: it stretches to the left, keeping its right edge -->
