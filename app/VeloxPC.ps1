@@ -1666,6 +1666,39 @@ function Start-VxStagger {
     } catch { Write-VxLog "stagger: $($_.Exception.Message)" 'WARN' }
 }
 
+# smooth scrolling (macOS-like): the wheel sets a target, the page glides to it frame by frame
+$script:ScrollFx = @{ Sv = $null; Target = 0.0; Last = [DateTime]::MinValue; On = $false }
+$script:ScrollTick = [EventHandler] {
+    $fx = $script:ScrollFx
+    $sv = $fx.Sv
+    if (-not $sv) { return }
+    $now = [DateTime]::Now
+    $dt = [math]::Min(0.05, [math]::Max(0.001, ($now - $fx.Last).TotalSeconds))
+    $fx.Last = $now
+    $cur = $sv.VerticalOffset
+    $diff = $fx.Target - $cur
+    if ([math]::Abs($diff) -lt 0.6) {
+        $sv.ScrollToVerticalOffset($fx.Target)
+        [System.Windows.Media.CompositionTarget]::remove_Rendering($script:ScrollTick); $fx.On = $false
+        return
+    }
+    $k = 1 - [math]::Exp(-$dt * 16)       # time-based easing: same feel at 60, 144 or 360 Hz
+    $sv.ScrollToVerticalOffset($cur + $diff * $k)
+}
+function Enable-VxSmoothScroll {
+    param($Sv)
+    $Sv.add_PreviewMouseWheel({
+        param($s, $e)
+        if ($s.ScrollableHeight -le 0) { return }
+        $e.Handled = $true
+        $fx = $script:ScrollFx
+        if ($fx.Sv -ne $s -or -not $fx.On) { $fx.Target = $s.VerticalOffset }
+        $fx.Sv = $s
+        $fx.Target = [math]::Max(0, [math]::Min($s.ScrollableHeight, $fx.Target - $e.Delta * 1.1))
+        if (-not $fx.On) { $fx.On = $true; $fx.Last = [DateTime]::Now; [System.Windows.Media.CompositionTarget]::add_Rendering($script:ScrollTick) }
+    })
+}
+
 function Show-VxPage {
     param([string]$Name)
     if (-not $Name) { return }
@@ -2105,6 +2138,7 @@ Set-VxBarWidth $ui.SplashBar 60 -Instant
 
 $script:CacheHw = Read-VxJson 'cache\hardware.json' $null
 $script:CacheStates = ConvertTo-VxHashtable (Read-VxJson 'cache\states.json' $null)
+foreach ($pn in $script:PageNames) { $pg = $ui["Page$pn"]; if ($pg -is [System.Windows.Controls.ScrollViewer]) { Enable-VxSmoothScroll $pg } }
 $script:Window.add_ContentRendered({
     try {
         $tier = [System.Windows.Media.RenderCapability]::Tier -shr 16

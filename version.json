@@ -1,8 +1,8 @@
 {
-  "version": "1.7.0",
+  "version": "1.7.1",
   "notes": {
-    "it": "Animazioni alla frequenza del tuo monitor e molto più leggere: finestre e liste si muovono senza ridisegnare tutto a ogni fotogramma.",
-    "en": "Animations at your monitor refresh rate and much lighter: windows and lists move without redrawing everything every frame."
+    "it": "Scorrimento morbido come su Mac e animazioni fino a 240 fps sui monitor ad alta frequenza.",
+    "en": "Mac-like smooth scrolling and animations up to 240 fps on high refresh rate monitors."
   },
   "files": [
     {
@@ -37,8 +37,8 @@
     },
     {
       "path": "app/VeloxPC.ps1",
-      "sha256": "c03eba6d71eaa8732281ece6ab4bba31a287e85e7648ad34c2c5d2fbe755d205",
-      "size": 114600
+      "sha256": "279028d424b752d72bade964b72e380698c700ffa4f7d89f22a10413515550d9",
+      "size": 116149
     },
     {
       "path": "app/assets/logo.png",
@@ -92,8 +92,8 @@
     },
     {
       "path": "app/core/Tweaks.ps1",
-      "sha256": "29efbf5aafb8023ada427611bad0ff7d9e35f63985dc10f657ef1278b1248f85",
-      "size": 44112
+      "sha256": "4eeb73d19abc0ea15bfb55c4a0e51c36419ba1a9b6bdb3d29a74b283be843a61",
+      "size": 44930
     },
     {
       "path": "app/core/Updater.ps1",

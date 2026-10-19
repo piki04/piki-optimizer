@@ -576,6 +576,15 @@ function Repair-VxLostTweaks {
             $script:VxHealTried[$id] = [DateTime]::Now
             $r = Invoke-VxTweak $t $Hw
             if ($r.ok) { $fixed += $id; Write-VxLog "Re-applied lost setting: $id" }
+            if ($r.ok -and $id -match '^(powerlat|cpumin|wifipower)$' -and -not (Test-VxTweakApplied $t $Hw)) {
+                # still off right after applying: write what the power plan reports, to find who changes it back
+                try {
+                    $sch = Get-VxActiveScheme
+                    $u = Get-VxPowerValue $sch.guid '2a737441-1930-4402-8d77-b2bebba308a3' '48e6b7a6-50f5-4782-a5d4-53bb8f07e226'
+                    $p = Get-VxPowerValue $sch.guid '501a4d13-42af-4429-9fd1-a8218c268e20' 'ee12f906-d277-404b-b6da-e5fa1a576df5'
+                    Write-VxLog ("power check {0}: plan {1} ({2}) usb={3} pcie={4}" -f $id, $sch.guid, $sch.name, $(if ($u) { "$($u.ac)/$($u.dc)" } else { 'n/a' }), $(if ($p) { "$($p.ac)/$($p.dc)" } else { 'n/a' })) 'WARN'
+                } catch { }
+            }
         } catch { Write-VxLog "Repair $id : $($_.Exception.Message)" 'WARN' }
     }
     return $fixed
