@@ -1583,6 +1583,60 @@ function Set-VxAutoStart {
 #  NAVIGATION
 # =====================================================================
 $script:PageNames = @('Home', 'Health', 'Optimize', 'Processes', 'Network', 'Remote', 'Ae', 'Cleanup', 'Restore', 'Settings')
+# the selected-section capsule slides to the clicked item with a gentle spring
+$script:EaseSlide = New-Object System.Windows.Media.Animation.BackEase
+$script:EaseSlide.EasingMode = 'EaseOut'; $script:EaseSlide.Amplitude = 0.22; $script:EaseSlide.Freeze()
+function Move-VxNavIndicator {
+    param([string]$Name, [switch]$Instant)
+    try {
+        $nav = $ui["Nav$Name"]
+        $ind = $ui.NavIndicator
+        if (-not $nav -or -not $ind -or $nav.ActualHeight -le 0) { return }
+        $y = $nav.TranslatePoint((New-Object System.Windows.Point(0, 0)), $ui.NavStack).Y
+        $h = $nav.ActualHeight
+        $tt = Get-VxTransform $ind
+        if ($Instant -or $ind.Opacity -lt 0.5) {
+            $tt.BeginAnimation([System.Windows.Media.TranslateTransform]::YProperty, $null); $tt.Y = $y
+            $ind.BeginAnimation([System.Windows.FrameworkElement]::HeightProperty, $null); $ind.Height = $h
+            $ind.BeginAnimation($script:OpacityP, (New-VxAnim 1 260 0))
+            return
+        }
+        $tt.BeginAnimation([System.Windows.Media.TranslateTransform]::YProperty, (New-VxAnim $y 480 $null $script:EaseSlide))
+        $ind.BeginAnimation([System.Windows.FrameworkElement]::HeightProperty, (New-VxAnim $h 300))
+    } catch { Write-VxLog "nav indicator: $($_.Exception.Message)" 'WARN' }
+}
+
+# the blocks of a page come in one after another (fade + short slide), then the animation is released
+function Start-VxStagger {
+    param($Page, [int]$Dir = 1)
+    try {
+        $panel = $Page
+        if ($Page -is [System.Windows.Controls.ScrollViewer]) { $panel = $Page.Content }
+        if (-not ($panel -is [System.Windows.Controls.Panel])) { return }
+        $i = 0
+        foreach ($c in $panel.Children) {
+            if ($i -ge 8) { break }
+            if (-not ($c -is [System.Windows.FrameworkElement]) -or $c.Visibility -ne 'Visible') { continue }
+            $delay = 40 + 45 * $i
+            $op = New-Object System.Windows.Media.Animation.DoubleAnimationUsingKeyFrames
+            [void]$op.KeyFrames.Add((New-Object System.Windows.Media.Animation.DiscreteDoubleKeyFrame(0, [System.Windows.Media.Animation.KeyTime]::FromTimeSpan([TimeSpan]::Zero))))
+            [void]$op.KeyFrames.Add((New-Object System.Windows.Media.Animation.DiscreteDoubleKeyFrame(0, [System.Windows.Media.Animation.KeyTime]::FromTimeSpan([TimeSpan]::FromMilliseconds($delay)))))
+            [void]$op.KeyFrames.Add((New-Object System.Windows.Media.Animation.EasingDoubleKeyFrame(1, [System.Windows.Media.Animation.KeyTime]::FromTimeSpan([TimeSpan]::FromMilliseconds($delay + 300)), $script:EaseOut)))
+            $el = $c
+            $op.add_Completed({ $el.BeginAnimation([System.Windows.UIElement]::OpacityProperty, $null) }.GetNewClosure())
+            $c.BeginAnimation($script:OpacityP, $op)
+            if ($c.RenderTransform -is [System.Windows.Media.TranslateTransform] -or $c.RenderTransform -eq [System.Windows.Media.Transform]::Identity) {
+                $mv = New-Object System.Windows.Media.Animation.DoubleAnimationUsingKeyFrames
+                [void]$mv.KeyFrames.Add((New-Object System.Windows.Media.Animation.DiscreteDoubleKeyFrame((14 * $Dir), [System.Windows.Media.Animation.KeyTime]::FromTimeSpan([TimeSpan]::Zero))))
+                [void]$mv.KeyFrames.Add((New-Object System.Windows.Media.Animation.DiscreteDoubleKeyFrame((14 * $Dir), [System.Windows.Media.Animation.KeyTime]::FromTimeSpan([TimeSpan]::FromMilliseconds($delay)))))
+                [void]$mv.KeyFrames.Add((New-Object System.Windows.Media.Animation.EasingDoubleKeyFrame(0, [System.Windows.Media.Animation.KeyTime]::FromTimeSpan([TimeSpan]::FromMilliseconds($delay + 420)), $script:EaseOutStrong)))
+                (Get-VxTransform $c).BeginAnimation([System.Windows.Media.TranslateTransform]::YProperty, $mv)
+            }
+            $i++
+        }
+    } catch { Write-VxLog "stagger: $($_.Exception.Message)" 'WARN' }
+}
+
 function Show-VxPage {
     param([string]$Name)
     if (-not $Name) { return }
@@ -1590,9 +1644,14 @@ function Show-VxPage {
     $nav = $ui["Nav$Name"]
     if ($nav -and -not $nav.IsChecked) { $script:NavSuppress = $true; $nav.IsChecked = $true; $script:NavSuppress = $false }
     $page = $ui["Page$Name"]
-    # iOS-like page change: quick fade with a small upward slide
+    # direction-aware: going down the menu the page rises from below, going up it comes from above
+    $idx = [array]::IndexOf($script:PageNames, $Name)
+    $dir = if ($null -ne $script:PageIdx -and $idx -lt $script:PageIdx) { -1 } else { 1 }
+    $script:PageIdx = $idx
     $page.BeginAnimation($script:OpacityP, (New-VxAnim 1 240 0))
-    (Get-VxTransform $page).BeginAnimation([System.Windows.Media.TranslateTransform]::YProperty, (New-VxAnim 0 420 16 $script:EaseOutStrong))
+    (Get-VxTransform $page).BeginAnimation([System.Windows.Media.TranslateTransform]::YProperty, (New-VxAnim 0 460 (20 * $dir) $script:EaseOutStrong))
+    Start-VxStagger $page $dir
+    Move-VxNavIndicator $Name
     $script:CurrentPage = $Name
     if (-not $script:Hw) { return }
     switch ($Name) {
@@ -1999,6 +2058,7 @@ Set-VxBarWidth $ui.SplashBar 60 -Instant
 $script:CacheHw = Read-VxJson 'cache\hardware.json' $null
 $script:CacheStates = ConvertTo-VxHashtable (Read-VxJson 'cache\states.json' $null)
 $script:Window.add_ContentRendered({
+    Move-VxNavIndicator $(if ($script:CurrentPage) { $script:CurrentPage } else { 'Home' }) -Instant
     if ($script:CacheHw -and $script:Settings.firstRunDone -and -not $script:Hw) {
         # instant start: show the last known data right away, refresh in the background
         try {

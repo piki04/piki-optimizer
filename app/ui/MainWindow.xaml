@@ -288,7 +288,8 @@
             </Setter>
         </Style>
 
-        <!-- Sidebar navigation: hover light fades in, the content nudges, the selected glass capsule glows softly -->
+        <!-- Sidebar navigation: hover light fades in, the content nudges, a press squeezes it slightly.
+             The selected capsule is one shared indicator that slides between items (see Move-VxNavIndicator). -->
         <Style x:Key="Nav" TargetType="RadioButton">
             <Setter Property="Foreground" Value="{StaticResource SubBrush}"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -298,12 +299,9 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
-                        <Grid Background="Transparent">
+                        <Grid x:Name="Root" Background="Transparent" RenderTransformOrigin="0.5,0.5">
+                            <Grid.RenderTransform><ScaleTransform/></Grid.RenderTransform>
                             <Border x:Name="Hl" CornerRadius="14" Background="{StaticResource HoverBrush}" Opacity="0"/>
-                            <Border x:Name="Sel" CornerRadius="14" Background="{StaticResource NavSelBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Opacity="0"/>
-                            <Border x:Name="Dot" Width="4" Height="16" CornerRadius="2" HorizontalAlignment="Left" Margin="5,0,0,0" Background="{StaticResource AccentGrad}" Opacity="0" RenderTransformOrigin="0.5,0.5">
-                                <Border.RenderTransform><ScaleTransform ScaleY="0.3"/></Border.RenderTransform>
-                            </Border>
                             <ContentPresenter x:Name="Cp" Margin="15,11">
                                 <ContentPresenter.RenderTransform><TranslateTransform/></ContentPresenter.RenderTransform>
                             </ContentPresenter>
@@ -320,18 +318,18 @@
                                     <DoubleAnimation Storyboard.TargetName="Cp" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" To="0" Duration="{StaticResource DurSlow}" EasingFunction="{StaticResource EaseOut}"/>
                                 </Storyboard></BeginStoryboard></Trigger.ExitActions>
                             </Trigger>
-                            <Trigger Property="IsChecked" Value="True">
-                                <Setter Property="Foreground" Value="White"/>
+                            <Trigger Property="IsPressed" Value="True">
                                 <Trigger.EnterActions><BeginStoryboard><Storyboard>
-                                    <DoubleAnimation Storyboard.TargetName="Sel" Storyboard.TargetProperty="Opacity" To="1" Duration="{StaticResource DurBase}" EasingFunction="{StaticResource EaseOut}"/>
-                                    <DoubleAnimation Storyboard.TargetName="Dot" Storyboard.TargetProperty="Opacity" To="1" Duration="{StaticResource DurBase}"/>
-                                    <DoubleAnimation Storyboard.TargetName="Dot" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="{StaticResource DurSlow}" EasingFunction="{StaticResource EaseSpring}"/>
+                                    <DoubleAnimation Storyboard.TargetName="Root" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="0.97" Duration="{StaticResource DurPress}"/>
+                                    <DoubleAnimation Storyboard.TargetName="Root" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="0.94" Duration="{StaticResource DurPress}"/>
                                 </Storyboard></BeginStoryboard></Trigger.EnterActions>
                                 <Trigger.ExitActions><BeginStoryboard><Storyboard>
-                                    <DoubleAnimation Storyboard.TargetName="Sel" Storyboard.TargetProperty="Opacity" To="0" Duration="{StaticResource DurBase}" EasingFunction="{StaticResource EaseOut}"/>
-                                    <DoubleAnimation Storyboard.TargetName="Dot" Storyboard.TargetProperty="Opacity" To="0" Duration="{StaticResource DurFast}"/>
-                                    <DoubleAnimation Storyboard.TargetName="Dot" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="0.3" Duration="{StaticResource DurFast}"/>
+                                    <DoubleAnimation Storyboard.TargetName="Root" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="{StaticResource DurSlow}" EasingFunction="{StaticResource EaseSpring}"/>
+                                    <DoubleAnimation Storyboard.TargetName="Root" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="{StaticResource DurSlow}" EasingFunction="{StaticResource EaseSpring}"/>
                                 </Storyboard></BeginStoryboard></Trigger.ExitActions>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -449,6 +447,10 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="CheckBox">
                         <Grid Width="46" Height="27" Background="Transparent">
+                            <!-- click ripple (only on a real click, not when the list loads) -->
+                            <Border x:Name="Pulse" CornerRadius="13.5" BorderBrush="#8CFFFFFF" BorderThickness="1.5" Opacity="0" RenderTransformOrigin="0.5,0.5" IsHitTestVisible="False">
+                                <Border.RenderTransform><ScaleTransform/></Border.RenderTransform>
+                            </Border>
                             <!-- track: off -->
                             <Border CornerRadius="13.5" Background="#47787880" BorderBrush="#1FFFFFFF" BorderThickness="1"/>
                             <Border x:Name="TrackHl" CornerRadius="13.5" Background="#14FFFFFF" Opacity="0"/>
@@ -488,6 +490,9 @@
                                 </Storyboard></BeginStoryboard></Trigger.EnterActions>
                                 <Trigger.ExitActions><BeginStoryboard><Storyboard>
                                     <DoubleAnimation Storyboard.TargetName="Knob" Storyboard.TargetProperty="Width" To="23" Duration="{StaticResource DurSlow}" EasingFunction="{StaticResource EaseSpring}"/>
+                                    <DoubleAnimation Storyboard.TargetName="Pulse" Storyboard.TargetProperty="Opacity" From="0.9" To="0" Duration="0:0:0.55" EasingFunction="{StaticResource EaseOut}"/>
+                                    <DoubleAnimation Storyboard.TargetName="Pulse" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" From="1" To="1.28" Duration="0:0:0.55" EasingFunction="{StaticResource EaseOutStrong}"/>
+                                    <DoubleAnimation Storyboard.TargetName="Pulse" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" From="1" To="1.55" Duration="0:0:0.55" EasingFunction="{StaticResource EaseOutStrong}"/>
                                 </Storyboard></BeginStoryboard></Trigger.ExitActions>
                             </Trigger>
                             <!-- pressed while on: it stretches to the left, keeping its right edge -->
@@ -736,6 +741,12 @@
                 <DataTrigger Binding="{Binding IsChecked}" Value="True">
                     <Setter Property="Text" Value="@{opt.state.on}"/>
                     <Setter Property="Foreground" Value="#30D158"/>
+                    <DataTrigger.EnterActions><BeginStoryboard><Storyboard>
+                        <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="{StaticResource DurSlow}" EasingFunction="{StaticResource EaseOut}"/>
+                    </Storyboard></BeginStoryboard></DataTrigger.EnterActions>
+                    <DataTrigger.ExitActions><BeginStoryboard><Storyboard>
+                        <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="{StaticResource DurSlow}" EasingFunction="{StaticResource EaseOut}"/>
+                    </Storyboard></BeginStoryboard></DataTrigger.ExitActions>
                 </DataTrigger>
                 <MultiDataTrigger>
                     <MultiDataTrigger.Conditions>
@@ -1058,48 +1069,55 @@
                     </StackPanel>
                 </StackPanel>
 
-                <StackPanel Grid.Row="1" Margin="14,10,14,0">
-                    <RadioButton x:Name="NavHome" Style="{StaticResource Nav}" Tag="Home" IsChecked="True">
-                        <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE80F;" Style="{StaticResource IconText}" FontSize="16" Width="26"/><TextBlock Text="@{nav.home}" FontSize="14" Margin="6,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/></StackPanel>
-                    </RadioButton>
-                    <RadioButton x:Name="NavHealth" Style="{StaticResource Nav}" Tag="Health">
-                        <Grid>
-                            <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE95E;" Style="{StaticResource IconText}" FontSize="16" Width="26"/><TextBlock Text="@{nav.health}" FontSize="14" Margin="6,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/></StackPanel>
-                            <Border x:Name="HealthBadge" HorizontalAlignment="Right" CornerRadius="9" MinWidth="20" Height="18" Background="#FF5D73" Padding="5,0" Visibility="Collapsed">
-                                <TextBlock x:Name="HealthBadgeText" Text="0" FontSize="12" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                        </Grid>
-                    </RadioButton>
-                    <RadioButton x:Name="NavOptimize" Style="{StaticResource Nav}" Tag="Optimize">
-                        <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE945;" Style="{StaticResource IconText}" FontSize="16" Width="26"/><TextBlock Text="@{nav.optimize}" FontSize="14" Margin="6,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/></StackPanel>
-                    </RadioButton>
-                    <RadioButton x:Name="NavProcesses" Style="{StaticResource Nav}" Tag="Processes">
-                        <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE9D9;" Style="{StaticResource IconText}" FontSize="16" Width="26"/><TextBlock Text="@{nav.processes}" FontSize="14" Margin="6,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/></StackPanel>
-                    </RadioButton>
-                    <RadioButton x:Name="NavNetwork" Style="{StaticResource Nav}" Tag="Network">
-                        <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE968;" Style="{StaticResource IconText}" FontSize="16" Width="26"/><TextBlock Text="@{nav.network}" FontSize="14" Margin="6,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/></StackPanel>
-                    </RadioButton>
-                    <RadioButton x:Name="NavRemote" Style="{StaticResource Nav}" Tag="Remote">
-                        <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE7F4;" Style="{StaticResource IconText}" FontSize="16" Width="26"/><TextBlock Text="@{nav.remote}" FontSize="14" Margin="6,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/></StackPanel>
-                    </RadioButton>
-                    <RadioButton x:Name="NavAe" Style="{StaticResource Nav}" Tag="Ae">
-                        <StackPanel Orientation="Horizontal">
-                            <Border Width="20" Height="20" CornerRadius="5" Background="#00005B" BorderBrush="#9999FF" BorderThickness="1.2" Margin="0,0,6,0">
-                                <TextBlock Text="Ae" FontSize="10" FontWeight="Bold" Foreground="#9999FF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <TextBlock Text="After Effects" FontSize="14" Margin="6,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/>
-                        </StackPanel>
-                    </RadioButton>
-                    <RadioButton x:Name="NavCleanup" Style="{StaticResource Nav}" Tag="Cleanup">
-                        <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE74D;" Style="{StaticResource IconText}" FontSize="16" Width="26"/><TextBlock Text="@{nav.cleanup}" FontSize="14" Margin="6,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/></StackPanel>
-                    </RadioButton>
-                    <RadioButton x:Name="NavRestore" Style="{StaticResource Nav}" Tag="Restore">
-                        <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE777;" Style="{StaticResource IconText}" FontSize="16" Width="26"/><TextBlock Text="@{nav.restore}" FontSize="14" Margin="6,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/></StackPanel>
-                    </RadioButton>
-                    <RadioButton x:Name="NavSettings" Style="{StaticResource Nav}" Tag="Settings">
-                        <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE713;" Style="{StaticResource IconText}" FontSize="16" Width="26"/><TextBlock Text="@{nav.settings}" FontSize="14" Margin="6,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/></StackPanel>
-                    </RadioButton>
-                </StackPanel>
+                <Grid Grid.Row="1" Margin="14,10,14,0">
+                    <!-- one capsule for the selected section: it slides to the clicked item -->
+                    <Border x:Name="NavIndicator" VerticalAlignment="Top" Height="44" Opacity="0" CornerRadius="14" Background="{StaticResource NavSelBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" IsHitTestVisible="False">
+                        <Border.RenderTransform><TranslateTransform/></Border.RenderTransform>
+                        <Border Width="4" Height="18" CornerRadius="2" HorizontalAlignment="Left" Margin="5,0,0,0" Background="{StaticResource AccentGrad}"/>
+                    </Border>
+                    <StackPanel x:Name="NavStack">
+                        <RadioButton x:Name="NavHome" Style="{StaticResource Nav}" Tag="Home" IsChecked="True">
+                            <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE80F;" Style="{StaticResource IconText}" FontSize="16" Width="26"/><TextBlock Text="@{nav.home}" FontSize="14" Margin="6,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/></StackPanel>
+                        </RadioButton>
+                        <RadioButton x:Name="NavHealth" Style="{StaticResource Nav}" Tag="Health">
+                            <Grid>
+                                <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE95E;" Style="{StaticResource IconText}" FontSize="16" Width="26"/><TextBlock Text="@{nav.health}" FontSize="14" Margin="6,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/></StackPanel>
+                                <Border x:Name="HealthBadge" HorizontalAlignment="Right" CornerRadius="9" MinWidth="20" Height="18" Background="#FF5D73" Padding="5,0" Visibility="Collapsed">
+                                    <TextBlock x:Name="HealthBadgeText" Text="0" FontSize="12" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </Grid>
+                        </RadioButton>
+                        <RadioButton x:Name="NavOptimize" Style="{StaticResource Nav}" Tag="Optimize">
+                            <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE945;" Style="{StaticResource IconText}" FontSize="16" Width="26"/><TextBlock Text="@{nav.optimize}" FontSize="14" Margin="6,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/></StackPanel>
+                        </RadioButton>
+                        <RadioButton x:Name="NavProcesses" Style="{StaticResource Nav}" Tag="Processes">
+                            <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE9D9;" Style="{StaticResource IconText}" FontSize="16" Width="26"/><TextBlock Text="@{nav.processes}" FontSize="14" Margin="6,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/></StackPanel>
+                        </RadioButton>
+                        <RadioButton x:Name="NavNetwork" Style="{StaticResource Nav}" Tag="Network">
+                            <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE968;" Style="{StaticResource IconText}" FontSize="16" Width="26"/><TextBlock Text="@{nav.network}" FontSize="14" Margin="6,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/></StackPanel>
+                        </RadioButton>
+                        <RadioButton x:Name="NavRemote" Style="{StaticResource Nav}" Tag="Remote">
+                            <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE7F4;" Style="{StaticResource IconText}" FontSize="16" Width="26"/><TextBlock Text="@{nav.remote}" FontSize="14" Margin="6,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/></StackPanel>
+                        </RadioButton>
+                        <RadioButton x:Name="NavAe" Style="{StaticResource Nav}" Tag="Ae">
+                            <StackPanel Orientation="Horizontal">
+                                <Border Width="20" Height="20" CornerRadius="5" Background="#00005B" BorderBrush="#9999FF" BorderThickness="1.2" Margin="0,0,6,0">
+                                    <TextBlock Text="Ae" FontSize="10" FontWeight="Bold" Foreground="#9999FF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="After Effects" FontSize="14" Margin="6,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/>
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton x:Name="NavCleanup" Style="{StaticResource Nav}" Tag="Cleanup">
+                            <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE74D;" Style="{StaticResource IconText}" FontSize="16" Width="26"/><TextBlock Text="@{nav.cleanup}" FontSize="14" Margin="6,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/></StackPanel>
+                        </RadioButton>
+                        <RadioButton x:Name="NavRestore" Style="{StaticResource Nav}" Tag="Restore">
+                            <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE777;" Style="{StaticResource IconText}" FontSize="16" Width="26"/><TextBlock Text="@{nav.restore}" FontSize="14" Margin="6,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/></StackPanel>
+                        </RadioButton>
+                        <RadioButton x:Name="NavSettings" Style="{StaticResource Nav}" Tag="Settings">
+                            <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE713;" Style="{StaticResource IconText}" FontSize="16" Width="26"/><TextBlock Text="@{nav.settings}" FontSize="14" Margin="6,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/></StackPanel>
+                        </RadioButton>
+                    </StackPanel>
+                </Grid>
 
                 <!-- live mini monitor -->
                 <Border Grid.Row="2" Margin="14,0,14,16" CornerRadius="18" Background="{StaticResource CardBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="14,12">

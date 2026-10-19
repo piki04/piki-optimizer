@@ -1,8 +1,8 @@
 {
-  "version": "1.6.6",
+  "version": "1.6.7",
   "notes": {
-    "it": "Pulsante principale più leggibile e corretto \"USB e PCIe sempre svegli\", che risultava spento anche se attivo.",
-    "en": "More readable main button and fixed \"USB and PCIe always awake\", which showed as off even when on."
+    "it": "Animazioni più fluide: la sezione selezionata scivola nel menu, i contenuti entrano a cascata, gli interruttori fanno un'onda al clic.",
+    "en": "Smoother motion: the selected section slides in the menu, content flows in, switches ripple when clicked."
   },
   "files": [
     {
@@ -37,8 +37,8 @@
     },
     {
       "path": "app/VeloxPC.ps1",
-      "sha256": "ccaad3f4d25378f5709ce55b6c5436a90fe6a6e45b036f85892768ff5f347361",
-      "size": 105508
+      "sha256": "a3afd053cf4a3ea1aa19a2cb0098b65a7a165a21f75142aca911e73cb16ef501",
+      "size": 109784
     },
     {
       "path": "app/assets/logo.png",
@@ -152,8 +152,8 @@
     },
     {
       "path": "app/ui/MainWindow.xaml",
-      "sha256": "caebe54ba105767753ac8d4bece2639e6940cbf8e18195692fa0b379ea08de5e",
-      "size": 165471
+      "sha256": "bc98c7223f149eac69ffcf12a1bd1ca9b64743828df02df1b21d8fc36b7d46ce",
+      "size": 167642
     },
     {
       "path": "config.json",
