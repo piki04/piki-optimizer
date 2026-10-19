@@ -1,8 +1,8 @@
 {
-  "version": "1.6.2",
+  "version": "1.6.3",
   "notes": {
-    "it": "Vetro scuro smerigliato per testi sempre leggibili e aggiornamenti più affidabili (subito disponibili, senza attese).",
-    "en": "Dark frosted glass for always readable text and more reliable updates (available right away)."
+    "it": "Interruttori e spunte in stile Mac: il pallino si allunga quando premi e scatta con una molla, la spunta si disegna da sola.",
+    "en": "Mac-style switches and checkboxes: the knob stretches when pressed and springs across, the tick draws itself."
   },
   "files": [
     {
@@ -152,8 +152,8 @@
     },
     {
       "path": "app/ui/MainWindow.xaml",
-      "sha256": "80a813652bef5f94d2fe8978663308113098cf6b1e4c17ab1fcb621f731ec024",
-      "size": 159205
+      "sha256": "51930959fcbe872032e9220c7a0cfbef2608bb76254fb4f6fe3bcfeb51b8ed1e",
+      "size": 165079
     },
     {
       "path": "config.json",

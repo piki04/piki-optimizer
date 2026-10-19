@@ -434,34 +434,72 @@
             </Setter>
         </Style>
 
-        <!-- Toggle switch (iOS): the knob slides with a gentle spring, the green fades in with a soft glow -->
+        <!-- Toggle switch (macOS style): the capsule knob stretches while pressed, then springs across;
+             the track colour fades in. Only opacity/transform/width of small elements are animated. -->
         <Style x:Key="Switch" TargetType="CheckBox">
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="CheckBox">
-                        <Grid Width="51" Height="31" Background="Transparent">
-                            <Border CornerRadius="15.5" Background="#38FFFFFF" BorderBrush="#26FFFFFF" BorderThickness="1"/>
-                            <Border x:Name="On" CornerRadius="15.5" Background="{StaticResource IosGreen}" Opacity="0"/>
-                            <Grid x:Name="Knob" Width="29" Height="29" HorizontalAlignment="Left" Margin="1,0,0,0">
+                        <Grid Width="46" Height="27" Background="Transparent">
+                            <!-- track: off -->
+                            <Border CornerRadius="13.5" Background="#47787880" BorderBrush="#1FFFFFFF" BorderThickness="1"/>
+                            <Border x:Name="TrackHl" CornerRadius="13.5" Background="#14FFFFFF" Opacity="0"/>
+                            <!-- track: on -->
+                            <Border x:Name="On" CornerRadius="13.5" Background="{StaticResource IosGreen}" Opacity="0">
+                                <Border CornerRadius="13.5" Background="{StaticResource SheenBrush}" Opacity="0.6"/>
+                            </Border>
+                            <!-- knob (capsule) with a drawn shadow -->
+                            <Grid x:Name="Knob" Width="23" Height="23" HorizontalAlignment="Left" Margin="2,0,0,0">
                                 <Grid.RenderTransform><TranslateTransform/></Grid.RenderTransform>
-                                <!-- drawn shadow (no effect): a soft dark ring slightly below the knob -->
-                                <Ellipse Margin="0,1.5,0,-1.5">
-                                    <Ellipse.Fill>
-                                        <RadialGradientBrush>
-                                            <GradientStop Color="#40000000" Offset="0.8"/>
-                                            <GradientStop Color="#00000000" Offset="1"/>
-                                        </RadialGradientBrush>
-                                    </Ellipse.Fill>
-                                </Ellipse>
-                                <Ellipse Width="27" Height="27" Fill="White"/>
+                                <Border CornerRadius="11.5" Background="#38000000" Margin="0,1.5,0,-1.5"/>
+                                <Border CornerRadius="11.5" Background="#FFFFFF" BorderBrush="#14000000" BorderThickness="0.5">
+                                    <Border CornerRadius="11.5" Margin="1">
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                <GradientStop Color="#00FFFFFF" Offset="0"/>
+                                                <GradientStop Color="#0F000000" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Border.Background>
+                                    </Border>
+                                </Border>
                             </Grid>
                         </Grid>
                         <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Trigger.EnterActions><BeginStoryboard><Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="TrackHl" Storyboard.TargetProperty="Opacity" To="1" Duration="{StaticResource DurFast}"/>
+                                </Storyboard></BeginStoryboard></Trigger.EnterActions>
+                                <Trigger.ExitActions><BeginStoryboard><Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="TrackHl" Storyboard.TargetProperty="Opacity" To="0" Duration="{StaticResource DurBase}"/>
+                                </Storyboard></BeginStoryboard></Trigger.ExitActions>
+                            </Trigger>
+                            <!-- pressed: the knob stretches (grows to the right when off) -->
+                            <Trigger Property="IsPressed" Value="True">
+                                <Trigger.EnterActions><BeginStoryboard><Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="Knob" Storyboard.TargetProperty="Width" To="29" Duration="{StaticResource DurFast}" EasingFunction="{StaticResource EaseOut}"/>
+                                </Storyboard></BeginStoryboard></Trigger.EnterActions>
+                                <Trigger.ExitActions><BeginStoryboard><Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="Knob" Storyboard.TargetProperty="Width" To="23" Duration="{StaticResource DurSlow}" EasingFunction="{StaticResource EaseSpring}"/>
+                                </Storyboard></BeginStoryboard></Trigger.ExitActions>
+                            </Trigger>
+                            <!-- pressed while on: it stretches to the left, keeping its right edge -->
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsPressed" Value="True"/>
+                                    <Condition Property="IsChecked" Value="True"/>
+                                </MultiTrigger.Conditions>
+                                <MultiTrigger.EnterActions><BeginStoryboard><Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="Knob" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" To="13" Duration="{StaticResource DurFast}" EasingFunction="{StaticResource EaseOut}"/>
+                                </Storyboard></BeginStoryboard></MultiTrigger.EnterActions>
+                                <MultiTrigger.ExitActions><BeginStoryboard><Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="Knob" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" To="19" Duration="{StaticResource DurSlow}" EasingFunction="{StaticResource EaseSpring}"/>
+                                </Storyboard></BeginStoryboard></MultiTrigger.ExitActions>
+                            </MultiTrigger>
                             <Trigger Property="IsChecked" Value="True">
                                 <Trigger.EnterActions><BeginStoryboard><Storyboard>
-                                    <DoubleAnimation Storyboard.TargetName="Knob" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" To="20" Duration="{StaticResource DurSlow}" EasingFunction="{StaticResource EaseSpring}"/>
+                                    <DoubleAnimation Storyboard.TargetName="Knob" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" To="19" Duration="{StaticResource DurSlow}" EasingFunction="{StaticResource EaseSpring}"/>
                                     <DoubleAnimation Storyboard.TargetName="On" Storyboard.TargetProperty="Opacity" To="1" Duration="{StaticResource DurBase}" EasingFunction="{StaticResource EaseOut}"/>
                                 </Storyboard></BeginStoryboard></Trigger.EnterActions>
                                 <Trigger.ExitActions><BeginStoryboard><Storyboard>
@@ -470,13 +508,14 @@
                                 </Storyboard></BeginStoryboard></Trigger.ExitActions>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Opacity" Value="0.3"/>
+                                <Setter Property="Opacity" Value="0.35"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
+        <!-- Checkbox (macOS style): fills with the accent, the tick draws itself, the box compresses when pressed -->
         <Style x:Key="Tick" TargetType="CheckBox">
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
@@ -485,28 +524,46 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="CheckBox">
                         <StackPanel Orientation="Horizontal" Background="Transparent">
-                            <Grid Width="20" Height="20">
-                                <Border CornerRadius="6" Background="#21FFFFFF" BorderBrush="#59FFFFFF" BorderThickness="1.5"/>
-                                <Border x:Name="Fill" CornerRadius="6" Background="{StaticResource AccentGrad}" Opacity="0"/>
-                                <TextBlock x:Name="Mark" Text="&#xE73E;" FontFamily="Segoe MDL2 Assets" FontSize="11" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0" RenderTransformOrigin="0.5,0.5">
-                                    <TextBlock.RenderTransform><ScaleTransform ScaleX="0.5" ScaleY="0.5"/></TextBlock.RenderTransform>
-                                </TextBlock>
+                            <Grid x:Name="Box" Width="18" Height="18" RenderTransformOrigin="0.5,0.5" VerticalAlignment="Center">
+                                <Grid.RenderTransform><ScaleTransform/></Grid.RenderTransform>
+                                <Border CornerRadius="5" Background="#26FFFFFF" BorderBrush="#66FFFFFF" BorderThickness="1"/>
+                                <Border x:Name="BoxHl" CornerRadius="5" Background="#1AFFFFFF" Opacity="0"/>
+                                <Border x:Name="Fill" CornerRadius="5" Background="{StaticResource AccentGrad}" Opacity="0">
+                                    <Border CornerRadius="5" Background="{StaticResource SheenBrush}"/>
+                                </Border>
+                                <Path x:Name="Mark" Data="M4.2,9.4 L7.6,12.6 L13.8,5.6" Stroke="White" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" StrokeDashArray="8 8" StrokeDashOffset="8" Opacity="0"/>
                             </Grid>
                             <ContentPresenter Margin="10,0,0,0" VerticalAlignment="Center"/>
                         </StackPanel>
                         <ControlTemplate.Triggers>
-                            <Trigger Property="IsChecked" Value="True">
+                            <Trigger Property="IsMouseOver" Value="True">
                                 <Trigger.EnterActions><BeginStoryboard><Storyboard>
-                                    <DoubleAnimation Storyboard.TargetName="Fill" Storyboard.TargetProperty="Opacity" To="1" Duration="{StaticResource DurFast}"/>
-                                    <DoubleAnimation Storyboard.TargetName="Mark" Storyboard.TargetProperty="Opacity" To="1" Duration="{StaticResource DurFast}"/>
-                                    <DoubleAnimation Storyboard.TargetName="Mark" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="{StaticResource DurSlow}" EasingFunction="{StaticResource EaseSpring}"/>
-                                    <DoubleAnimation Storyboard.TargetName="Mark" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="{StaticResource DurSlow}" EasingFunction="{StaticResource EaseSpring}"/>
+                                    <DoubleAnimation Storyboard.TargetName="BoxHl" Storyboard.TargetProperty="Opacity" To="1" Duration="{StaticResource DurFast}"/>
                                 </Storyboard></BeginStoryboard></Trigger.EnterActions>
                                 <Trigger.ExitActions><BeginStoryboard><Storyboard>
-                                    <DoubleAnimation Storyboard.TargetName="Fill" Storyboard.TargetProperty="Opacity" To="0" Duration="{StaticResource DurFast}"/>
+                                    <DoubleAnimation Storyboard.TargetName="BoxHl" Storyboard.TargetProperty="Opacity" To="0" Duration="{StaticResource DurBase}"/>
+                                </Storyboard></BeginStoryboard></Trigger.ExitActions>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Trigger.EnterActions><BeginStoryboard><Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="Box" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="0.88" Duration="{StaticResource DurPress}"/>
+                                    <DoubleAnimation Storyboard.TargetName="Box" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="0.88" Duration="{StaticResource DurPress}"/>
+                                </Storyboard></BeginStoryboard></Trigger.EnterActions>
+                                <Trigger.ExitActions><BeginStoryboard><Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="Box" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="{StaticResource DurSlow}" EasingFunction="{StaticResource EaseSpring}"/>
+                                    <DoubleAnimation Storyboard.TargetName="Box" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="{StaticResource DurSlow}" EasingFunction="{StaticResource EaseSpring}"/>
+                                </Storyboard></BeginStoryboard></Trigger.ExitActions>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Trigger.EnterActions><BeginStoryboard><Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="Fill" Storyboard.TargetProperty="Opacity" To="1" Duration="{StaticResource DurFast}" EasingFunction="{StaticResource EaseOut}"/>
+                                    <DoubleAnimation Storyboard.TargetName="Mark" Storyboard.TargetProperty="Opacity" To="1" Duration="{StaticResource DurFast}"/>
+                                    <DoubleAnimation Storyboard.TargetName="Mark" Storyboard.TargetProperty="StrokeDashOffset" To="0" BeginTime="0:0:0.06" Duration="{StaticResource DurSlow}" EasingFunction="{StaticResource EaseOut}"/>
+                                </Storyboard></BeginStoryboard></Trigger.EnterActions>
+                                <Trigger.ExitActions><BeginStoryboard><Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="Fill" Storyboard.TargetProperty="Opacity" To="0" Duration="{StaticResource DurBase}" EasingFunction="{StaticResource EaseOut}"/>
                                     <DoubleAnimation Storyboard.TargetName="Mark" Storyboard.TargetProperty="Opacity" To="0" Duration="{StaticResource DurFast}"/>
-                                    <DoubleAnimation Storyboard.TargetName="Mark" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="0.5" Duration="{StaticResource DurFast}"/>
-                                    <DoubleAnimation Storyboard.TargetName="Mark" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="0.5" Duration="{StaticResource DurFast}"/>
+                                    <DoubleAnimation Storyboard.TargetName="Mark" Storyboard.TargetProperty="StrokeDashOffset" To="8" Duration="{StaticResource DurFast}"/>
                                 </Storyboard></BeginStoryboard></Trigger.ExitActions>
                             </Trigger>
                         </ControlTemplate.Triggers>
