@@ -104,14 +104,32 @@ function Save-VxSettings {
 
 $script:VxTx = $null
 
+# Batch mode: while applying many changes, backup.json and history.json are read once,
+# kept in memory and written once at the end (Stop-VxBatch), instead of once per change.
+$script:VxBatch = $null
+function Start-VxBatch { $script:VxBatch = @{ backup = $null; history = $null } }
+function Stop-VxBatch {
+    $bt = $script:VxBatch
+    $script:VxBatch = $null
+    if (-not $bt) { return }
+    if ($bt.backup) { Write-VxJson 'backup.json' $bt.backup }
+    if ($null -ne $bt.history) { Write-VxJson 'history.json' @($bt.history) }
+}
+
 function Get-VxBackup {
+    if ($script:VxBatch -and $script:VxBatch.backup) { return $script:VxBatch.backup }
     $b = ConvertTo-VxHashtable (Read-VxJson 'backup.json' $null)
     if (-not $b) { $b = @{} }
     if (-not $b.ContainsKey('entries')) { $b['entries'] = @{} }
+    if ($script:VxBatch) { $script:VxBatch.backup = $b }
     return $b
 }
 
-function Save-VxBackup { param([hashtable]$Backup) Write-VxJson 'backup.json' $Backup }
+function Save-VxBackup {
+    param([hashtable]$Backup)
+    if ($script:VxBatch) { $script:VxBatch.backup = $Backup; return }
+    Write-VxJson 'backup.json' $Backup
+}
 
 function Test-VxBackupEntry { param([string]$Id) $b = Get-VxBackup; return $b.entries.ContainsKey($Id) }
 
@@ -151,10 +169,14 @@ function Complete-VxTx {
 function Add-VxHistory {
     param([string]$Id, [string]$Title, [string]$Action)
     try {
-        $old = ConvertTo-VxHashtable (Read-VxJson 'history.json' $null)
-        $h = @($old | Where-Object { $_ })
+        if ($script:VxBatch -and $null -ne $script:VxBatch.history) { $h = @($script:VxBatch.history) }
+        else {
+            $old = ConvertTo-VxHashtable (Read-VxJson 'history.json' $null)
+            $h = @($old | Where-Object { $_ })
+        }
         $h = @(@{ time = (Get-Date -Format 'yyyy-MM-dd HH:mm'); id = $Id; title = $Title; action = $Action }) + $h
         if ($h.Count -gt 300) { $h = $h[0..299] }
+        if ($script:VxBatch) { $script:VxBatch.history = $h; return }
         Write-VxJson 'history.json' $h
     } catch { }
 }
@@ -411,6 +433,14 @@ function Format-VxBytes {
 
 function New-VxRestorePoint {
     param([string]$Description = 'VeloxPC')
+    # Windows keeps one restore point per day anyway: skip the slow attempt if Piki made one in the last 24 hours
+    $stamp = Join-Path $script:VxData 'cache\lastrp.txt'
+    try {
+        if (Test-Path -LiteralPath $stamp) {
+            $t = [DateTime]::Parse(([System.IO.File]::ReadAllText($stamp)).Trim(), [Globalization.CultureInfo]::InvariantCulture)
+            if (([DateTime]::Now - $t).TotalHours -lt 24) { Write-VxLog 'Restore point: recent one exists, skipped'; return 'recent' }
+        }
+    } catch { }
     try {
         $freqKey = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore'
         $old = Get-VxRegState -Path $freqKey -Name 'SystemRestorePointCreationFrequency'
@@ -421,6 +451,11 @@ function New-VxRestorePoint {
         if ($old.existed) { New-ItemProperty -LiteralPath $freqKey -Name 'SystemRestorePointCreationFrequency' -PropertyType DWord -Value ([int]$old.value) -Force | Out-Null }
         else { Remove-ItemProperty -LiteralPath $freqKey -Name 'SystemRestorePointCreationFrequency' -ErrorAction SilentlyContinue }
         Write-VxLog 'Restore point created'
+        try {
+            $cd = Split-Path -Parent $stamp
+            if (-not (Test-Path -LiteralPath $cd)) { New-Item -ItemType Directory -Path $cd -Force | Out-Null }
+            [System.IO.File]::WriteAllText($stamp, [DateTime]::Now.ToString('o', [Globalization.CultureInfo]::InvariantCulture))
+        } catch { }
         return $true
     } catch {
         Write-VxLog "Restore point failed: $($_.Exception.Message)" 'WARN'

@@ -60,7 +60,7 @@
         </Style>
         <Style x:Key="H1" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource Display}"/>
-            <Setter Property="FontSize" Value="28"/>
+            <Setter Property="FontSize" Value="32"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
         </Style>
@@ -81,7 +81,6 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
         <Style x:Key="Card" TargetType="Border">
-            <Setter Property="Effect"><Setter.Value><DropShadowEffect BlurRadius="40" ShadowDepth="10" Direction="270" Opacity="0.30" Color="#000000"/></Setter.Value></Setter>
             <Setter Property="Background" Value="{StaticResource CardBrush}"/>
             <Setter Property="BorderBrush" Value="{StaticResource LineBrush}"/>
             <Setter Property="BorderThickness" Value="1.2"/>
@@ -109,6 +108,8 @@
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="Bd" Property="Background" Value="#14FFFFFF"/>
+                                <Setter TargetName="Bd" Property="RenderTransform"><Setter.Value><ScaleTransform ScaleX="0.97" ScaleY="0.97"/></Setter.Value></Setter>
+                                <Setter TargetName="Bd" Property="RenderTransformOrigin" Value="0.5,0.5"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.4"/>
@@ -147,6 +148,8 @@
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="Bd" Property="Opacity" Value="0.85"/>
+                                <Setter TargetName="Bd" Property="RenderTransform"><Setter.Value><ScaleTransform ScaleX="0.97" ScaleY="0.97"/></Setter.Value></Setter>
+                                <Setter TargetName="Bd" Property="RenderTransformOrigin" Value="0.5,0.5"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.4"/>
@@ -212,20 +215,19 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
                         <Grid>
-                            <Border x:Name="Bd" CornerRadius="10" Background="Transparent" Padding="14,10">
+                            <Border x:Name="Bd" CornerRadius="14" Background="Transparent" BorderBrush="Transparent" BorderThickness="1" Padding="14,10">
                                 <ContentPresenter/>
                             </Border>
-                            <Border x:Name="Bar" Width="3" CornerRadius="2" HorizontalAlignment="Left" Margin="0,10" Background="{StaticResource AccentGrad}" Visibility="Collapsed"/>
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#1FFFFFFF"/>
+                                <Setter TargetName="Bd" Property="Background" Value="#14FFFFFF"/>
                                 <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#2BFFFFFF"/>
-                                <Setter TargetName="Bar" Property="Visibility" Value="Visible"/>
-                                <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource GlassBtnBrush}"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource LineBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -291,17 +293,16 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="CheckBox">
-                        <Grid Width="46" Height="26" Background="Transparent">
-                            <Border x:Name="Track" CornerRadius="13" Background="#33FFFFFF" BorderBrush="#4DFFFFFF" BorderThickness="1"/>
-                            <Ellipse x:Name="Knob" Width="18" Height="18" Fill="#9AA3B8" HorizontalAlignment="Left" Margin="4,0,0,0"/>
+                        <Grid Width="51" Height="31" Background="Transparent">
+                            <Border x:Name="Track" CornerRadius="15.5" Background="#38FFFFFF" BorderBrush="#26FFFFFF" BorderThickness="1"/>
+                            <Ellipse x:Name="Knob" Width="27" Height="27" Fill="White" HorizontalAlignment="Left" Margin="2,0,0,0"/>
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="Track" Property="Background" Value="{StaticResource AccentGrad}"/>
+                                <Setter TargetName="Track" Property="Background" Value="#30D158"/>
                                 <Setter TargetName="Track" Property="BorderBrush" Value="Transparent"/>
-                                <Setter TargetName="Knob" Property="Fill" Value="White"/>
                                 <Setter TargetName="Knob" Property="HorizontalAlignment" Value="Right"/>
-                                <Setter TargetName="Knob" Property="Margin" Value="0,0,4,0"/>
+                                <Setter TargetName="Knob" Property="Margin" Value="0,0,2,0"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.3"/>
@@ -718,9 +719,11 @@
         </Grid.ColumnDefinitions>
 
         <!-- custom background -->
-        <Image x:Name="BgImage" Grid.ColumnSpan="2" Stretch="UniformToFill" Opacity="0.35" Visibility="Collapsed" IsHitTestVisible="False" Margin="-60"><Image.Effect><BlurEffect Radius="28" KernelType="Gaussian"/></Image.Effect></Image>
+        <Image x:Name="BgImage" Grid.ColumnSpan="2" Stretch="UniformToFill" Opacity="0.35" Visibility="Collapsed" IsHitTestVisible="False" Margin="-60">
+            <Image.CacheMode><BitmapCache RenderAtScale="0.5"/></Image.CacheMode><Image.Effect><BlurEffect Radius="28" KernelType="Gaussian"/></Image.Effect></Image>
         <!-- colourful blurred blobs behind the glass -->
         <Grid x:Name="Blobs" Grid.ColumnSpan="2" IsHitTestVisible="False" Opacity="0.85" ClipToBounds="True">
+            <Grid.CacheMode><BitmapCache RenderAtScale="0.5"/></Grid.CacheMode>
             <Grid.Effect><BlurEffect Radius="110" KernelType="Gaussian"/></Grid.Effect>
             <Ellipse Width="620" Height="520" Fill="#7C5CFF" Opacity="0.55" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-180,-120,0"/>
             <Ellipse Width="520" Height="440" Fill="#22D3EE" Opacity="0.35" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="120,0,0,-160"/>

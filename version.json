@@ -1,8 +1,8 @@
 {
-  "version": "1.5.2",
+  "version": "1.5.3",
   "notes": {
-    "it": "Ora ricevi una notifica di Windows quando esce una nuova versione, anche con l'app nella barra vicino all'orologio.",
-    "en": "You now get a Windows notification when a new version is out, even with the app in the tray."
+    "it": "Applicazione delle impostazioni molto più veloce e grafica più pulita in stile iPhone, anche più leggera.",
+    "en": "Much faster when applying settings and a cleaner, lighter iPhone-style look."
   },
   "files": [
     {
@@ -37,8 +37,8 @@
     },
     {
       "path": "app/VeloxPC.ps1",
-      "sha256": "cc8b1d9d993edaa22dc2998cfd4dae9fff8329b579230f07f47fdc2e2de98437",
-      "size": 96237
+      "sha256": "5bcc2ecc59fce6504faa87a51296787a857dc949e74b3245896fd47855efdd2f",
+      "size": 96937
     },
     {
       "path": "app/assets/logo.png",
@@ -62,8 +62,8 @@
     },
     {
       "path": "app/core/Common.ps1",
-      "sha256": "dd2b9ca55114c2443b4002fcf7a868d2e4d03dedd4bf6f72786746070d12a48d",
-      "size": 19867
+      "sha256": "b888df5eb2361d1d90b0ecbf83da0604b49375538c75495f1c329506fd71e507",
+      "size": 21664
     },
     {
       "path": "app/core/Hardware.ps1",
@@ -147,8 +147,8 @@
     },
     {
       "path": "app/ui/MainWindow.xaml",
-      "sha256": "4cf02a12556b2ef5fe363d9fff04a15b12a1849ddb805b3e789c08e0731fb59d",
-      "size": 123152
+      "sha256": "f85c0c624a603fed67f1862a15243a03b9e7ce1b2b9e964137de3132032d8170",
+      "size": 123458
     },
     {
       "path": "config.json",

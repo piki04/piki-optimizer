@@ -204,7 +204,7 @@ function Start-VxJob {
         "Write-VxLog ('job body: $Name ({0:N0} ms)' -f ([DateTime]::Now - `$__t0).TotalMilliseconds)`n,`$__r"
     if ($script:CoreFile) {
         $load = "if (-not (Get-Command Initialize-VxPaths -CommandType Function -ErrorAction SilentlyContinue)) { . '" + ($script:CoreFile -replace "'", "''") + "' }`n" +
-            "`$script:VxAeCache = `$null; `$script:VxTx = `$null; `$script:VxNicRestart = `$false`n"
+            "`$script:VxAeCache = `$null; `$script:VxTx = `$null; `$script:VxNicRestart = `$false; `$script:VxBatch = `$null`n"
         [void]$ps.AddScript($load + $wrap)
     } else {
         [void]$ps.AddScript($script:CoreText + $wrap)
@@ -452,6 +452,8 @@ function Invoke-VxApplyItems {
         $total = [math]::Max(1, $ApplyIds.Count + $RevertIds.Count)
         $i = 0
         if ($Rp) { $Sync.Step = (L @{ it = 'Creo un punto di ripristino...'; en = 'Creating a restore point...' }); $res.rp = New-VxRestorePoint 'VeloxPC' }
+        Start-VxBatch
+        try {
         foreach ($id in $ApplyIds) {
             $i++; $Sync.Pct = [int](100 * $i / $total)
             if ($id -like 'svc:*') {
@@ -477,6 +479,7 @@ function Invoke-VxApplyItems {
                 if ($t -and $t.Reboot) { $res.reboot = $true }
             } else { $res.noUndo++ }
         }
+        } finally { Stop-VxBatch }
         return $res
     } -OnDone {
         param($r)
@@ -1405,8 +1408,16 @@ function Show-VxPage {
     $nav = $ui["Nav$Name"]
     if ($nav -and -not $nav.IsChecked) { $script:NavSuppress = $true; $nav.IsChecked = $true; $script:NavSuppress = $false }
     $page = $ui["Page$Name"]
-    $page.Opacity = 0
-    $page.BeginAnimation([System.Windows.UIElement]::OpacityProperty, (New-Object System.Windows.Media.Animation.DoubleAnimation(0, 1, [TimeSpan]::FromMilliseconds(160))))
+    # iOS-like page change: quick fade with a small upward slide
+    $ease = New-Object System.Windows.Media.Animation.CubicEase
+    $ease.EasingMode = 'EaseOut'
+    $fade = New-Object System.Windows.Media.Animation.DoubleAnimation(0, 1, [TimeSpan]::FromMilliseconds(220))
+    $fade.EasingFunction = $ease
+    $page.BeginAnimation([System.Windows.UIElement]::OpacityProperty, $fade)
+    if (-not ($page.RenderTransform -is [System.Windows.Media.TranslateTransform])) { $page.RenderTransform = New-Object System.Windows.Media.TranslateTransform }
+    $slide = New-Object System.Windows.Media.Animation.DoubleAnimation(10, 0, [TimeSpan]::FromMilliseconds(260))
+    $slide.EasingFunction = $ease
+    $page.RenderTransform.BeginAnimation([System.Windows.Media.TranslateTransform]::YProperty, $slide)
     $script:CurrentPage = $Name
     if (-not $script:Hw) { return }
     switch ($Name) {
