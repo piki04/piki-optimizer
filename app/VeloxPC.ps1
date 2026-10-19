@@ -150,14 +150,25 @@ $lm = Get-VxLocalManifest
 if ($lm -and $lm.version) { $script:Version = [string]$lm.version }
 
 # ---------------------------------------------------------------- XAML
-$xamlText = [System.IO.File]::ReadAllText((Join-Path $AppDir 'ui\MainWindow.xaml'), [System.Text.Encoding]::UTF8)
-$xamlText = [regex]::Replace($xamlText, '@\{([a-zA-Z0-9_.]+)\}', {
-        param($m)
-        $v = [System.Security.SecurityElement]::Escape((T $m.Groups[1].Value))
-        if ($v.StartsWith('{')) { $v = '{}' + $v }   # not a markup extension
-        $v
-    })
-$script:Window = [Windows.Markup.XamlReader]::Parse($xamlText)
+function Read-VxXaml {
+    param([string]$File)
+    $t = [System.IO.File]::ReadAllText((Join-Path $AppDir "ui\$File"), [System.Text.Encoding]::UTF8)
+    return [regex]::Replace($t, '@\{([a-zA-Z0-9_.]+)\}', {
+            param($m)
+            $v = [System.Security.SecurityElement]::Escape((T $m.Groups[1].Value))
+            if ($v.StartsWith('{')) { $v = '{}' + $v }   # not a markup extension
+            $v
+        })
+}
+$xamlText = Read-VxXaml 'MainWindow.xaml'
+try {
+    $script:Window = [Windows.Markup.XamlReader]::Parse($xamlText)
+} catch {
+    # safety net: if the new look cannot load on this PC, start with the previous, proven one
+    Write-VxLog ("UI load failed, using the safe layout: " + $_.Exception.Message) 'ERROR'
+    $xamlText = Read-VxXaml 'MainWindow.safe.xaml'
+    $script:Window = [Windows.Markup.XamlReader]::Parse($xamlText)
+}
 $script:ui = @{}
 foreach ($m in [regex]::Matches($xamlText, 'x:Name="([^"]+)"')) {
     $n = $m.Groups[1].Value
@@ -247,6 +258,90 @@ function Complete-VxJobs {
 # =====================================================================
 function New-VxBrush { param([string]$Hex) return (New-Object System.Windows.Media.SolidColorBrush ([System.Windows.Media.ColorConverter]::ConvertFromString($Hex))) }
 
+# =====================================================================
+#  MOTION SYSTEM: same durations and curves as the XAML tokens (DurFast/DurBase/DurSlow, EaseOut/EaseOutStrong)
+#  Only opacity and transforms are animated (cheap for the GPU); widths only on small progress bars.
+# =====================================================================
+$script:EaseOut = New-Object System.Windows.Media.Animation.CubicEase
+$script:EaseOut.EasingMode = 'EaseOut'; $script:EaseOut.Freeze()
+$script:EaseOutStrong = New-Object System.Windows.Media.Animation.QuinticEase
+$script:EaseOutStrong.EasingMode = 'EaseOut'; $script:EaseOutStrong.Freeze()
+$script:OpacityP = [System.Windows.UIElement]::OpacityProperty
+
+function New-VxAnim {
+    param([double]$To, [int]$Ms, $From = $null, $Ease = $script:EaseOut)
+    $a = New-Object System.Windows.Media.Animation.DoubleAnimation
+    $a.To = $To
+    if ($null -ne $From) { $a.From = [double]$From }
+    $a.Duration = New-Object System.Windows.Duration ([TimeSpan]::FromMilliseconds($Ms))
+    if ($Ease) { $a.EasingFunction = $Ease }
+    return $a
+}
+
+function Get-VxTransform {
+    # returns the element's TranslateTransform or ScaleTransform, creating it if needed
+    param($El, [string]$Kind = 'Translate')
+    $type = if ($Kind -eq 'Scale') { [System.Windows.Media.ScaleTransform] } else { [System.Windows.Media.TranslateTransform] }
+    if (-not ($El.RenderTransform -is $type) -or $El.RenderTransform.IsFrozen) {
+        $El.RenderTransformOrigin = New-Object System.Windows.Point(0.5, 0.5)
+        $El.RenderTransform = New-Object $type
+    }
+    return $El.RenderTransform
+}
+
+# popups (dialog, busy, wizard): backdrop fades, the panel grows from 94% with a soft deceleration
+function Show-VxOverlay {
+    param($Grid)
+    $wasOpen = ($Grid.Visibility -eq 'Visible' -and $Grid.Tag -ne 'closing')
+    $Grid.Tag = 'open'
+    $Grid.Visibility = 'Visible'
+    if ($wasOpen) { return }
+    $Grid.BeginAnimation($script:OpacityP, (New-VxAnim 1 200 0))
+    $panel = $null
+    foreach ($c in $Grid.Children) { if ($c -is [System.Windows.FrameworkElement] -and $c.VerticalAlignment -eq 'Center') { $panel = $c; break } }
+    if ($panel) {
+        $sc = Get-VxTransform $panel 'Scale'
+        $sc.BeginAnimation([System.Windows.Media.ScaleTransform]::ScaleXProperty, (New-VxAnim 1 360 0.94 $script:EaseOutStrong))
+        $sc.BeginAnimation([System.Windows.Media.ScaleTransform]::ScaleYProperty, (New-VxAnim 1 360 0.94 $script:EaseOutStrong))
+    }
+}
+
+function Hide-VxOverlay {
+    param($Grid)
+    if ($Grid.Visibility -ne 'Visible' -or $Grid.Tag -eq 'closing') { return }
+    $Grid.Tag = 'closing'
+    $g = $Grid
+    $a = New-VxAnim 0 170
+    $a.add_Completed({ if ($g.Tag -eq 'closing') { $g.Visibility = 'Collapsed'; $g.Tag = $null } }.GetNewClosure())
+    $Grid.BeginAnimation($script:OpacityP, $a)
+}
+
+# progress bars glide to the new value instead of jumping
+function Set-VxBarWidth {
+    param($Bar, [double]$Width, [switch]$Instant)
+    $Width = [math]::Max(0, $Width)
+    if ($Instant) { $Bar.BeginAnimation([System.Windows.FrameworkElement]::WidthProperty, $null); $Bar.Width = $Width; $Bar.Tag = $Width; return }
+    if ($Bar.Tag -is [double] -and [math]::Abs([double]$Bar.Tag - $Width) -lt 0.5) { return }
+    $Bar.Tag = $Width
+    $Bar.BeginAnimation([System.Windows.FrameworkElement]::WidthProperty, (New-VxAnim $Width 450))
+}
+
+# score numbers count up smoothly to the new value
+function Start-VxCountUp {
+    param($Label, [double]$From, [double]$To)
+    $t = New-Object System.Windows.Threading.DispatcherTimer
+    $t.Interval = [TimeSpan]::FromMilliseconds(16)
+    $start = [DateTime]::Now
+    $lbl = $Label
+    $t.add_Tick({
+        $p = ([DateTime]::Now - $start).TotalMilliseconds / 800
+        if ($p -ge 1) { $lbl.Text = [string][int]$To; $t.Stop(); return }
+        $e = 1 - [math]::Pow(1 - $p, 4)
+        $lbl.Text = [string][int][math]::Round($From + ($To - $From) * $e)
+    }.GetNewClosure())
+    $t.Start()
+}
+
 function Show-VxToast {
     param([string]$Text, [string]$Kind = 'ok')
     $ui.ToastText.Text = $Text
@@ -256,10 +351,20 @@ function Show-VxToast {
         'info' { $ui.ToastIcon.Text = [char]0xE946; $ui.ToastIcon.Foreground = New-VxBrush '#5AA9FF' }
         default { $ui.ToastIcon.Text = [char]0xE73E; $ui.ToastIcon.Foreground = New-VxBrush '#2ED47A' }
     }
+    $ui.Toast.Tag = 'open'
     $ui.Toast.Visibility = 'Visible'
-    $ui.Toast.Opacity = 0
-    $ui.Toast.BeginAnimation([System.Windows.UIElement]::OpacityProperty, (New-Object System.Windows.Media.Animation.DoubleAnimation(0, 1, [TimeSpan]::FromMilliseconds(180))))
+    $ui.Toast.BeginAnimation($script:OpacityP, (New-VxAnim 1 220 0))
+    (Get-VxTransform $ui.Toast).BeginAnimation([System.Windows.Media.TranslateTransform]::YProperty, (New-VxAnim 0 380 16 $script:EaseOutStrong))
     $script:ToastUntil = (Get-Date).AddSeconds([math]::Max(3.5, $Text.Length / 22))
+}
+
+function Hide-VxToast {
+    if ($ui.Toast.Visibility -ne 'Visible') { return }
+    $ui.Toast.Tag = 'closing'
+    $a = New-VxAnim 0 220
+    $a.add_Completed({ if ($ui.Toast.Tag -eq 'closing') { $ui.Toast.Visibility = 'Collapsed' } })
+    $ui.Toast.BeginAnimation($script:OpacityP, $a)
+    (Get-VxTransform $ui.Toast).BeginAnimation([System.Windows.Media.TranslateTransform]::YProperty, (New-VxAnim 8 220))
 }
 
 function Show-VxBusy {
@@ -267,11 +372,19 @@ function Show-VxBusy {
     $script:Sync.Step = $Text; $script:Sync.Pct = 0
     $ui.BusyTitle.Text = $Title
     $ui.BusyText.Text = $Text
-    $ui.BusyBar.Width = 0
-    $ui.BusyOverlay.Visibility = 'Visible'
+    Set-VxBarWidth $ui.BusyBar 0 -Instant
+    # the spinner only turns while it is visible (no endless animation in the background)
+    $spin = New-Object System.Windows.Media.Animation.DoubleAnimation(0, 360, [TimeSpan]::FromSeconds(0.9))
+    $spin.RepeatBehavior = [System.Windows.Media.Animation.RepeatBehavior]::Forever
+    $ui.SpinnerRot.BeginAnimation([System.Windows.Media.RotateTransform]::AngleProperty, $spin)
+    Show-VxOverlay $ui.BusyOverlay
     $script:BusyActive = $true
 }
-function Hide-VxBusy { $ui.BusyOverlay.Visibility = 'Collapsed'; $script:BusyActive = $false }
+function Hide-VxBusy {
+    Hide-VxOverlay $ui.BusyOverlay
+    $script:BusyActive = $false
+    $ui.SpinnerRot.BeginAnimation([System.Windows.Media.RotateTransform]::AngleProperty, $null)
+}
 
 $script:DialogYes = $null; $script:DialogNo = $null
 function Show-VxDialog {
@@ -281,7 +394,7 @@ function Show-VxDialog {
     $ui.DialogYes.Content = $YesText
     if ($NoText) { $ui.DialogNo.Content = $NoText; $ui.DialogNo.Visibility = 'Visible' } else { $ui.DialogNo.Visibility = 'Collapsed' }
     $script:DialogYes = $OnYes; $script:DialogNo = $OnNo
-    $ui.DialogOverlay.Visibility = 'Visible'
+    Show-VxOverlay $ui.DialogOverlay
 }
 
 function Set-VxRing {
@@ -291,7 +404,14 @@ function Set-VxRing {
     $circ = [math]::PI * ($Size - $Thickness) / $Thickness
     $len = [math]::Max(0.01, $circ * [math]::Min(100, $Value) / 100)
     $Ellipse.StrokeDashArray = New-Object System.Windows.Media.DoubleCollection (, [double[]]@($len, 1000))
-    $Label.Text = [string][int]$Value
+    $prev = if ($Ellipse.Tag -is [double]) { [double]$Ellipse.Tag } else { 0 }
+    if ([int]$prev -ne [int]$Value) {
+        # the arc sweeps in from its start, the number counts up with it
+        $prevLen = $circ * [math]::Min(100, $prev) / 100
+        $Ellipse.BeginAnimation([System.Windows.Shapes.Shape]::StrokeDashOffsetProperty, (New-VxAnim 0 900 ([math]::Max(0, $len - $prevLen)) $script:EaseOutStrong))
+        Start-VxCountUp $Label $prev $Value
+    } else { $Label.Text = [string][int]$Value }
+    $Ellipse.Tag = [double]$Value
     if ($Ellipse.Stroke -is [System.Windows.Media.SolidColorBrush]) {
         if ($Value -ge 80) { $Ellipse.Stroke = New-VxBrush '#2ED47A' } elseif ($Value -ge 55) { $Ellipse.Stroke = New-VxBrush '#FFB547' } else { $Ellipse.Stroke = New-VxBrush '#FF5D73' }
     }
@@ -437,8 +557,19 @@ function Update-VxPendingBar {
         $txt = T 'pending.count' @($dirty.Count)
         if ($off -gt 0) { $txt += '  ·  ' + (T 'pending.detail' @($on, $off)) }
         $ui.PendingText.Text = $txt
-        $ui.PendingBar.Visibility = 'Visible'
-    } else { $ui.PendingBar.Visibility = 'Collapsed' }
+        if ($ui.PendingBar.Visibility -ne 'Visible' -or $ui.PendingBar.Tag -eq 'closing') {
+            $ui.PendingBar.Tag = 'open'
+            $ui.PendingBar.Visibility = 'Visible'
+            $ui.PendingBar.BeginAnimation($script:OpacityP, (New-VxAnim 1 220 0))
+            (Get-VxTransform $ui.PendingBar).BeginAnimation([System.Windows.Media.TranslateTransform]::YProperty, (New-VxAnim 0 420 28 $script:EaseOutStrong))
+        }
+    } elseif ($ui.PendingBar.Visibility -eq 'Visible' -and $ui.PendingBar.Tag -ne 'closing') {
+        $ui.PendingBar.Tag = 'closing'
+        $a = New-VxAnim 0 200
+        $a.add_Completed({ if ($ui.PendingBar.Tag -eq 'closing') { $ui.PendingBar.Visibility = 'Collapsed' } })
+        $ui.PendingBar.BeginAnimation($script:OpacityP, $a)
+        (Get-VxTransform $ui.PendingBar).BeginAnimation([System.Windows.Media.TranslateTransform]::YProperty, (New-VxAnim 18 200))
+    }
 }
 
 function Invoke-VxApplyItems {
@@ -737,7 +868,7 @@ function Show-VxWizard {
     $ui.WizSummary.Text = T 'wiz.pick'; $ui.WizDetail.Text = ''
     $ui.WizGo.IsEnabled = $false
     $script:WizPreset = $null
-    $ui.WizardOverlay.Visibility = 'Visible'
+    Show-VxOverlay $ui.WizardOverlay
 }
 
 function Get-VxWizardPlan {
@@ -1413,15 +1544,8 @@ function Show-VxPage {
     if ($nav -and -not $nav.IsChecked) { $script:NavSuppress = $true; $nav.IsChecked = $true; $script:NavSuppress = $false }
     $page = $ui["Page$Name"]
     # iOS-like page change: quick fade with a small upward slide
-    $ease = New-Object System.Windows.Media.Animation.CubicEase
-    $ease.EasingMode = 'EaseOut'
-    $fade = New-Object System.Windows.Media.Animation.DoubleAnimation(0, 1, [TimeSpan]::FromMilliseconds(220))
-    $fade.EasingFunction = $ease
-    $page.BeginAnimation([System.Windows.UIElement]::OpacityProperty, $fade)
-    if (-not ($page.RenderTransform -is [System.Windows.Media.TranslateTransform])) { $page.RenderTransform = New-Object System.Windows.Media.TranslateTransform }
-    $slide = New-Object System.Windows.Media.Animation.DoubleAnimation(10, 0, [TimeSpan]::FromMilliseconds(260))
-    $slide.EasingFunction = $ease
-    $page.RenderTransform.BeginAnimation([System.Windows.Media.TranslateTransform]::YProperty, $slide)
+    $page.BeginAnimation($script:OpacityP, (New-VxAnim 1 240 0))
+    (Get-VxTransform $page).BeginAnimation([System.Windows.Media.TranslateTransform]::YProperty, (New-VxAnim 0 420 16 $script:EaseOutStrong))
     $script:CurrentPage = $Name
     if (-not $script:Hw) { return }
     switch ($Name) {
@@ -1459,7 +1583,7 @@ function Start-VxQuickAssist {
 }
 
 function Hide-VxSplash {
-    $a = New-Object System.Windows.Media.Animation.DoubleAnimation(1, 0, [TimeSpan]::FromMilliseconds(350))
+    $a = New-VxAnim 0 420 1
     $a.add_Completed({ $ui.SplashOverlay.Visibility = 'Collapsed' })
     $ui.SplashOverlay.BeginAnimation([System.Windows.UIElement]::OpacityProperty, $a)
     $script:SplashActive = $false
@@ -1498,13 +1622,13 @@ foreach ($n in @('HomeAdvice', 'HealthList')) { $ui[$n].AddHandler([System.Windo
 $ui.BtnHealthRun.add_Click({ Start-VxHealthCheck })
 
 # wizard
-$ui.WizClose.add_Click({ $ui.WizardOverlay.Visibility = 'Collapsed' })
+$ui.WizClose.add_Click({ Hide-VxOverlay $ui.WizardOverlay })
 foreach ($n in @('WizGaming', 'WizCompetitive', 'WizCreator', 'WizBalanced', 'WizLaptop')) {
     $ui[$n].add_Checked({ param($s, $e) Update-VxWizardSummary ([string]$s.Tag) })
 }
 $ui.WizGo.add_Click({
     $plan = Get-VxWizardPlan $script:WizPreset
-    $ui.WizardOverlay.Visibility = 'Collapsed'
+    Hide-VxOverlay $ui.WizardOverlay
     $script:Settings.profile = $script:WizPreset
     Save-VxSettings $script:Settings
     Invoke-VxApplyItems -ApplyIds (@($plan.tweaks) + @($plan.services)) -RevertIds @() -RestorePoint $true -Title (T 'busy.optimizing')
@@ -1744,8 +1868,8 @@ $ui.BtnPurgeRam.add_Click({
 })
 
 # dialog buttons
-$ui.DialogYes.add_Click({ $ui.DialogOverlay.Visibility = 'Collapsed'; $cb = $script:DialogYes; $script:DialogYes = $null; if ($cb) { & $cb } })
-$ui.DialogNo.add_Click({ $ui.DialogOverlay.Visibility = 'Collapsed'; $cb = $script:DialogNo; $script:DialogNo = $null; if ($cb) { & $cb } })
+$ui.DialogYes.add_Click({ Hide-VxOverlay $ui.DialogOverlay; $cb = $script:DialogYes; $script:DialogYes = $null; if ($cb) { & $cb } })
+$ui.DialogNo.add_Click({ Hide-VxOverlay $ui.DialogOverlay; $cb = $script:DialogNo; $script:DialogNo = $null; if ($cb) { & $cb } })
 
 # =====================================================================
 #  TIMERS
@@ -1761,16 +1885,16 @@ $script:JobTimer.add_Tick({
         Complete-VxJobs
         if ($script:BusyActive) {
             $ui.BusyText.Text = [string]$script:Sync.Step
-            $ui.BusyBar.Width = [math]::Max(0, 400 * [double]$script:Sync.Pct / 100)
+            Set-VxBarWidth $ui.BusyBar (406 * [double]$script:Sync.Pct / 100)
         }
         if ($script:SplashActive) {
             if ($script:Sync.Step) { $ui.SplashStep.Text = [string]$script:Sync.Step }
-            if ($script:HealthSplash) { $ui.SplashBar.Width = 520 * (0.3 + 0.7 * [double]$script:Sync.Pct / 100) }
-            elseif (-not $script:Hw) { $ui.SplashBar.Width = [math]::Min(150, 60 + 90 * [double]$script:Sync.Pct / 100) }
+            if ($script:HealthSplash) { Set-VxBarWidth $ui.SplashBar (520 * (0.3 + 0.7 * [double]$script:Sync.Pct / 100)) }
+            elseif (-not $script:Hw) { Set-VxBarWidth $ui.SplashBar ([math]::Min(150, 60 + 90 * [double]$script:Sync.Pct / 100)) }
         }
         if ($script:Pinger) { Update-VxPingLive }
         if ($script:LoadT) { Update-VxLoadLive }
-        if ($script:ToastUntil -and (Get-Date) -gt $script:ToastUntil) { $script:ToastUntil = $null; $ui.Toast.Visibility = 'Collapsed' }
+        if ($script:ToastUntil -and (Get-Date) -gt $script:ToastUntil) { $script:ToastUntil = $null; Hide-VxToast }
     } catch { Write-VxLog "Timer: $($_.Exception.Message)" 'ERROR' }
 })
 $script:JobTimer.Start()
@@ -1807,9 +1931,7 @@ $script:LiveTimer.add_Tick({
 $script:LiveTimer.Start()
 
 # spinner animation
-$spin = New-Object System.Windows.Media.Animation.DoubleAnimation(0, 360, [TimeSpan]::FromSeconds(1))
-$spin.RepeatBehavior = [System.Windows.Media.Animation.RepeatBehavior]::Forever
-$ui.SpinnerRot.BeginAnimation([System.Windows.Media.RotateTransform]::AngleProperty, $spin)
+# (the busy spinner is started/stopped by Show-VxBusy / Hide-VxBusy)
 
 # =====================================================================
 #  STARTUP SEQUENCE
@@ -1824,7 +1946,7 @@ if ($Tray) {
 }
 $script:SplashActive = $true
 $ui.SplashStep.Text = T 'splash.hw'
-$ui.SplashBar.Width = 60
+Set-VxBarWidth $ui.SplashBar 60 -Instant
 
 $script:CacheHw = Read-VxJson 'cache\hardware.json' $null
 $script:CacheStates = ConvertTo-VxHashtable (Read-VxJson 'cache\states.json' $null)
@@ -1855,7 +1977,7 @@ $script:Window.add_ContentRendered({
         Write-VxLog "Hardware: $($hw.CPU.Name) | $(if ($hw.GPU) { $hw.GPU.Name }) | $($hw.RAM.GB) GB | $($hw.OS.Name) $($hw.OS.DisplayVersion)"
         $ui.TitlePc.Text = (@($hw.Model, $hw.ComputerName) | Where-Object { $_ }) -join ' · '
         $ui.HomeHello.Text = T 'home.title2' @($env:USERNAME)
-        $ui.SplashBar.Width = 150
+        Set-VxBarWidth $ui.SplashBar 150
         $script:Sync.Step = T 'splash.states'
         $ui.SplashStep.Text = T 'splash.states'
         Update-VxHwCards
