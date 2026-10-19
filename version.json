@@ -1,8 +1,8 @@
 {
-  "version": "1.6.5",
+  "version": "1.6.6",
   "notes": {
-    "it": "Animazioni in stile macOS: le finestre interne si aprono dal pulsante che premi e si chiudono risucchiate verso di lui. Corretto il caricamento della nuova grafica.",
-    "en": "macOS-style animations: in-app windows open from the button you press and close by flowing back into it. Fixed loading of the new look."
+    "it": "Pulsante principale più leggibile e corretto \"USB e PCIe sempre svegli\", che risultava spento anche se attivo.",
+    "en": "More readable main button and fixed \"USB and PCIe always awake\", which showed as off even when on."
   },
   "files": [
     {
@@ -92,8 +92,8 @@
     },
     {
       "path": "app/core/Tweaks.ps1",
-      "sha256": "8940102eeb43dbd76a03b48aaad19cd174a798a990aa11b4e44fb733df66f84b",
-      "size": 43564
+      "sha256": "29efbf5aafb8023ada427611bad0ff7d9e35f63985dc10f657ef1278b1248f85",
+      "size": 44112
     },
     {
       "path": "app/core/Updater.ps1",
@@ -152,8 +152,8 @@
     },
     {
       "path": "app/ui/MainWindow.xaml",
-      "sha256": "f5db153b65037b394145922061c35af82b76659c92ccb6ea3d805dcca183b215",
-      "size": 165079
+      "sha256": "caebe54ba105767753ac8d4bece2639e6940cbf8e18195692fa0b379ea08de5e",
+      "size": 165471
     },
     {
       "path": "config.json",

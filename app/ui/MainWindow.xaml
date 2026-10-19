@@ -116,6 +116,12 @@
             <GradientStop Color="#80FFFFFF" Offset="1"/>
         </LinearGradientBrush>
         <SolidColorBrush x:Key="HoverBrush" Color="#17FFFFFF"/>
+        <!-- primary actions: same hues as the accent, deeper, so white text stays readable -->
+        <LinearGradientBrush x:Key="PrimaryGrad" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#6A48F2" Offset="0"/>
+            <GradientStop Color="#4F5FE6" Offset="0.5"/>
+            <GradientStop Color="#1690BE" Offset="1"/>
+        </LinearGradientBrush>
         <LinearGradientBrush x:Key="NavSelBrush" StartPoint="0,0.5" EndPoint="1,0.5">
             <GradientStop Color="#4D7C5CFF" Offset="0"/>
             <GradientStop Color="#26FFFFFF" Offset="0.55"/>
@@ -183,9 +189,9 @@
                             <Border x:Name="Bloom" CornerRadius="16" Background="{StaticResource AccentGrad}" Opacity="0.42" Margin="6,8,6,-4" IsHitTestVisible="False">
                                 <Border.Effect><BlurEffect Radius="20" KernelType="Gaussian" RenderingBias="Quality"/></Border.Effect>
                             </Border>
-                            <Border x:Name="Bd" CornerRadius="14" Background="{StaticResource AccentGrad}"/>
-                            <Border CornerRadius="14" Background="{StaticResource SheenBrush}" IsHitTestVisible="False"/>
-                            <Border x:Name="Hl" CornerRadius="14" Background="#24FFFFFF" Opacity="0" IsHitTestVisible="False"/>
+                            <Border x:Name="Bd" CornerRadius="14" Background="{StaticResource PrimaryGrad}"/>
+                            <Border CornerRadius="14" Background="{StaticResource SheenBrush}" Opacity="0.55" IsHitTestVisible="False"/>
+                            <Border x:Name="Hl" CornerRadius="14" Background="#1AFFFFFF" Opacity="0" IsHitTestVisible="False"/>
                             <Border CornerRadius="14" BorderBrush="{StaticResource RimBrush}" BorderThickness="1" IsHitTestVisible="False"/>
                             <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Grid>

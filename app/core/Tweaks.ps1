@@ -165,7 +165,11 @@ $script:VxTweaks = @(
             $s = Get-VxActiveScheme; if (-not $s) { return $false }
             $u = Get-VxPowerValue $s.guid '2a737441-1930-4402-8d77-b2bebba308a3' '48e6b7a6-50f5-4782-a5d4-53bb8f07e226'
             $p = Get-VxPowerValue $s.guid '501a4d13-42af-4429-9fd1-a8218c268e20' 'ee12f906-d277-404b-b6da-e5fa1a576df5'
-            return ($u -and $p -and $u.ac -eq 0 -and $p.ac -eq 0)
+            # some PCs hide one of the two settings: check only the ones that exist
+            $found = @(@($u, $p) | Where-Object { $_ })
+            if ($found.Count -eq 0) { return $false }
+            foreach ($v in $found) { if ($v.ac -ne 0) { return $false } }
+            return $true
         }
     },
     @{
@@ -557,15 +561,19 @@ function Invoke-VxTweak {
 # Settings stored inside the active power plan (or per network interface) get lost when Windows or another
 # program switches plan / adds an interface. If the user turned them on (backup entry exists), put them back.
 $script:VxHealIds = @('powerlat', 'cpumin', 'wifipower', 'nagle')
+$script:VxHealTried = @{}
 function Repair-VxLostTweaks {
     param($Hw)
     $fixed = @()
     foreach ($id in $script:VxHealIds) {
         try {
+            # at most one attempt per setting every few hours (no loop if Windows keeps changing it back)
+            if ($script:VxHealTried.ContainsKey($id) -and ([DateTime]::Now - $script:VxHealTried[$id]).TotalHours -lt 6) { continue }
             if (-not (Test-VxBackupEntry $id)) { continue }
             $t = Find-VxTweak $id
             if (-not $t -or -not (Test-VxTweakApplicable $t $Hw)) { continue }
             if (Test-VxTweakApplied $t $Hw) { continue }
+            $script:VxHealTried[$id] = [DateTime]::Now
             $r = Invoke-VxTweak $t $Hw
             if ($r.ok) { $fixed += $id; Write-VxLog "Re-applied lost setting: $id" }
         } catch { Write-VxLog "Repair $id : $($_.Exception.Message)" 'WARN' }
