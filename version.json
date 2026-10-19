@@ -1,8 +1,8 @@
 {
-  "version": "1.6.8",
+  "version": "1.6.9",
   "notes": {
-    "it": "Più fluida e leggera: animazioni a 120 fps, cambio pagina istantaneo, meno lavoro in background e interruttori senza scatti.",
-    "en": "Smoother and lighter: 120 fps animations, instant page switching, less background work and no stutter on switches."
+    "it": "Modalità leggera automatica quando il PC è sotto sforzo e interfaccia sempre reattiva: le analisi in background non rubano più potenza ad altri programmi.",
+    "en": "Automatic light mode when the PC is under heavy load and an always-responsive UI: background scans no longer take power from other programs."
   },
   "files": [
     {
@@ -37,8 +37,8 @@
     },
     {
       "path": "app/VeloxPC.ps1",
-      "sha256": "b3ba63cd14eb651586ef70792b0e36817b414e06c767765832b6c7524f8fccd3",
-      "size": 112143
+      "sha256": "e727d81e0b18f6f79e68ef41852bd85b94e491ba509982d171d68fd0e9701f2e",
+      "size": 113198
     },
     {
       "path": "app/assets/logo.png",

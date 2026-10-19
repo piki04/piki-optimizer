@@ -62,6 +62,8 @@ if (-not $Cleanup) {
 }
 
 Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase, System.Xaml, System.Windows.Forms, System.Drawing
+# the window stays responsive even when the PC is busy (the UI thread is light); background jobs run below normal
+try { [System.Diagnostics.Process]::GetCurrentProcess().PriorityClass = [System.Diagnostics.ProcessPriorityClass]::AboveNormal } catch { }
 # smoother motion on high-refresh screens: animations run at 120 fps instead of WPF's default 60
 try { [System.Windows.Media.Animation.Timeline]::DesiredFrameRateProperty.OverrideMetadata([System.Windows.Media.Animation.Timeline], (New-Object System.Windows.FrameworkPropertyMetadata([object][int]120))) } catch { }
 
@@ -217,7 +219,8 @@ function Start-VxJob {
     $wrap = "`n`$__t0 = [DateTime]::Now`n`$__r = & {`n" + $Script.ToString() + "`n} @args`n" +
         "Write-VxLog ('job body: $Name ({0:N0} ms)' -f ([DateTime]::Now - `$__t0).TotalMilliseconds)`n,`$__r"
     if ($script:CoreFile) {
-        $load = "if (-not (Get-Command Initialize-VxPaths -CommandType Function -ErrorAction SilentlyContinue)) { . '" + ($script:CoreFile -replace "'", "''") + "' }`n" +
+        $load = "try { [System.Threading.Thread]::CurrentThread.Priority = 'Lowest' } catch { }`n" +
+            "if (-not (Get-Command Initialize-VxPaths -CommandType Function -ErrorAction SilentlyContinue)) { . '" + ($script:CoreFile -replace "'", "''") + "' }`n" +
             "`$script:VxAeCache = `$null; `$script:VxTx = `$null; `$script:VxNicRestart = `$false; `$script:VxBatch = `$null`n"
         [void]$ps.AddScript($load + $wrap)
     } else {
@@ -278,6 +281,7 @@ function New-VxAnim {
     if ($null -ne $From) { $a.From = [double]$From }
     $a.Duration = New-Object System.Windows.Duration ([TimeSpan]::FromMilliseconds($Ms))
     if ($Ease) { $a.EasingFunction = $Ease }
+    if ($script:LiteMode) { [System.Windows.Media.Animation.Timeline]::SetDesiredFrameRate($a, 60) }
     return $a
 }
 
@@ -1620,6 +1624,7 @@ function Move-VxNavIndicator {
 # the blocks of a page come in one after another (fade + short slide), then the animation is released
 function Start-VxStagger {
     param($Page, [int]$Dir = 1)
+    if ($script:LiteMode) { return }   # PC under heavy load: skip the cascade, keep the simple glide
     try {
         $panel = $Page
         if ($Page -is [System.Windows.Controls.ScrollViewer]) { $panel = $Page.Content }
@@ -2035,6 +2040,10 @@ $script:LiveTimer.add_Tick({
     try {
         $cpu = [VeloxPC.Native]::CpuUsage()
         $mem = [VeloxPC.Native]::Memory()
+        # light mode: when the PC is saturated (e.g. a render), animations get cheaper automatically
+        if ($cpu -ge 80) { $script:HotSecs++; $script:CoolSecs = 0 } else { $script:CoolSecs++; if ($cpu -lt 60) { $script:HotSecs = 0 } }
+        if (-not $script:LiteMode -and $script:HotSecs -ge 3) { $script:LiteMode = $true; Write-VxLog "light mode on (CPU $([int]$cpu)%)" }
+        elseif ($script:LiteMode -and $script:CoolSecs -ge 6) { $script:LiteMode = $false; Write-VxLog 'light mode off' }
         if ($script:TrayIcon -and $script:TrayIcon.Visible) { $script:TrayIcon.Text = ('Piki Optimizer · CPU {0:N0}% · RAM {1:N0}%' -f $cpu, $mem[0]) }
         if (-not $script:Window.IsVisible -or $script:Window.WindowState -eq 'Minimized') { return }
         $ui.SideCpuText.Text = '{0:N0}%' -f $cpu
