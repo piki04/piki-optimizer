@@ -1440,12 +1440,12 @@ function Update-VxLook {
             $lv = [int]$script:Settings.bgLevel; if ($lv -lt 1) { $lv = 2 }
             $ui.BgImage.Opacity = @(0, 0.18, 0.32, 0.5)[$lv]
             $ui.BgImage.Visibility = 'Visible'
-            $ui.Sidebar.Background = New-VxBrush '#590F1219'
+            $ui.Sidebar.Background = New-VxBrush '#990E111B'
             $ui["BgLevel$lv"].IsChecked = $true
         } catch { Write-VxLog "bg: $($_.Exception.Message)" 'WARN' }
     } else {
         $ui.BgImage.Visibility = 'Collapsed'; $ui.BgImage.Source = $null
-        $ui.Sidebar.Background = New-VxBrush '#66101420'
+        $ui.Sidebar.Background = New-VxBrush '#A60E111B'
     }
     Update-VxTrayIcon
 }

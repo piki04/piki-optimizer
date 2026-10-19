@@ -14,12 +14,12 @@
         <FontFamily x:Key="Display">Segoe UI Variable Display, Segoe UI</FontFamily>
 
         <SolidColorBrush x:Key="BgBrush" Color="#0A0C11"/>
-        <SolidColorBrush x:Key="PanelBrush" Color="#66101420"/>
+        <SolidColorBrush x:Key="PanelBrush" Color="#A60E111B"/>
         <!-- liquid glass: frosted fill brighter at the top, rim light on the top-left and bottom-right edges -->
         <LinearGradientBrush x:Key="CardBrush" StartPoint="0,0" EndPoint="0.6,1">
-            <GradientStop Color="#42FFFFFF" Offset="0"/>
-            <GradientStop Color="#26FFFFFF" Offset="0.45"/>
-            <GradientStop Color="#1CFFFFFF" Offset="1"/>
+            <GradientStop Color="#B8262B3C" Offset="0"/>
+            <GradientStop Color="#AD181C29" Offset="0.45"/>
+            <GradientStop Color="#B3121521" Offset="1"/>
         </LinearGradientBrush>
         <LinearGradientBrush x:Key="GlassBtnBrush" StartPoint="0,0" EndPoint="0,1">
             <GradientStop Color="#40FFFFFF" Offset="0"/>
@@ -653,8 +653,8 @@
         <Style x:Key="OptCard" TargetType="Border" BasedOn="{StaticResource RowCard}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsDirty}" Value="True">
-                    <Setter Property="BorderBrush" Value="#7C5CFF"/>
-                    <Setter Property="Background" Value="#2E7C5CFF"/>
+                    <Setter Property="BorderBrush" Value="#9B82FF"/>
+                    <Setter Property="Background" Value="#CC2A2160"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>

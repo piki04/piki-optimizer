@@ -1,8 +1,8 @@
 {
-  "version": "1.6.0",
+  "version": "1.6.1",
   "notes": {
-    "it": "Nuova grafica premium: animazioni fluide in tutta l'app, luci morbide e realistiche, anelli e numeri animati, testi più nitidi.",
-    "en": "New premium look: smooth animations across the app, soft realistic lighting, animated rings and numbers, sharper text."
+    "it": "Vetro scuro smerigliato: testi sempre leggibili anche con uno sfondo personalizzato chiaro.",
+    "en": "Dark frosted glass: text is always readable, even on a bright custom background."
   },
   "files": [
     {
@@ -37,7 +37,7 @@
     },
     {
       "path": "app/VeloxPC.ps1",
-      "sha256": "0ddd22309286437b1d5f4fb1307f9548f88a02449b1794f073e128283bb0b217",
+      "sha256": "a2d482b0961675c142d51d62db5580b4f4ddeb10a7bda437cbb683e5c80a4a1a",
       "size": 103025
     },
     {
@@ -152,7 +152,7 @@
     },
     {
       "path": "app/ui/MainWindow.xaml",
-      "sha256": "bc60c662a5464ad717155c6114941bdbaf729d1dc5db7883eb68a39c675a47bf",
+      "sha256": "80a813652bef5f94d2fe8978663308113098cf6b1e4c17ab1fcb621f731ec024",
       "size": 159205
     },
     {
