@@ -64,8 +64,13 @@ if (-not $Cleanup) {
 Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase, System.Xaml, System.Windows.Forms, System.Drawing
 # the window stays responsive even when the PC is busy (the UI thread is light); background jobs run below normal
 try { [System.Diagnostics.Process]::GetCurrentProcess().PriorityClass = [System.Diagnostics.ProcessPriorityClass]::AboveNormal } catch { }
-# smoother motion on high-refresh screens: animations run at 120 fps instead of WPF's default 60
-try { [System.Windows.Media.Animation.Timeline]::DesiredFrameRateProperty.OverrideMetadata([System.Windows.Media.Animation.Timeline], (New-Object System.Windows.FrameworkPropertyMetadata([object][int]120))) } catch { }
+# animations follow the monitor's refresh rate (read on the previous run), up to 240 fps
+$script:Fps = 120
+try {
+    $hzFile = Join-Path $Root 'data\cache\hz.txt'
+    if (Test-Path -LiteralPath $hzFile) { $hz = [int]([System.IO.File]::ReadAllText($hzFile).Trim()); if ($hz -ge 50) { $script:Fps = [math]::Min(240, $hz) } }
+} catch { }
+try { [System.Windows.Media.Animation.Timeline]::DesiredFrameRateProperty.OverrideMetadata([System.Windows.Media.Animation.Timeline], (New-Object System.Windows.FrameworkPropertyMetadata([object][int]$script:Fps))) } catch { }
 
 # ---------------------------------------------------------------- native helpers (cached build)
 $dataDir = Join-Path $Root 'data'
@@ -282,6 +287,7 @@ function New-VxAnim {
     $a.Duration = New-Object System.Windows.Duration ([TimeSpan]::FromMilliseconds($Ms))
     if ($Ease) { $a.EasingFunction = $Ease }
     if ($script:LiteMode) { [System.Windows.Media.Animation.Timeline]::SetDesiredFrameRate($a, 60) }
+    elseif ($script:MonitorFps -and $script:MonitorFps -ne $script:Fps) { [System.Windows.Media.Animation.Timeline]::SetDesiredFrameRate($a, $script:MonitorFps) }
     return $a
 }
 
@@ -330,8 +336,12 @@ function Show-VxOverlay {
         } catch { }
     }
     $panel.RenderTransformOrigin = $origin
+    $panel.CacheMode = New-Object System.Windows.Media.BitmapCache
+    $pnl = $panel
+    $ax = New-VxAnim 1 520 0.06 $script:EaseOutStrong
+    $ax.add_Completed({ $pnl.CacheMode = $null }.GetNewClosure())
     $panel.BeginAnimation($script:OpacityP, (New-VxAnim 1 260 0))
-    $sc.BeginAnimation([System.Windows.Media.ScaleTransform]::ScaleXProperty, (New-VxAnim 1 520 0.06 $script:EaseOutStrong))
+    $sc.BeginAnimation([System.Windows.Media.ScaleTransform]::ScaleXProperty, $ax)
     $sc.BeginAnimation([System.Windows.Media.ScaleTransform]::ScaleYProperty, (New-VxAnim 1 460 0.06 $script:EaseOutStrong))
 }
 
@@ -343,13 +353,15 @@ function Hide-VxOverlay {
     $panel = Get-VxOverlayPanel $Grid
     if ($panel) {
         $sc = Get-VxTransform $panel 'Scale'
+        $panel.CacheMode = New-Object System.Windows.Media.BitmapCache
         # genie: the height collapses first, the width follows
         $sc.BeginAnimation([System.Windows.Media.ScaleTransform]::ScaleYProperty, (New-VxAnim 0.04 260 $null $script:EaseIn))
         $sc.BeginAnimation([System.Windows.Media.ScaleTransform]::ScaleXProperty, (New-VxAnim 0.04 330 $null $script:EaseIn))
         $panel.BeginAnimation($script:OpacityP, (New-VxAnim 0 330 $null $script:EaseIn))
     }
     $a = New-VxAnim 0 340
-    $a.add_Completed({ if ($g.Tag -eq 'closing') { $g.Visibility = 'Collapsed'; $g.Tag = $null } }.GetNewClosure())
+    $p2 = $panel
+    $a.add_Completed({ if ($g.Tag -eq 'closing') { $g.Visibility = 'Collapsed'; $g.Tag = $null }; if ($p2) { $p2.CacheMode = $null } }.GetNewClosure())
     $Grid.BeginAnimation($script:OpacityP, $a)
 }
 
@@ -1639,9 +1651,9 @@ function Start-VxStagger {
             [void]$op.KeyFrames.Add((New-Object System.Windows.Media.Animation.DiscreteDoubleKeyFrame(0, [System.Windows.Media.Animation.KeyTime]::FromTimeSpan([TimeSpan]::FromMilliseconds($delay)))))
             [void]$op.KeyFrames.Add((New-Object System.Windows.Media.Animation.EasingDoubleKeyFrame(1, [System.Windows.Media.Animation.KeyTime]::FromTimeSpan([TimeSpan]::FromMilliseconds($delay + 300)), $script:EaseOut)))
             $el = $c
-            $c.CacheMode = New-Object System.Windows.Media.BitmapCache
-            $op.add_Completed({ $el.BeginAnimation([System.Windows.UIElement]::OpacityProperty, $null); $el.CacheMode = $null }.GetNewClosure())
-            $c.BeginAnimation($script:OpacityP, $op)
+            $op.add_Completed({ $el.BeginAnimation([System.Windows.UIElement]::OpacityProperty, $null) }.GetNewClosure())
+            # fading a tall list means redrawing all of it every frame: only small blocks fade, big ones just glide
+            if ($c.ActualHeight -lt 420) { $c.BeginAnimation($script:OpacityP, $op) }
             if ($c.RenderTransform -is [System.Windows.Media.TranslateTransform] -or $c.RenderTransform -eq [System.Windows.Media.Transform]::Identity) {
                 $mv = New-Object System.Windows.Media.Animation.DoubleAnimationUsingKeyFrames
                 [void]$mv.KeyFrames.Add((New-Object System.Windows.Media.Animation.DiscreteDoubleKeyFrame((14 * $Dir), [System.Windows.Media.Animation.KeyTime]::FromTimeSpan([TimeSpan]::Zero))))
@@ -2094,6 +2106,15 @@ Set-VxBarWidth $ui.SplashBar 60 -Instant
 $script:CacheHw = Read-VxJson 'cache\hardware.json' $null
 $script:CacheStates = ConvertTo-VxHashtable (Read-VxJson 'cache\states.json' $null)
 $script:Window.add_ContentRendered({
+    try {
+        $tier = [System.Windows.Media.RenderCapability]::Tier -shr 16
+        $prim = @([VeloxPC.Native]::GetDisplays() | Where-Object { $_.Primary }) | Select-Object -First 1
+        if ($prim -and $prim.CurrentHz -ge 50) {
+            [System.IO.File]::WriteAllText((Join-Path $Root 'data\cache\hz.txt'), [string]$prim.CurrentHz)
+            $script:MonitorFps = [math]::Min(240, [int]$prim.CurrentHz)
+        }
+        Write-VxLog ("render: tier {0} ({1}), animations {2} fps, monitor {3} Hz" -f $tier, $(if ($tier -ge 2) { 'GPU' } else { 'SOFTWARE - slow' }), $script:Fps, $(if ($prim) { $prim.CurrentHz } else { '?' }))
+    } catch { }
     Move-VxNavIndicator $(if ($script:CurrentPage) { $script:CurrentPage } else { 'Home' }) -Instant
     if ($script:CacheHw -and $script:Settings.firstRunDone -and -not $script:Hw) {
         # instant start: show the last known data right away, refresh in the background

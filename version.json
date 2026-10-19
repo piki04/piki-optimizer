@@ -1,8 +1,8 @@
 {
-  "version": "1.6.9",
+  "version": "1.7.0",
   "notes": {
-    "it": "Modalità leggera automatica quando il PC è sotto sforzo e interfaccia sempre reattiva: le analisi in background non rubano più potenza ad altri programmi.",
-    "en": "Automatic light mode when the PC is under heavy load and an always-responsive UI: background scans no longer take power from other programs."
+    "it": "Animazioni alla frequenza del tuo monitor e molto più leggere: finestre e liste si muovono senza ridisegnare tutto a ogni fotogramma.",
+    "en": "Animations at your monitor refresh rate and much lighter: windows and lists move without redrawing everything every frame."
   },
   "files": [
     {
@@ -37,8 +37,8 @@
     },
     {
       "path": "app/VeloxPC.ps1",
-      "sha256": "e727d81e0b18f6f79e68ef41852bd85b94e491ba509982d171d68fd0e9701f2e",
-      "size": 113198
+      "sha256": "c03eba6d71eaa8732281ece6ab4bba31a287e85e7648ad34c2c5d2fbe755d205",
+      "size": 114600
     },
     {
       "path": "app/assets/logo.png",
