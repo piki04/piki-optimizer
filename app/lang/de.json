@@ -339,5 +339,10 @@
   "remote.opened": "Remotehilfe ist geöffnet: Folge den Anweisungen im Fenster.",
   "remote.install": "Remotehilfe ist nicht installiert: Der Microsoft Store wurde geöffnet, tippe auf „Herunterladen“ und versuche es erneut.",
   "update.notify.title": "Update verfügbar",
-  "update.notify.text": "Piki Optimizer {0} ist bereit. Klicke hier, um in Sekunden zu aktualisieren."
+  "update.notify.text": "Piki Optimizer {0} ist bereit. Klicke hier, um in Sekunden zu aktualisieren.",
+  "opt.state.on": "Aktiv",
+  "opt.state.off": "Nicht aktiv",
+  "svc.state.on": "Dienst läuft",
+  "svc.state.off": "Dienst aus",
+  "proc.switch.help": "So liest du die Schalter: GRÜN = der Dienst oder die Funktion wird AUSGESCHALTET, um den PC zu entlasten. GRAU = bleibt AN wie jetzt. Neben jedem Schalter steht, was passiert. Änderungen starten erst, wenn du „Anwenden“ drückst."
 }

@@ -339,5 +339,10 @@
   "remote.opened": "Assistência Rápida aberta: siga as instruções na janela.",
   "remote.install": "A Assistência Rápida não está instalada: a Microsoft Store foi aberta, clique em \"Obter\" e tente de novo.",
   "update.notify.title": "Atualização disponível",
-  "update.notify.text": "O Piki Optimizer {0} está pronto. Clique aqui para atualizar em segundos."
+  "update.notify.text": "O Piki Optimizer {0} está pronto. Clique aqui para atualizar em segundos.",
+  "opt.state.on": "Ativa",
+  "opt.state.off": "Não ativa",
+  "svc.state.on": "Serviço ligado",
+  "svc.state.off": "Serviço desligado",
+  "proc.switch.help": "Como ler os botões: VERDE = o serviço ou a função é DESLIGADO para deixar o PC mais leve. CINZA = continua LIGADO como agora. Ao lado de cada botão está escrito o que acontece. As alterações só começam quando você clica em \"Aplicar\"."
 }

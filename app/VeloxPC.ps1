@@ -452,6 +452,8 @@ function Invoke-VxApplyItems {
         $total = [math]::Max(1, $ApplyIds.Count + $RevertIds.Count)
         $i = 0
         if ($Rp) { $Sync.Step = (L @{ it = 'Creo un punto di ripristino...'; en = 'Creating a restore point...' }); $res.rp = New-VxRestorePoint 'VeloxPC' }
+        # the power plan goes first: settings stored in the plan must land in the new plan
+        $ApplyIds = @(@($ApplyIds | Where-Object { $_ -eq 'powerplan' }) + @($ApplyIds | Where-Object { $_ -ne 'powerplan' }))
         Start-VxBatch
         try {
         foreach ($id in $ApplyIds) {
@@ -479,6 +481,7 @@ function Invoke-VxApplyItems {
                 if ($t -and $t.Reboot) { $res.reboot = $true }
             } else { $res.noUndo++ }
         }
+        [void](Repair-VxLostTweaks $Hw)
         } finally { Stop-VxBatch }
         return $res
     } -OnDone {
@@ -511,6 +514,7 @@ function Update-VxStates {
     $script:AfterStates = $Then
     Start-VxJob -Name 'states' -Arguments @($script:Hw) -Script {
         param($Sync, $Hw)
+        try { [void](Repair-VxLostTweaks $Hw) } catch { }
         return @{ states = (Get-VxTweakStates $Hw); services = @(Get-VxServiceRows $Hw) }
     } -OnDone {
         param($r)

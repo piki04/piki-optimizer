@@ -1,8 +1,8 @@
 {
-  "version": "1.5.4",
+  "version": "1.5.5",
   "notes": {
-    "it": "Testi più grandi, nitidi e ariosi: schermate più leggibili e piacevoli.",
-    "en": "Bigger, sharper and more spacious text: easier and nicer to read screens."
+    "it": "Corrette le impostazioni che si disattivavano da sole. Accanto a ogni interruttore ora c'è scritto cosa fa (es. Servizio acceso / spento).",
+    "en": "Fixed settings that switched themselves off. Each switch now says what it does (e.g. Service running / turned off)."
   },
   "files": [
     {
@@ -37,8 +37,8 @@
     },
     {
       "path": "app/VeloxPC.ps1",
-      "sha256": "d2aaf50e64a15fc614232c079cd6f23d2fdd83b2fb862e0e92ce587eb85d0436",
-      "size": 96937
+      "sha256": "d6a6d8f7e4fa821b923e09425d0eb4b6899ae9488fab2d98a538fdb87ee09329",
+      "size": 97253
     },
     {
       "path": "app/assets/logo.png",
@@ -92,8 +92,8 @@
     },
     {
       "path": "app/core/Tweaks.ps1",
-      "sha256": "40b87b304c0327a9256a77d2a51a1f60b6bbc531c89a0771ef5ac448bf8dc213",
-      "size": 42313
+      "sha256": "8940102eeb43dbd76a03b48aaad19cd174a798a990aa11b4e44fb733df66f84b",
+      "size": 43564
     },
     {
       "path": "app/core/Updater.ps1",
@@ -102,53 +102,53 @@
     },
     {
       "path": "app/lang/de.json",
-      "sha256": "580c8b424af691f4fc7ad23a442d6e638dda31da3d4373cc3ed7f6b6cf07feb5",
-      "size": 20544
+      "sha256": "b8805859013eefb661d5f13236ff76b8357e28d5f25041afef92112e9ea8796d",
+      "size": 20934
     },
     {
       "path": "app/lang/en.json",
-      "sha256": "56d054a619d4786ee138157a19cd9875d414eb8f13637aca313c7f0415a25311",
-      "size": 18759
+      "sha256": "20bd8c57d0ee46e2e205f5840a36af01509f77c372e345aedb9364e012145408",
+      "size": 19123
     },
     {
       "path": "app/lang/es.json",
-      "sha256": "e88a7b14ece0a214d9e2171a58811e517a5d77be810daae79e8c12e6f9afcc31",
-      "size": 19880
+      "sha256": "579fbd48d6632c8d247619de5bb7ef25daba7a74d7e22d9da71265a02dfdc712",
+      "size": 20269
     },
     {
       "path": "app/lang/fr.json",
-      "sha256": "53732996b5c01a08696185ee7096875ba4c8ac31cc103d2f7d4819c114b022d7",
-      "size": 20852
+      "sha256": "d6f15f18df26f26584ce802c2ec85d5d6c9664f9602e9f88ea25427581db467c",
+      "size": 21283
     },
     {
       "path": "app/lang/it.json",
-      "sha256": "72304afd361944ab51ca61d60d484b92af78712e7e2133c767df57b87b3219bf",
-      "size": 19838
+      "sha256": "1fde934e3787635ed261973f17d34106fa1a18ca5831dbfbee904ff3f0fdd0fc",
+      "size": 20242
     },
     {
       "path": "app/lang/ja.json",
-      "sha256": "b0262a82b02e4bdcff0c58f1bdfb0aac46827a9bcb36cfbf63ce749015db3be2",
-      "size": 23481
+      "sha256": "c27c896299c852ce21cc8f87a78efdea4e6abbedda91aa4719541db083b3bb0e",
+      "size": 23914
     },
     {
       "path": "app/lang/pt.json",
-      "sha256": "4959862e0e190b57d35ba249ce0b50b3264832035adff178c95092b16197c6ba",
-      "size": 19837
+      "sha256": "99322041bcbf4cf362ffffe10142b5513dfd3b595e114ab59c95373b1f7dde61",
+      "size": 20248
     },
     {
       "path": "app/lang/ru.json",
-      "sha256": "fb9ec7d873bef9b2bd6bdae43cc536e8de8ad41dff9f3266b86bbe8076b32b92",
-      "size": 28536
+      "sha256": "68e8e231cbaf3aa73ca66a210a75480c1d12b1eb777f41f3c4f298f51f12db92",
+      "size": 29182
     },
     {
       "path": "app/lang/zh.json",
-      "sha256": "a9b991ccdd5c789e8b0a4f7a00622297bca165e59262ebffd825de7f7752449a",
-      "size": 18436
+      "sha256": "247183a453baf7b378059d155f01fc60ffc66273089ec4b45d1b84818207e5b9",
+      "size": 18792
     },
     {
       "path": "app/ui/MainWindow.xaml",
-      "sha256": "d3654d506e75b248e284d09a2d3e8a9fa1b9bbb697a5b9b6dada8a5a3f179006",
-      "size": 123664
+      "sha256": "7037ed1af1db1cadf8715a9fdc98d86916b2a82cfbefb476ddbe29148018c461",
+      "size": 127155
     },
     {
       "path": "config.json",

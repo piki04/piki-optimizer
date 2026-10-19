@@ -339,5 +339,10 @@
   "remote.opened": "Quick Assist is open: follow the instructions in its window.",
   "remote.install": "Quick Assist is not installed: Microsoft Store has opened, press \"Get\" and try again.",
   "update.notify.title": "Update available",
-  "update.notify.text": "Piki Optimizer {0} is ready. Click here to update in seconds."
+  "update.notify.text": "Piki Optimizer {0} is ready. Click here to update in seconds.",
+  "opt.state.on": "On",
+  "opt.state.off": "Off",
+  "svc.state.on": "Service running",
+  "svc.state.off": "Service turned off",
+  "proc.switch.help": "How to read the switches: GREEN = the service or feature is TURNED OFF to lighten your PC. GREY = it stays ON as it is now. Next to each switch it says what happens. Changes only start when you press \"Apply\"."
 }

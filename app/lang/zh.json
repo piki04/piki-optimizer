@@ -339,5 +339,10 @@
   "remote.opened": "快速助手已打开：请按照窗口中的说明操作。",
   "remote.install": "未安装快速助手：已打开 Microsoft Store，点击“获取”后再试一次。",
   "update.notify.title": "有可用更新",
-  "update.notify.text": "Piki Optimizer {0} 已就绪。点击此处，几秒钟即可完成更新。"
+  "update.notify.text": "Piki Optimizer {0} 已就绪。点击此处，几秒钟即可完成更新。",
+  "opt.state.on": "已启用",
+  "opt.state.off": "未启用",
+  "svc.state.on": "服务运行中",
+  "svc.state.off": "服务已关闭",
+  "proc.switch.help": "如何看开关：绿色 = 关闭该服务或功能，为电脑减负。灰色 = 保持开启，与现在一样。每个开关旁都会写明效果。只有点击“应用”后才会生效。"
 }

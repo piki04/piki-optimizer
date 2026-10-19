@@ -216,7 +216,8 @@ $script:VxTweaks = @(
             Add-VxCustomUndo 'mmagent' @{ kind = 'mmagent'; prev = $prev }
             Disable-MMAgent -MemoryCompression -ErrorAction Stop
         }
-        Test = { param($hw) try { -not [bool](Get-MMAgent -ErrorAction Stop).MemoryCompression } catch { $false } }
+        # Get-MMAgent fails when the SysMain service is disabled: then trust the change Piki made
+        Test = { param($hw) try { -not [bool](Get-MMAgent -ErrorAction Stop).MemoryCompression } catch { Test-VxBackupEntry 'memcompress' } }
     },
 
     # ======================================================= VISUAL
@@ -345,13 +346,18 @@ $script:VxTweaks = @(
             }
         }
         Test = {
+            # same interfaces the Apply step changes (not only the adapter remembered from the last scan)
             param($hw)
-            $n = $hw.Network
-            if (-not $n) { return $false }
-            $guid = $null
-            try { $guid = (Get-NetAdapter -InterfaceIndex $n.IfIndex -ErrorAction Stop).InterfaceGuid } catch { }
-            if (-not $guid) { return $false }
-            return (Test-VxRegValue "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\$guid" 'TCPNoDelay' 1)
+            $base = 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces'
+            $n = 0
+            foreach ($k in @(Get-ChildItem -LiteralPath $base -ErrorAction SilentlyContinue)) {
+                $p = Get-ItemProperty -LiteralPath $k.PSPath -ErrorAction SilentlyContinue
+                if ($p.DhcpIPAddress -or $p.IPAddress) {
+                    if (-not (Test-VxRegValue "$base\$($k.PSChildName)" 'TCPNoDelay' 1)) { return $false }
+                    $n++
+                }
+            }
+            return ($n -gt 0)
         }
     },
     @{
@@ -546,6 +552,25 @@ function Invoke-VxTweak {
         Write-VxLog "Apply $($Tweak.Id) failed: $msg" 'ERROR'
         return @{ ok = $false; error = $msg }
     }
+}
+
+# Settings stored inside the active power plan (or per network interface) get lost when Windows or another
+# program switches plan / adds an interface. If the user turned them on (backup entry exists), put them back.
+$script:VxHealIds = @('powerlat', 'cpumin', 'wifipower', 'nagle')
+function Repair-VxLostTweaks {
+    param($Hw)
+    $fixed = @()
+    foreach ($id in $script:VxHealIds) {
+        try {
+            if (-not (Test-VxBackupEntry $id)) { continue }
+            $t = Find-VxTweak $id
+            if (-not $t -or -not (Test-VxTweakApplicable $t $Hw)) { continue }
+            if (Test-VxTweakApplied $t $Hw) { continue }
+            $r = Invoke-VxTweak $t $Hw
+            if ($r.ok) { $fixed += $id; Write-VxLog "Re-applied lost setting: $id" }
+        } catch { Write-VxLog "Repair $id : $($_.Exception.Message)" 'WARN' }
+    }
+    return $fixed
 }
 
 function Get-VxTweakStates {

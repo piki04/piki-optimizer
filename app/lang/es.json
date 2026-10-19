@@ -339,5 +339,10 @@
   "remote.opened": "Asistencia rápida abierta: sigue las instrucciones de su ventana.",
   "remote.install": "Asistencia rápida no está instalada: se abrió Microsoft Store, pulsa «Obtener» y vuelve a intentarlo.",
   "update.notify.title": "Actualización disponible",
-  "update.notify.text": "Piki Optimizer {0} está listo. Haz clic aquí para actualizar en segundos."
+  "update.notify.text": "Piki Optimizer {0} está listo. Haz clic aquí para actualizar en segundos.",
+  "opt.state.on": "Activada",
+  "opt.state.off": "No activada",
+  "svc.state.on": "Servicio activo",
+  "svc.state.off": "Servicio apagado",
+  "proc.switch.help": "Cómo leer los interruptores: VERDE = el servicio o la función se APAGA para aligerar el PC. GRIS = sigue ENCENDIDO como ahora. Junto a cada interruptor se indica qué pasa. Los cambios solo empiezan al pulsar «Aplicar»."
 }

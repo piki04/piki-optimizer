@@ -476,6 +476,51 @@
             </Style.Triggers>
         </Style>
 
+        <!-- what the switch means, written next to it -->
+        <Style x:Key="StateText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,0,12,0"/>
+            <Setter Property="TextAlignment" Value="Right"/>
+            <Setter Property="MinWidth" Value="110"/>
+            <Setter Property="Text" Value="@{opt.state.off}"/>
+            <Setter Property="Foreground" Value="{StaticResource FaintBrush}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsChecked}" Value="True">
+                    <Setter Property="Text" Value="@{opt.state.on}"/>
+                    <Setter Property="Foreground" Value="#30D158"/>
+                </DataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding Kind}" Value="svc"/>
+                        <Condition Binding="{Binding IsChecked}" Value="False"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Text" Value="@{svc.state.on}"/>
+                    <Setter Property="Foreground" Value="{StaticResource FaintBrush}"/>
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding Kind}" Value="svc"/>
+                        <Condition Binding="{Binding IsChecked}" Value="True"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Text" Value="@{svc.state.off}"/>
+                    <Setter Property="Foreground" Value="#30D158"/>
+                </MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="StartupStateText" TargetType="TextBlock" BasedOn="{StaticResource StateText}">
+            <Setter Property="MinWidth" Value="150"/>
+            <Setter Property="Text" Value="@{startup.off}"/>
+            <Setter Property="Foreground" Value="{StaticResource FaintBrush}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsChecked}" Value="True">
+                    <Setter Property="Text" Value="@{startup.on}"/>
+                    <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
         <!-- ============================ templates -->
         <DataTemplate x:Key="OptionTpl">
             <Border Style="{StaticResource OptCard}">
@@ -503,7 +548,10 @@
                         </StackPanel>
                         <TextBlock Text="{Binding Extra}" Foreground="{StaticResource FaintBrush}" FontSize="13" Margin="0,6,0,0" TextWrapping="Wrap" Visibility="{Binding HasExtra, Converter={StaticResource B2V}}"/>
                     </StackPanel>
-                    <CheckBox Grid.Column="1" Style="{StaticResource Switch}" VerticalAlignment="Center" IsChecked="{Binding IsChecked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsSelectable}"/>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource StateText}"/>
+                        <CheckBox Style="{StaticResource Switch}" VerticalAlignment="Center" IsChecked="{Binding IsChecked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsSelectable}"/>
+                    </StackPanel>
                 </Grid>
             </Border>
         </DataTemplate>
@@ -524,7 +572,10 @@
                         <TextBlock Text="{Binding Description}" Style="{StaticResource Sub}" Margin="0,6,0,0"/>
                         <TextBlock Text="{Binding Extra}" Foreground="{StaticResource FaintBrush}" FontSize="12.5" Margin="0,5,0,0" TextTrimming="CharacterEllipsis" Visibility="{Binding HasExtra, Converter={StaticResource B2V}}"/>
                     </StackPanel>
-                    <CheckBox Grid.Column="1" Style="{StaticResource Switch}" VerticalAlignment="Center" IsChecked="{Binding IsChecked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsSelectable}"/>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource StartupStateText}"/>
+                        <CheckBox Style="{StaticResource Switch}" VerticalAlignment="Center" IsChecked="{Binding IsChecked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsSelectable}"/>
+                    </StackPanel>
                 </Grid>
             </Border>
         </DataTemplate>
@@ -1055,6 +1106,12 @@
                                     <StackPanel><StackPanel Orientation="Horizontal"><Ellipse Width="10" Height="10" Fill="#FF5D73"/><TextBlock Text="@{proc.level.3}" FontWeight="Bold" FontSize="14" Margin="8,0,0,0"/></StackPanel><TextBlock Text="@{proc.level.3.d}" Style="{StaticResource Sub}" FontSize="13" Margin="0,6,0,0"/></StackPanel>
                                 </RadioButton>
                             </UniformGrid>
+                            <Border Style="{StaticResource RowCard}" Margin="0,4,0,14" Background="#1F30D158" BorderBrush="#5530D158">
+                                <DockPanel>
+                                    <TextBlock Text="&#xE946;" Style="{StaticResource IconText}" FontSize="18" Foreground="#30D158" VerticalAlignment="Top" Margin="0,1,12,0"/>
+                                    <TextBlock Text="@{proc.switch.help}" Style="{StaticResource Sub}" Foreground="{StaticResource TextBrush}"/>
+                                </DockPanel>
+                            </Border>
                             <ItemsControl x:Name="ProcOptList" ItemTemplate="{StaticResource OptionTpl}">
                                 <ItemsControl.GroupStyle>
                                     <GroupStyle HeaderTemplate="{StaticResource GroupHeaderTpl}"/>

@@ -339,5 +339,10 @@
   "remote.opened": "クイック アシストを開きました：ウィンドウの指示に従ってください。",
   "remote.install": "クイック アシストがインストールされていません：Microsoft Store を開きました。「入手」を押してから、もう一度お試しください。",
   "update.notify.title": "アップデートがあります",
-  "update.notify.text": "Piki Optimizer {0} の準備ができました。ここをクリックすると数秒でアップデートできます。"
+  "update.notify.text": "Piki Optimizer {0} の準備ができました。ここをクリックすると数秒でアップデートできます。",
+  "opt.state.on": "オン",
+  "opt.state.off": "オフ",
+  "svc.state.on": "サービス実行中",
+  "svc.state.off": "サービス停止",
+  "proc.switch.help": "スイッチの見方：緑 = PCを軽くするためにサービスや機能を停止します。グレー = 今のままオンです。各スイッチの横に何が起きるか表示されます。変更は「適用」を押したときだけ実行されます。"
 }
