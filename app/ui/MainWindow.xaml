@@ -1028,15 +1028,19 @@
         </Grid.ColumnDefinitions>
 
         <!-- custom background -->
-        <Image x:Name="BgImage" Grid.ColumnSpan="2" Stretch="UniformToFill" Opacity="0.35" Visibility="Collapsed" IsHitTestVisible="False" Margin="-60">
-            <Image.CacheMode><BitmapCache RenderAtScale="0.5"/></Image.CacheMode><Image.Effect><BlurEffect Radius="28" KernelType="Gaussian"/></Image.Effect></Image>
+        <Border Grid.ColumnSpan="2" IsHitTestVisible="False" ClipToBounds="True">
+            <Border.CacheMode><BitmapCache RenderAtScale="0.5"/></Border.CacheMode>
+        <Image x:Name="BgImage" Stretch="UniformToFill" Opacity="0.35" Visibility="Collapsed" IsHitTestVisible="False" Margin="-60"><Image.Effect><BlurEffect Radius="28" KernelType="Gaussian"/></Image.Effect></Image>
+        </Border>
         <!-- colourful blurred blobs behind the glass -->
         <Grid x:Name="Blobs" Grid.ColumnSpan="2" IsHitTestVisible="False" Opacity="0.85" ClipToBounds="True">
             <Grid.CacheMode><BitmapCache RenderAtScale="0.5"/></Grid.CacheMode>
+            <Grid>
             <Grid.Effect><BlurEffect Radius="110" KernelType="Gaussian"/></Grid.Effect>
             <Ellipse Width="620" Height="520" Fill="#7C5CFF" Opacity="0.55" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-180,-120,0"/>
             <Ellipse Width="520" Height="440" Fill="#22D3EE" Opacity="0.35" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="120,0,0,-160"/>
             <Ellipse Width="420" Height="380" Fill="#FF4FA3" Opacity="0.25" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="260,40,0,0"/>
+            </Grid>
         </Grid>
 
         <!-- ============================ SIDEBAR -->
@@ -1127,14 +1131,14 @@
                             <TextBlock Typography.NumeralAlignment="Tabular" x:Name="SideCpuText" Text="0%" HorizontalAlignment="Right" FontSize="12.5" FontWeight="SemiBold"/>
                         </Grid>
                         <Border Height="5" CornerRadius="3" Background="#24FFFFFF" Margin="0,5,0,10">
-                            <Border x:Name="SideCpuBar" HorizontalAlignment="Left" Width="0" CornerRadius="3" Background="#22D3EE"/>
+                            <Border x:Name="SideCpuBar" HorizontalAlignment="Stretch" CornerRadius="3" Background="#22D3EE" RenderTransformOrigin="0,0.5"><Border.RenderTransform><ScaleTransform ScaleX="0.02"/></Border.RenderTransform></Border>
                         </Border>
                         <Grid>
                             <TextBlock Text="RAM" Foreground="{StaticResource SubBrush}" FontSize="12.5" FontWeight="SemiBold"/>
                             <TextBlock Typography.NumeralAlignment="Tabular" x:Name="SideRamText" Text="0%" HorizontalAlignment="Right" FontSize="12.5" FontWeight="SemiBold"/>
                         </Grid>
                         <Border Height="5" CornerRadius="3" Background="#24FFFFFF" Margin="0,5,0,0">
-                            <Border x:Name="SideRamBar" HorizontalAlignment="Left" Width="0" CornerRadius="3" Background="#7C5CFF"/>
+                            <Border x:Name="SideRamBar" HorizontalAlignment="Stretch" CornerRadius="3" Background="#7C5CFF" RenderTransformOrigin="0,0.5"><Border.RenderTransform><ScaleTransform ScaleX="0.02"/></Border.RenderTransform></Border>
                         </Border>
                     </StackPanel>
                 </Border>

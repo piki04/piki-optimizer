@@ -1,8 +1,8 @@
 {
-  "version": "1.6.7",
+  "version": "1.6.8",
   "notes": {
-    "it": "Animazioni più fluide: la sezione selezionata scivola nel menu, i contenuti entrano a cascata, gli interruttori fanno un'onda al clic.",
-    "en": "Smoother motion: the selected section slides in the menu, content flows in, switches ripple when clicked."
+    "it": "Più fluida e leggera: animazioni a 120 fps, cambio pagina istantaneo, meno lavoro in background e interruttori senza scatti.",
+    "en": "Smoother and lighter: 120 fps animations, instant page switching, less background work and no stutter on switches."
   },
   "files": [
     {
@@ -37,8 +37,8 @@
     },
     {
       "path": "app/VeloxPC.ps1",
-      "sha256": "a3afd053cf4a3ea1aa19a2cb0098b65a7a165a21f75142aca911e73cb16ef501",
-      "size": 109784
+      "sha256": "b3ba63cd14eb651586ef70792b0e36817b414e06c767765832b6c7524f8fccd3",
+      "size": 112143
     },
     {
       "path": "app/assets/logo.png",
@@ -152,8 +152,8 @@
     },
     {
       "path": "app/ui/MainWindow.xaml",
-      "sha256": "bc98c7223f149eac69ffcf12a1bd1ca9b64743828df02df1b21d8fc36b7d46ce",
-      "size": 167642
+      "sha256": "73e2944bde542f46bb7c18814f40b4e3b73e30502a10f92eeb994ff5cf800449",
+      "size": 167985
     },
     {
       "path": "config.json",

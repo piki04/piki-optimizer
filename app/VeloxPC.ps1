@@ -62,6 +62,8 @@ if (-not $Cleanup) {
 }
 
 Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase, System.Xaml, System.Windows.Forms, System.Drawing
+# smoother motion on high-refresh screens: animations run at 120 fps instead of WPF's default 60
+try { [System.Windows.Media.Animation.Timeline]::DesiredFrameRateProperty.OverrideMetadata([System.Windows.Media.Animation.Timeline], (New-Object System.Windows.FrameworkPropertyMetadata([object][int]120))) } catch { }
 
 # ---------------------------------------------------------------- native helpers (cached build)
 $dataDir = Join-Path $Root 'data'
@@ -207,6 +209,7 @@ $script:Jobs = New-Object System.Collections.ArrayList
 
 function Start-VxJob {
     param([string]$Name, [scriptblock]$Script, [object[]]$Arguments = @(), [scriptblock]$OnDone, [scriptblock]$OnError)
+    if ($script:JobTimer -and $script:JobTimer.Interval.TotalMilliseconds -gt 150) { $script:JobTimer.Interval = [TimeSpan]::FromMilliseconds(120) }
     $ps = [powershell]::Create()
     $ps.RunspacePool = $script:Pool
     # one single script: core functions + the job body invoked with the arguments
@@ -580,9 +583,17 @@ function Update-VxOptionLists {
 function Get-VxAllItems { return @($script:Lists.opt) + @($script:Lists.proc) + @($script:Lists.net) + @($script:Lists.ae) }
 
 function Update-VxPendingBar {
-    $dirty = @(Get-VxAllItems | Where-Object { $_.IsDirty })
+    # many switches can change at once (presets): recount once, after the current frame
+    if ($script:PendingQueued) { return }
+    $script:PendingQueued = $true
+    [void]$script:Window.Dispatcher.BeginInvoke([Action] { $script:PendingQueued = $false; Update-VxPendingBarNow }, [System.Windows.Threading.DispatcherPriority]::Background)
+}
+
+function Update-VxPendingBarNow {
+    $dirty = New-Object System.Collections.Generic.List[object]
+    foreach ($list in @($script:Lists.opt, $script:Lists.proc, $script:Lists.net, $script:Lists.ae)) { foreach ($it in @($list)) { if ($it -and $it.IsDirty) { $dirty.Add($it) } } }
     if ($dirty.Count -gt 0) {
-        $on = @($dirty | Where-Object { $_.IsChecked }).Count
+        $on = 0; foreach ($d in $dirty) { if ($d.IsChecked) { $on++ } }
         $off = $dirty.Count - $on
         $txt = T 'pending.count' @($dirty.Count)
         if ($off -gt 0) { $txt += '  ·  ' + (T 'pending.detail' @($on, $off)) }
@@ -1615,15 +1626,16 @@ function Start-VxStagger {
         if (-not ($panel -is [System.Windows.Controls.Panel])) { return }
         $i = 0
         foreach ($c in $panel.Children) {
-            if ($i -ge 8) { break }
+            if ($i -ge 6) { break }
             if (-not ($c -is [System.Windows.FrameworkElement]) -or $c.Visibility -ne 'Visible') { continue }
-            $delay = 40 + 45 * $i
+            $delay = 30 + 40 * $i
             $op = New-Object System.Windows.Media.Animation.DoubleAnimationUsingKeyFrames
             [void]$op.KeyFrames.Add((New-Object System.Windows.Media.Animation.DiscreteDoubleKeyFrame(0, [System.Windows.Media.Animation.KeyTime]::FromTimeSpan([TimeSpan]::Zero))))
             [void]$op.KeyFrames.Add((New-Object System.Windows.Media.Animation.DiscreteDoubleKeyFrame(0, [System.Windows.Media.Animation.KeyTime]::FromTimeSpan([TimeSpan]::FromMilliseconds($delay)))))
             [void]$op.KeyFrames.Add((New-Object System.Windows.Media.Animation.EasingDoubleKeyFrame(1, [System.Windows.Media.Animation.KeyTime]::FromTimeSpan([TimeSpan]::FromMilliseconds($delay + 300)), $script:EaseOut)))
             $el = $c
-            $op.add_Completed({ $el.BeginAnimation([System.Windows.UIElement]::OpacityProperty, $null) }.GetNewClosure())
+            $c.CacheMode = New-Object System.Windows.Media.BitmapCache
+            $op.add_Completed({ $el.BeginAnimation([System.Windows.UIElement]::OpacityProperty, $null); $el.CacheMode = $null }.GetNewClosure())
             $c.BeginAnimation($script:OpacityP, $op)
             if ($c.RenderTransform -is [System.Windows.Media.TranslateTransform] -or $c.RenderTransform -eq [System.Windows.Media.Transform]::Identity) {
                 $mv = New-Object System.Windows.Media.Animation.DoubleAnimationUsingKeyFrames
@@ -1640,7 +1652,13 @@ function Start-VxStagger {
 function Show-VxPage {
     param([string]$Name)
     if (-not $Name) { return }
-    foreach ($p in $script:PageNames) { $ui["Page$p"].Visibility = if ($p -eq $Name) { 'Visible' } else { 'Collapsed' } }
+    if (-not $script:Visited) { $script:Visited = @{} }
+    foreach ($p in $script:PageNames) {
+        if ($p -eq $Name) { $ui["Page$p"].Visibility = 'Visible' }
+        elseif ($script:Visited[$p]) { $ui["Page$p"].Visibility = 'Hidden' }   # keeps its layout: switching back is instant
+        else { $ui["Page$p"].Visibility = 'Collapsed' }
+    }
+    $script:Visited[$Name] = $true
     $nav = $ui["Nav$Name"]
     if ($nav -and -not $nav.IsChecked) { $script:NavSuppress = $true; $nav.IsChecked = $true; $script:NavSuppress = $false }
     $page = $ui["Page$Name"]
@@ -1648,8 +1666,8 @@ function Show-VxPage {
     $idx = [array]::IndexOf($script:PageNames, $Name)
     $dir = if ($null -ne $script:PageIdx -and $idx -lt $script:PageIdx) { -1 } else { 1 }
     $script:PageIdx = $idx
-    $page.BeginAnimation($script:OpacityP, (New-VxAnim 1 240 0))
-    (Get-VxTransform $page).BeginAnimation([System.Windows.Media.TranslateTransform]::YProperty, (New-VxAnim 0 460 (20 * $dir) $script:EaseOutStrong))
+    # the blocks themselves fade/slide in (Start-VxStagger); the page only does a short glide
+    (Get-VxTransform $page).BeginAnimation([System.Windows.Media.TranslateTransform]::YProperty, (New-VxAnim 0 380 (10 * $dir) $script:EaseOutStrong))
     Start-VxStagger $page $dir
     Move-VxNavIndicator $Name
     $script:CurrentPage = $Name
@@ -2002,6 +2020,10 @@ $script:JobTimer.add_Tick({
         if ($script:Pinger) { Update-VxPingLive }
         if ($script:LoadT) { Update-VxLoadLive }
         if ($script:ToastUntil -and (Get-Date) -gt $script:ToastUntil) { $script:ToastUntil = $null; Hide-VxToast }
+        # fast while something is running, relaxed when idle (leaves the UI thread free for animations)
+        $active = ($script:Jobs.Count -gt 0 -or $script:BusyActive -or $script:SplashActive -or $script:Pinger -or $script:LoadT)
+        $want = if ($active) { 120 } else { 450 }
+        if ([int]$script:JobTimer.Interval.TotalMilliseconds -ne $want) { $script:JobTimer.Interval = [TimeSpan]::FromMilliseconds($want) }
     } catch { Write-VxLog "Timer: $($_.Exception.Message)" 'ERROR' }
 })
 $script:JobTimer.Start()
@@ -2013,11 +2035,16 @@ $script:LiveTimer.add_Tick({
     try {
         $cpu = [VeloxPC.Native]::CpuUsage()
         $mem = [VeloxPC.Native]::Memory()
+        if ($script:TrayIcon -and $script:TrayIcon.Visible) { $script:TrayIcon.Text = ('Piki Optimizer · CPU {0:N0}% · RAM {1:N0}%' -f $cpu, $mem[0]) }
+        if (-not $script:Window.IsVisible -or $script:Window.WindowState -eq 'Minimized') { return }
         $ui.SideCpuText.Text = '{0:N0}%' -f $cpu
         $ui.SideRamText.Text = '{0:N0}%' -f $mem[0]
-        $ui.SideCpuBar.Width = 180 * $cpu / 100
-        $ui.SideRamBar.Width = 180 * $mem[0] / 100
-        if ($script:TrayIcon -and $script:TrayIcon.Visible) { $script:TrayIcon.Text = ('Piki Optimizer · CPU {0:N0}% · RAM {1:N0}%' -f $cpu, $mem[0]) }
+        foreach ($pair in @(@($ui.SideCpuBar, $cpu), @($ui.SideRamBar, $mem[0]))) {
+            if ($pair[0].HorizontalAlignment -eq 'Left') { $pair[0].Width = 180 * [double]$pair[1] / 100; continue }   # safe layout
+            $sc = Get-VxTransform $pair[0] 'Scale'
+            $pair[0].RenderTransformOrigin = New-Object System.Windows.Point(0, 0.5)
+            $sc.BeginAnimation([System.Windows.Media.ScaleTransform]::ScaleXProperty, (New-VxAnim ([math]::Max(0.02, [double]$pair[1] / 100)) 700))
+        }
         if ($script:CurrentPage -eq 'Home') {
             $script:CpuHist.Add($cpu); $script:RamHist.Add($mem[0])
             while ($script:CpuHist.Count -gt 60) { $script:CpuHist.RemoveAt(0); $script:RamHist.RemoveAt(0) }
