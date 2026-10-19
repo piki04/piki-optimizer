@@ -1,8 +1,8 @@
 {
-  "version": "1.5.0",
+  "version": "1.5.1",
   "notes": {
-    "it": "Testi più grandi e leggibili, nuovo effetto vetro stile iPhone e nuova sezione Assistenza remota (come AnyDesk).",
-    "en": "Bigger, more readable text, new iPhone-style glass effect and a new Remote help section (like AnyDesk)."
+    "it": "Avvio più veloce: un passaggio in meno all'apertura e operazioni in background più rapide.",
+    "en": "Faster start: one less step when opening and quicker background tasks."
   },
   "files": [
     {
@@ -37,8 +37,8 @@
     },
     {
       "path": "app/VeloxPC.ps1",
-      "sha256": "40d47d7896081ccc063c5a5ed0fdd22bc51705fcf019656faa15cfdb4b1f8e74",
-      "size": 91935
+      "sha256": "3063fa757df37dc6960ae111ff8381fcba2ab016b845eeb502de3cd54ee320ea",
+      "size": 94101
     },
     {
       "path": "app/assets/logo.png",

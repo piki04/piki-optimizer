@@ -17,7 +17,12 @@ $psExe = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.e
 $selfArgs = "-NoProfile -ExecutionPolicy Bypass -STA -WindowStyle Hidden -File `"$PSCommandPath`""
 if ($Tray) { $selfArgs += ' -Tray' }
 if (-not $NoElevate -and -not (Test-VxAdmin)) {
-    try { Start-Process -FilePath $psExe -Verb RunAs -WindowStyle Hidden -ArgumentList $selfArgs } catch { }
+    # elevate straight into the hidden classic console (saves one extra PowerShell start)
+    $conhostE = Join-Path $env:SystemRoot 'System32\conhost.exe'
+    try {
+        if (Test-Path -LiteralPath $conhostE) { Start-Process -FilePath $conhostE -Verb RunAs -WindowStyle Hidden -ArgumentList "`"$psExe`" $selfArgs -Hosted" }
+        else { Start-Process -FilePath $psExe -Verb RunAs -WindowStyle Hidden -ArgumentList $selfArgs }
+    } catch { }
     exit
 }
 if (-not $NoElevate -and -not $Hosted -and -not $Cleanup) {
@@ -37,11 +42,24 @@ $ProgressPreference = 'SilentlyContinue'
 
 if ($Cleanup) { $ProgressPreference = 'SilentlyContinue' }
 # single instance: close any other running VeloxPC window (e.g. an old or stuck one)
+# (pid file instead of a slow WMI query: the old copy is identified by pid + start time)
+$pidFile = Join-Path $Root 'data\app.pid'
 try {
-    foreach ($p in @(Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" -ErrorAction Stop)) {
-        if ($p.ProcessId -ne $PID -and [string]$p.CommandLine -like '*VeloxPC.ps1*-Hosted*') { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue }
+    if (Test-Path -LiteralPath $pidFile) {
+        $old = ([System.IO.File]::ReadAllText($pidFile)).Trim().Split('|')
+        if ($old.Count -eq 2 -and [int]$old[0] -ne $PID) {
+            $op = Get-Process -Id ([int]$old[0]) -ErrorAction SilentlyContinue
+            if ($op -and $op.ProcessName -eq 'powershell' -and $op.StartTime.Ticks -eq [long]$old[1]) { Stop-Process -Id $op.Id -Force -ErrorAction SilentlyContinue }
+        }
     }
 } catch { }
+if (-not $Cleanup) {
+    try {
+        $pd = Split-Path -Parent $pidFile
+        if (-not (Test-Path -LiteralPath $pd)) { New-Item -ItemType Directory -Path $pd -Force | Out-Null }
+        [System.IO.File]::WriteAllText($pidFile, "$PID|$((Get-Process -Id $PID).StartTime.Ticks)")
+    } catch { }
+}
 
 Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase, System.Xaml, System.Windows.Forms, System.Drawing
 
@@ -113,10 +131,19 @@ function T {
 # code that background jobs load before running
 $coreText = New-Object System.Text.StringBuilder
 foreach ($cf in $coreFiles) { [void]$coreText.AppendLine([System.IO.File]::ReadAllText((Join-Path $AppDir "core\$cf.ps1"), [System.Text.Encoding]::UTF8)) }
-[void]$coreText.Insert(0, "`$ProgressPreference = 'SilentlyContinue'`n")
+[void]$coreText.Insert(0, "`$ProgressPreference = 'SilentlyContinue'`n`$script:VxRoot = '$($Root -replace "'", "''")'`n")
 [void]$coreText.AppendLine("Initialize-VxPaths '$($Root -replace "'", "''")'")
 [void]$coreText.AppendLine("`$script:VxLang = '$($script:VxLang)'")
 $script:CoreText = $coreText.ToString()
+# background jobs dot-source this file once per runspace instead of re-parsing all the core code on every job
+$coreHash = (([System.Security.Cryptography.SHA1]::Create().ComputeHash([System.Text.Encoding]::UTF8.GetBytes($script:CoreText))[0..7] | ForEach-Object { $_.ToString('x2') }) -join '')
+$script:CoreFile = Join-Path $cacheDir "core_$coreHash.ps1"
+try {
+    if (-not (Test-Path -LiteralPath $script:CoreFile)) {
+        Get-ChildItem -LiteralPath $cacheDir -Filter 'core_*.ps1' -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
+        [System.IO.File]::WriteAllText($script:CoreFile, $script:CoreText, (New-Object System.Text.UTF8Encoding($true)))
+    }
+} catch { $script:CoreFile = $null }
 
 $script:Version = '1.0.0'
 $lm = Get-VxLocalManifest
@@ -162,6 +189,7 @@ function Show-VxFatal {
 $script:Sync = [hashtable]::Synchronized(@{ Step = ''; Pct = 0 })
 $iss = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
 $script:Pool = [runspacefactory]::CreateRunspacePool($iss)
+[void]$script:Pool.SetMinRunspaces(2)
 [void]$script:Pool.SetMaxRunspaces(4)
 $script:Pool.Open()
 $script:Jobs = New-Object System.Collections.ArrayList
@@ -174,13 +202,21 @@ function Start-VxJob {
     # (AddStatement() on a RunspacePool can hang, so it is not used)
     $wrap = "`n`$__t0 = [DateTime]::Now`n`$__r = & {`n" + $Script.ToString() + "`n} @args`n" +
         "Write-VxLog ('job body: $Name ({0:N0} ms)' -f ([DateTime]::Now - `$__t0).TotalMilliseconds)`n,`$__r"
-    [void]$ps.AddScript($script:CoreText + $wrap)
+    if ($script:CoreFile) {
+        $load = "if (-not (Get-Command Initialize-VxPaths -CommandType Function -ErrorAction SilentlyContinue)) { . '" + ($script:CoreFile -replace "'", "''") + "' }`n" +
+            "`$script:VxAeCache = `$null; `$script:VxTx = `$null; `$script:VxNicRestart = `$false`n"
+        [void]$ps.AddScript($load + $wrap)
+    } else {
+        [void]$ps.AddScript($script:CoreText + $wrap)
+    }
     [void]$ps.AddArgument($script:Sync)
     foreach ($a in $Arguments) { [void]$ps.AddArgument($a) }
     $job = @{ Name = $Name; PS = $ps; Handle = $ps.BeginInvoke(); OnDone = $OnDone; OnError = $OnError; Start = [DateTime]::Now }
     [void]$script:Jobs.Add($job)
     Write-VxLog "job start: $Name"
 }
+
+Start-VxJob -Name 'warmup' -Script { return $true }
 
 function Complete-VxJobs {
     for ($i = $script:Jobs.Count - 1; $i -ge 0; $i--) {
