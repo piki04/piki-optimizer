@@ -337,5 +337,7 @@
   "remote.warn.title": "Vorsicht vor Betrug",
   "remote.warn": "Microsoft, deine Bank oder falsche „Techniker“ rufen dich nie an, um einen Fernzugriffscode zu verlangen. Gib den Code nur Menschen, die du wirklich kennst.",
   "remote.opened": "Remotehilfe ist geöffnet: Folge den Anweisungen im Fenster.",
-  "remote.install": "Remotehilfe ist nicht installiert: Der Microsoft Store wurde geöffnet, tippe auf „Herunterladen“ und versuche es erneut."
+  "remote.install": "Remotehilfe ist nicht installiert: Der Microsoft Store wurde geöffnet, tippe auf „Herunterladen“ und versuche es erneut.",
+  "update.notify.title": "Update verfügbar",
+  "update.notify.text": "Piki Optimizer {0} ist bereit. Klicke hier, um in Sekunden zu aktualisieren."
 }

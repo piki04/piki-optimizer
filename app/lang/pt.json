@@ -337,5 +337,7 @@
   "remote.warn.title": "Cuidado com golpes",
   "remote.warn": "A Microsoft, seu banco ou falsos \"técnicos\" nunca vão ligar pedindo um código de acesso remoto. Só passe o código para pessoas que você realmente conhece.",
   "remote.opened": "Assistência Rápida aberta: siga as instruções na janela.",
-  "remote.install": "A Assistência Rápida não está instalada: a Microsoft Store foi aberta, clique em \"Obter\" e tente de novo."
+  "remote.install": "A Assistência Rápida não está instalada: a Microsoft Store foi aberta, clique em \"Obter\" e tente de novo.",
+  "update.notify.title": "Atualização disponível",
+  "update.notify.text": "O Piki Optimizer {0} está pronto. Clique aqui para atualizar em segundos."
 }

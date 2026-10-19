@@ -1127,6 +1127,7 @@ function Start-VxUpdateCheck {
             $ui.UpdateBannerText.Text = T 'update.available' @($rv, $notes)
             $ui.UpdateBanner.Visibility = 'Visible'
             $ui.UpdateStatus.Text = T 'update.available' @($rv, '')
+            Show-VxUpdateNotice $rv $notes
         } else {
             if ($script:UpdManual) { $ui.UpdateStatus.Text = T 'update.latest' @($script:Version) }
         }
@@ -1134,6 +1135,32 @@ function Start-VxUpdateCheck {
         param($e)
         if ($script:UpdManual) { $ui.UpdateStatus.Text = T 'update.offline' }
     }
+}
+
+# Windows notification (bottom-right) once per new version, also while the app sits in the tray
+function Show-VxUpdateNotice {
+    param([string]$Ver, [string]$Notes)
+    if ($script:NotifiedVer -eq $Ver) { return }
+    $script:NotifiedVer = $Ver
+    try {
+        if (-not $script:TrayIcon) { Update-VxTrayIcon }
+        if (-not $script:TrayIcon) { return }
+        if (-not $script:TrayIcon.Visible) {
+            # tray icon turned off: show it just for the notification
+            $script:TrayIcon.Visible = $true
+            $script:TrayTempTimer = New-Object System.Windows.Threading.DispatcherTimer
+            $script:TrayTempTimer.Interval = [TimeSpan]::FromSeconds(15)
+            $script:TrayTempTimer.add_Tick({ $script:TrayTempTimer.Stop(); if (-not $script:Settings.tray -and $script:TrayIcon) { $script:TrayIcon.Visible = $false } })
+            $script:TrayTempTimer.Start()
+        }
+        $text = T 'update.notify.text' @($Ver)
+        if ($Notes) { $text += "`n" + $Notes }
+        if ($text.Length -gt 250) { $text = $text.Substring(0, 247) + '...' }
+        $script:BalloonKind = 'update'
+        $script:TrayIcon.ShowBalloonTip(10000, (T 'update.notify.title'), $text, 'Info')
+        Write-VxLog "update notice shown: $Ver"
+    } catch { Write-VxLog "update notice: $($_.Exception.Message)" 'WARN' }
+    if ($script:Window.IsVisible) { Show-VxToast (T 'update.notify.title') 'info' }
 }
 
 function Start-VxUpdate {
@@ -1320,6 +1347,10 @@ function Update-VxTrayIcon {
             $miExit = $menu.Items.Add((T 'tray.exit')); $miExit.add_Click({ $script:ReallyExit = $true; $script:Window.Close() })
             $ni.ContextMenuStrip = $menu
             $ni.add_MouseDoubleClick({ Show-VxFromTray })
+            $ni.add_BalloonTipClicked({
+                if ($script:BalloonKind -eq 'update') { $script:BalloonKind = $null; Show-VxFromTray; Show-VxPage 'Settings'; Start-VxUpdate }
+                else { Show-VxFromTray }
+            })
             $script:TrayIcon = $ni
         }
         $img = Get-VxCustomPath 'logo'
@@ -1827,6 +1858,13 @@ $script:Window.add_ContentRendered({
             Update-VxStates -Then { Hide-VxSplash; Show-VxPage 'Home' }
         }
         if ($script:Settings.autoUpdate) { Start-VxUpdateCheck }
+        # keep checking every 3 hours while the app stays open or in the tray
+        if (-not $script:UpdTimer) {
+            $script:UpdTimer = New-Object System.Windows.Threading.DispatcherTimer
+            $script:UpdTimer.Interval = [TimeSpan]::FromHours(3)
+            $script:UpdTimer.add_Tick({ if ($script:Settings.autoUpdate) { Start-VxUpdateCheck } })
+            $script:UpdTimer.Start()
+        }
     } -OnError {
         param($e)
         Show-VxFatal ("Hardware scan failed: " + $e.Message)
@@ -1839,7 +1877,7 @@ $script:Window.add_Closing({
     if ($script:Settings.tray -and -not $script:ReallyExit) {
         $e.Cancel = $true
         $script:Window.Hide()
-        if (-not $script:TrayHintShown -and $script:TrayIcon) { $script:TrayHintShown = $true; $script:TrayIcon.ShowBalloonTip(3000, 'Piki Optimizer', (T 'tray.still'), 'Info') }
+        if (-not $script:TrayHintShown -and $script:TrayIcon) { $script:TrayHintShown = $true; $script:BalloonKind = 'hint'; $script:TrayIcon.ShowBalloonTip(3000, 'Piki Optimizer', (T 'tray.still'), 'Info') }
         return
     }
     try { if ($script:TrayIcon) { $script:TrayIcon.Visible = $false; $script:TrayIcon.Dispose() } } catch { }

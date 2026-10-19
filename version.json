@@ -1,8 +1,8 @@
 {
-  "version": "1.5.1",
+  "version": "1.5.2",
   "notes": {
-    "it": "Avvio più veloce: un passaggio in meno all'apertura e operazioni in background più rapide.",
-    "en": "Faster start: one less step when opening and quicker background tasks."
+    "it": "Ora ricevi una notifica di Windows quando esce una nuova versione, anche con l'app nella barra vicino all'orologio.",
+    "en": "You now get a Windows notification when a new version is out, even with the app in the tray."
   },
   "files": [
     {
@@ -37,8 +37,8 @@
     },
     {
       "path": "app/VeloxPC.ps1",
-      "sha256": "3063fa757df37dc6960ae111ff8381fcba2ab016b845eeb502de3cd54ee320ea",
-      "size": 94101
+      "sha256": "cc8b1d9d993edaa22dc2998cfd4dae9fff8329b579230f07f47fdc2e2de98437",
+      "size": 96237
     },
     {
       "path": "app/assets/logo.png",
@@ -102,48 +102,48 @@
     },
     {
       "path": "app/lang/de.json",
-      "sha256": "9d6bc11984f508b46fbf6abf37e132128c5b350fe0a80f30b198f32fb0d75787",
-      "size": 20394
+      "sha256": "580c8b424af691f4fc7ad23a442d6e638dda31da3d4373cc3ed7f6b6cf07feb5",
+      "size": 20544
     },
     {
       "path": "app/lang/en.json",
-      "sha256": "5258103a105166423374b17d8d963c4d77673b0d982f859dd413911e30cb4d00",
-      "size": 18625
+      "sha256": "56d054a619d4786ee138157a19cd9875d414eb8f13637aca313c7f0415a25311",
+      "size": 18759
     },
     {
       "path": "app/lang/es.json",
-      "sha256": "35ed574cc32d843c241d85e7a1b929fc928c174d8d4cdcd30d955c591045c5d7",
-      "size": 19723
+      "sha256": "e88a7b14ece0a214d9e2171a58811e517a5d77be810daae79e8c12e6f9afcc31",
+      "size": 19880
     },
     {
       "path": "app/lang/fr.json",
-      "sha256": "964df18826a545c551fba7df73c9a62dfad43ef1733eeb663cc4389f71d26964",
-      "size": 20689
+      "sha256": "53732996b5c01a08696185ee7096875ba4c8ac31cc103d2f7d4819c114b022d7",
+      "size": 20852
     },
     {
       "path": "app/lang/it.json",
-      "sha256": "06605804c6ee031046547d1a4cd7e6f502a6505e57fa8f9954a397fe87e32f77",
-      "size": 19683
+      "sha256": "72304afd361944ab51ca61d60d484b92af78712e7e2133c767df57b87b3219bf",
+      "size": 19838
     },
     {
       "path": "app/lang/ja.json",
-      "sha256": "bc152052a19364ba5e850d6d3fb4697be8d5e051243f90686acb814e9bc735c9",
-      "size": 23270
+      "sha256": "b0262a82b02e4bdcff0c58f1bdfb0aac46827a9bcb36cfbf63ce749015db3be2",
+      "size": 23481
     },
     {
       "path": "app/lang/pt.json",
-      "sha256": "6ea4a5cf2332cab8280fe25e402b8b44d8118ce81af2a10e679beb5cc326e919",
-      "size": 19681
+      "sha256": "4959862e0e190b57d35ba249ce0b50b3264832035adff178c95092b16197c6ba",
+      "size": 19837
     },
     {
       "path": "app/lang/ru.json",
-      "sha256": "fe405989a5824ca89920fa4388c6db28129751c5af011ca766cab50520ac81ff",
-      "size": 28315
+      "sha256": "fb9ec7d873bef9b2bd6bdae43cc536e8de8ad41dff9f3266b86bbe8076b32b92",
+      "size": 28536
     },
     {
       "path": "app/lang/zh.json",
-      "sha256": "d50759eb0262a2c32bdf6ed9db0ec6c43b3e3d6d65c4ab67c018db44739b0a3d",
-      "size": 18288
+      "sha256": "a9b991ccdd5c789e8b0a4f7a00622297bca165e59262ebffd825de7f7752449a",
+      "size": 18436
     },
     {
       "path": "app/ui/MainWindow.xaml",

@@ -337,5 +337,7 @@
   "remote.warn.title": "谨防诈骗",
   "remote.warn": "微软、银行或冒充的“技术人员”绝不会打电话向你索要远程访问代码。只把代码给你真正认识的人。",
   "remote.opened": "快速助手已打开：请按照窗口中的说明操作。",
-  "remote.install": "未安装快速助手：已打开 Microsoft Store，点击“获取”后再试一次。"
+  "remote.install": "未安装快速助手：已打开 Microsoft Store，点击“获取”后再试一次。",
+  "update.notify.title": "有可用更新",
+  "update.notify.text": "Piki Optimizer {0} 已就绪。点击此处，几秒钟即可完成更新。"
 }

@@ -337,5 +337,7 @@
   "remote.warn.title": "詐欺に注意",
   "remote.warn": "Microsoft、銀行、偽の「技術者」が電話でリモートアクセス用のコードを求めることは絶対にありません。コードは本当に知っている人にだけ伝えてください。",
   "remote.opened": "クイック アシストを開きました：ウィンドウの指示に従ってください。",
-  "remote.install": "クイック アシストがインストールされていません：Microsoft Store を開きました。「入手」を押してから、もう一度お試しください。"
+  "remote.install": "クイック アシストがインストールされていません：Microsoft Store を開きました。「入手」を押してから、もう一度お試しください。",
+  "update.notify.title": "アップデートがあります",
+  "update.notify.text": "Piki Optimizer {0} の準備ができました。ここをクリックすると数秒でアップデートできます。"
 }

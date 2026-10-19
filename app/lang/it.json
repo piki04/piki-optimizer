@@ -337,5 +337,7 @@
   "remote.warn.title": "Attenzione alle truffe",
   "remote.warn": "Microsoft, la banca o finti «tecnici» non ti chiameranno mai per chiederti un codice di accesso remoto. Dai il codice solo a persone che conosci davvero.",
   "remote.opened": "Assistenza rapida aperta: segui le istruzioni nella finestra.",
-  "remote.install": "Assistenza rapida non è installata: si è aperto Microsoft Store, premi «Ottieni» e poi riprova."
+  "remote.install": "Assistenza rapida non è installata: si è aperto Microsoft Store, premi «Ottieni» e poi riprova.",
+  "update.notify.title": "Aggiornamento disponibile",
+  "update.notify.text": "Piki Optimizer {0} è pronto. Clicca qui per aggiornare in pochi secondi."
 }

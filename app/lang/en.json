@@ -337,5 +337,7 @@
   "remote.warn.title": "Beware of scams",
   "remote.warn": "Microsoft, your bank or fake \"technicians\" will never call you to ask for a remote access code. Only give the code to people you really know.",
   "remote.opened": "Quick Assist is open: follow the instructions in its window.",
-  "remote.install": "Quick Assist is not installed: Microsoft Store has opened, press \"Get\" and try again."
+  "remote.install": "Quick Assist is not installed: Microsoft Store has opened, press \"Get\" and try again.",
+  "update.notify.title": "Update available",
+  "update.notify.text": "Piki Optimizer {0} is ready. Click here to update in seconds."
 }
