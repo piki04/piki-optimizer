@@ -1198,7 +1198,7 @@ function Enable-VxGlass {
         $hr = [VeloxPC.Native]::EnableBackdrop($hwnd, 3)
         if ($hr -ne 0) { Write-VxLog "glass: backdrop hr=$hr" 'WARN'; return }
         $script:Window.Background = [System.Windows.Media.Brushes]::Transparent
-        $ui.Root.Background = New-VxBrush '#9E07090F'
+        $ui.Root.Background = New-VxBrush '#AD07090F'
         $ui.Blobs.Opacity = 0.72
         $script:GlassOn = $true
         Write-VxLog 'glass: acrylic on'

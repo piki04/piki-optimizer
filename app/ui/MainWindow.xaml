@@ -3,7 +3,7 @@
         Title="Piki Optimizer" Width="1240" Height="820" MinWidth="1060" MinHeight="690"
         WindowStartupLocation="CenterScreen" Background="#0A0C11" Foreground="#ECEFF6"
         FontFamily="Segoe UI Variable Text, Segoe UI" FontSize="14"
-        TextOptions.TextFormattingMode="Ideal" UseLayoutRounding="True" SnapsToDevicePixels="True">
+        TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="Auto" UseLayoutRounding="True" SnapsToDevicePixels="True">
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="46" ResizeBorderThickness="6" GlassFrameThickness="0" CornerRadius="0" UseAeroCaptionButtons="False"/>
     </WindowChrome.WindowChrome>
@@ -17,9 +17,9 @@
         <SolidColorBrush x:Key="PanelBrush" Color="#66101420"/>
         <!-- liquid glass: frosted fill brighter at the top, rim light on the top-left and bottom-right edges -->
         <LinearGradientBrush x:Key="CardBrush" StartPoint="0,0" EndPoint="0.6,1">
-            <GradientStop Color="#3DFFFFFF" Offset="0"/>
-            <GradientStop Color="#1FFFFFFF" Offset="0.45"/>
-            <GradientStop Color="#14FFFFFF" Offset="1"/>
+            <GradientStop Color="#42FFFFFF" Offset="0"/>
+            <GradientStop Color="#26FFFFFF" Offset="0.45"/>
+            <GradientStop Color="#1CFFFFFF" Offset="1"/>
         </LinearGradientBrush>
         <LinearGradientBrush x:Key="GlassBtnBrush" StartPoint="0,0" EndPoint="0,1">
             <GradientStop Color="#40FFFFFF" Offset="0"/>
@@ -66,15 +66,16 @@
         </Style>
         <Style x:Key="H2" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource Display}"/>
-            <Setter Property="FontSize" Value="17"/>
+            <Setter Property="FontSize" Value="19"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Margin" Value="0,26,0,10"/>
+            <Setter Property="Margin" Value="0,32,0,12"/>
             <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
         </Style>
         <Style x:Key="Sub" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{StaticResource SubBrush}"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
-            <Setter Property="LineHeight" Value="21"/>
+            <Setter Property="FontSize" Value="14.5"/>
+            <Setter Property="LineHeight" Value="22"/>
         </Style>
         <Style x:Key="IconText" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource Icons}"/>
@@ -463,8 +464,8 @@
             <Setter Property="BorderBrush" Value="{StaticResource LineBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="20"/>
-            <Setter Property="Padding" Value="18,15"/>
-            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="Padding" Value="20,17"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
         </Style>
         <Style x:Key="OptCard" TargetType="Border" BasedOn="{StaticResource RowCard}">
             <Style.Triggers>
@@ -485,7 +486,7 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Margin="0,0,16,0">
                         <WrapPanel>
-                            <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,0,2"/>
+                            <TextBlock Text="{Binding Title}" FontSize="15.5" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,0,2"/>
                             <Border Style="{StaticResource RiskChip}"><TextBlock Text="{Binding RiskLabel}" Style="{StaticResource RiskText}"/></Border>
                             <Border Style="{StaticResource BadgeChip}" Visibility="{Binding HasBadge, Converter={StaticResource B2V}}"><TextBlock Text="{Binding Badge}" Style="{StaticResource BadgeText}"/></Border>
                             <Border CornerRadius="6" Padding="7,2" Margin="8,0,0,0" Background="#1E2ED47A" VerticalAlignment="Center" Visibility="{Binding IsApplied, Converter={StaticResource B2V}}">
@@ -495,12 +496,12 @@
                                 <TextBlock Text="{Binding RebootLabel}" FontSize="12" Foreground="{StaticResource InfoBrush}"/>
                             </Border>
                         </WrapPanel>
-                        <TextBlock Text="{Binding Description}" Style="{StaticResource Sub}" Margin="0,5,0,0"/>
+                        <TextBlock Text="{Binding Description}" Style="{StaticResource Sub}" Margin="0,6,0,0"/>
                         <StackPanel Orientation="Horizontal" Margin="0,6,0,0" Visibility="{Binding HasWarning, Converter={StaticResource B2V}}">
                             <TextBlock Text="&#xE7BA;" FontFamily="{StaticResource Icons}" Foreground="{StaticResource WarnBrush}" FontSize="12" Margin="0,2,7,0" VerticalAlignment="Top"/>
-                            <TextBlock Text="{Binding Warning}" Foreground="#E8C38A" TextWrapping="Wrap" MaxWidth="760" FontSize="12.5"/>
+                            <TextBlock Text="{Binding Warning}" Foreground="#F5D49B" TextWrapping="Wrap" MaxWidth="760" FontSize="13.5" LineHeight="20"/>
                         </StackPanel>
-                        <TextBlock Text="{Binding Extra}" Foreground="{StaticResource FaintBrush}" FontSize="12.5" Margin="0,6,0,0" TextWrapping="Wrap" Visibility="{Binding HasExtra, Converter={StaticResource B2V}}"/>
+                        <TextBlock Text="{Binding Extra}" Foreground="{StaticResource FaintBrush}" FontSize="13" Margin="0,6,0,0" TextWrapping="Wrap" Visibility="{Binding HasExtra, Converter={StaticResource B2V}}"/>
                     </StackPanel>
                     <CheckBox Grid.Column="1" Style="{StaticResource Switch}" VerticalAlignment="Center" IsChecked="{Binding IsChecked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsSelectable}"/>
                 </Grid>
@@ -520,7 +521,7 @@
                             <Border Style="{StaticResource RiskChip}"><TextBlock Text="{Binding RiskLabel}" Style="{StaticResource RiskText}"/></Border>
                             <TextBlock Text="{Binding Status}" Foreground="{StaticResource FaintBrush}" FontSize="12.5" Margin="10,0,0,0" VerticalAlignment="Center"/>
                         </WrapPanel>
-                        <TextBlock Text="{Binding Description}" Style="{StaticResource Sub}" Margin="0,5,0,0"/>
+                        <TextBlock Text="{Binding Description}" Style="{StaticResource Sub}" Margin="0,6,0,0"/>
                         <TextBlock Text="{Binding Extra}" Foreground="{StaticResource FaintBrush}" FontSize="12.5" Margin="0,5,0,0" TextTrimming="CharacterEllipsis" Visibility="{Binding HasExtra, Converter={StaticResource B2V}}"/>
                     </StackPanel>
                     <CheckBox Grid.Column="1" Style="{StaticResource Switch}" VerticalAlignment="Center" IsChecked="{Binding IsChecked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsSelectable}"/>
@@ -836,7 +837,7 @@
             </Grid>
 
             <!-- update banner -->
-            <Border x:Name="UpdateBanner" Grid.Row="1" Margin="28,0,28,8" CornerRadius="12" Padding="16,10" Visibility="Collapsed" Background="#17163A" BorderBrush="#4B3DB0" BorderThickness="1">
+            <Border x:Name="UpdateBanner" Grid.Row="1" Margin="36,0,36,8" CornerRadius="16" Padding="18,12" Visibility="Collapsed" Background="#4D7C5CFF" BorderBrush="{StaticResource LineBrush}" BorderThickness="1">
                 <Grid>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="&#xE896;" Style="{StaticResource IconText}" Foreground="#A996FF" FontSize="15"/>
@@ -851,7 +852,7 @@
 
                 <!-- HOME -->
                 <ScrollViewer x:Name="PageHome" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                    <StackPanel Margin="28,4,28,28">
+                    <StackPanel Margin="36,8,36,36" MaxWidth="1180">
                         <TextBlock x:Name="HomeHello" Style="{StaticResource H1}" Text="@{home.title}"/>
                         <TextBlock x:Name="HomeSub" Style="{StaticResource Sub}" FontSize="14" Margin="0,4,0,0" Text="@{home.sub}"/>
                         <Grid Margin="0,20,0,0">
@@ -948,7 +949,7 @@
 
                 <!-- HEALTH -->
                 <ScrollViewer x:Name="PageHealth" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Visibility="Collapsed">
-                    <StackPanel Margin="28,4,28,28">
+                    <StackPanel Margin="36,8,36,36" MaxWidth="1180">
                         <Grid>
                             <StackPanel>
                                 <TextBlock Style="{StaticResource H1}" Text="@{health.title}"/>
@@ -990,7 +991,7 @@
 
                 <!-- OPTIMIZE -->
                 <ScrollViewer x:Name="PageOptimize" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Visibility="Collapsed">
-                    <StackPanel Margin="28,4,28,28">
+                    <StackPanel Margin="36,8,36,36" MaxWidth="1180">
                         <TextBlock Style="{StaticResource H1}" Text="@{opt.title}"/>
                         <TextBlock Style="{StaticResource Sub}" FontSize="14" Margin="0,4,0,18" Text="@{opt.sub}"/>
                         <UniformGrid x:Name="PresetPanel" Columns="5" Margin="0,0,-12,0">
@@ -1026,7 +1027,7 @@
 
                 <!-- PROCESSES -->
                 <ScrollViewer x:Name="PageProcesses" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Visibility="Collapsed">
-                    <StackPanel Margin="28,4,28,28">
+                    <StackPanel Margin="36,8,36,36" MaxWidth="1180">
                         <TextBlock Style="{StaticResource H1}" Text="@{proc.title}"/>
                         <TextBlock Style="{StaticResource Sub}" FontSize="14" Margin="0,4,0,16" Text="@{proc.sub}"/>
                         <UniformGrid Columns="4" Margin="0,0,-12,0">
@@ -1094,7 +1095,7 @@
 
                 <!-- NETWORK -->
                 <ScrollViewer x:Name="PageNetwork" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Visibility="Collapsed">
-                    <StackPanel Margin="28,4,28,28">
+                    <StackPanel Margin="36,8,36,36" MaxWidth="1180">
                         <TextBlock Style="{StaticResource H1}" Text="@{net.title}"/>
                         <TextBlock Style="{StaticResource Sub}" FontSize="14" Margin="0,4,0,18" Text="@{net.sub}"/>
                         <Border CornerRadius="20" Padding="24,22" BorderBrush="#4DFFFFFF" BorderThickness="1" Margin="0,0,0,16">
@@ -1224,7 +1225,7 @@
 
                 <!-- AFTER EFFECTS -->
                 <ScrollViewer x:Name="PageAe" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Visibility="Collapsed">
-                    <StackPanel Margin="28,4,28,28">
+                    <StackPanel Margin="36,8,36,36" MaxWidth="1180">
                         <StackPanel Orientation="Horizontal">
                             <Border Width="46" Height="46" CornerRadius="10" Background="#00005B" BorderBrush="#9999FF" BorderThickness="2">
                                 <TextBlock Text="Ae" FontSize="20" FontWeight="Bold" Foreground="#9999FF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -1280,7 +1281,7 @@
 
                 <!-- CLEANUP -->
                 <ScrollViewer x:Name="PageCleanup" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Visibility="Collapsed">
-                    <StackPanel Margin="28,4,28,28">
+                    <StackPanel Margin="36,8,36,36" MaxWidth="1180">
                         <Grid>
                             <StackPanel>
                                 <TextBlock Style="{StaticResource H1}" Text="@{clean.title}"/>
@@ -1304,7 +1305,7 @@
 
                 <!-- RESTORE -->
                 <ScrollViewer x:Name="PageRestore" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Visibility="Collapsed">
-                    <StackPanel Margin="28,4,28,28">
+                    <StackPanel Margin="36,8,36,36" MaxWidth="1180">
                         <TextBlock Style="{StaticResource H1}" Text="@{restore.title}"/>
                         <TextBlock Style="{StaticResource Sub}" FontSize="14" Margin="0,4,0,18" Text="@{restore.sub}"/>
                         <Grid>
@@ -1341,7 +1342,7 @@
 
                 <!-- REMOTE ASSISTANCE -->
                 <ScrollViewer x:Name="PageRemote" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Visibility="Collapsed">
-                    <StackPanel Margin="28,4,28,28" MaxWidth="900" HorizontalAlignment="Left">
+                    <StackPanel Margin="36,8,36,36" MaxWidth="900">
                         <TextBlock Style="{StaticResource H1}" Text="@{remote.title}"/>
                         <TextBlock Style="{StaticResource Sub}" Text="@{remote.sub}" Margin="0,6,0,0" FontSize="14"/>
                         <UniformGrid Columns="2" Margin="0,20,0,0">
@@ -1385,7 +1386,7 @@
 
                 <!-- SETTINGS -->
                 <ScrollViewer x:Name="PageSettings" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Visibility="Collapsed">
-                    <StackPanel Margin="28,4,28,28" MaxWidth="860" HorizontalAlignment="Left">
+                    <StackPanel Margin="36,8,36,36" MaxWidth="900">
                         <TextBlock Style="{StaticResource H1}" Text="@{set.title}"/>
                         <Border Style="{StaticResource Card}" Margin="0,20,0,0">
                             <Grid>
