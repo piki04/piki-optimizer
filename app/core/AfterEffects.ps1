@@ -197,7 +197,8 @@ function Get-VxTopazReport {
     $rows += @{ K = $pre + 'Max Memory %'; V = "$mem %"; H = (L @{ it = "$where > Max Memory. Hai $ramGB GB. Se lavori insieme ad After Effects scendi a $([math]::Max(40, $mem - 20)) %, così non si contendono la RAM."; en = "$where > Max Memory. You have $ramGB GB. If you work alongside After Effects go down to $([math]::Max(40, $mem - 20)) % so they do not fight over RAM." }) }
 
     $maxp = if ($vgb -ge 16) { 3 } elseif ($vgb -ge 8) { 2 } else { 1 }
-    if ($a.Gen -eq 'legacy') { $maxp = [math]::Min($maxp, 2) }
+    # older versions load a full model copy per process: with less than 16 GB of video memory keep one
+    if ($a.Gen -eq 'legacy') { $maxp = if ($vgb -ge 16) { 2 } else { 1 } }
     $rows += @{ K = $pre + 'Max Processes'; V = "$maxp"; H = (L @{ it = "$where > Max Processes. Con $vgb GB di memoria video $maxp export in parallelo è il punto giusto: di più rallenta ognuno."; en = "$where > Max Processes. With $vgb GB of video memory, $maxp parallel exports is the sweet spot: more slows each one down." }) }
 
     if ($gpu -and $gpu.Vendor -eq 'NVIDIA') {
