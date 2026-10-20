@@ -1,8 +1,8 @@
 {
-  "version": "1.7.3",
+  "version": "1.7.4",
   "notes": {
-    "it": "Nuovo pulsante in alto per mettere l'app in background con un clic: resta attiva vicino all'orologio.",
-    "en": "New title-bar button to send the app to the background in one click: it keeps running next to the clock."
+    "it": "Nuove opzioni per la latenza (timer ad alta precisione, schermo intero esclusivo, core sempre pronti, correzione scatti) e pulsante per mettere l'app in background.",
+    "en": "New latency options (high-precision timer, exclusive fullscreen, no core parking, stutter fix) and a button to send the app to the background."
   },
   "files": [
     {
@@ -92,8 +92,8 @@
     },
     {
       "path": "app/core/Tweaks.ps1",
-      "sha256": "4eeb73d19abc0ea15bfb55c4a0e51c36419ba1a9b6bdb3d29a74b283be843a61",
-      "size": 44930
+      "sha256": "730553c61ce4bcbce34e47b552de0a7f7eaf2becf0724db56997e4348ec71193",
+      "size": 49245
     },
     {
       "path": "app/core/Updater.ps1",

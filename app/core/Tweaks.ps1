@@ -65,6 +65,53 @@ $script:VxTweaks = @(
         Test = { param($hw) ([string](Get-VxRegState 'HKCU:\Software\Microsoft\DirectX\UserGpuPreferences' 'DirectXUserGlobalSettings').value) -match 'SwapEffectUpgradeEnable=1' }
     },
 
+    @{
+        Id = 'timerres'; Cat = 'latency'; Risk = 'safe'; Presets = @('gaming', 'competitive')
+        Title = @{ it = 'Timer di sistema ad alta precisione per i giochi'; en = 'High-precision system timer for games' }
+        Desc = @{ it = 'Su Windows 11 la precisione del timer chiesta da un gioco (es. 0,5 ms) vale di nuovo per tutto il sistema: frame più regolari e input più reattivo.'; en = 'On Windows 11 the timer precision a game asks for (e.g. 0.5 ms) applies system-wide again: steadier frame pacing and snappier input.' }
+        When = { param($hw) $hw.OS.IsWin11 }
+        Reboot = $true
+        Reg = @(, @('HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\kernel', 'GlobalTimerResolutionRequests', 'DWord', 1))
+    },
+    @{
+        Id = 'fso'; Cat = 'latency'; Risk = 'caution'; Presets = @('competitive')
+        Title = @{ it = 'Schermo intero esclusivo (no ottimizzazioni schermo intero)'; en = 'Exclusive fullscreen (no fullscreen optimizations)' }
+        Desc = @{ it = 'I giochi a schermo intero comunicano direttamente con lo schermo, senza passare dal compositore di Windows: qualche millisecondo di latenza in meno.'; en = 'Fullscreen games talk to the display directly, bypassing the Windows compositor: a few milliseconds less latency.' }
+        Warn = @{ it = 'Alt+Tab un po'' più lento. Se un gioco ha problemi a schermo intero, annulla questa voce.'; en = 'Alt+Tab is a bit slower. If a game misbehaves in fullscreen, undo this item.' }
+        Reg = @(
+            @('HKCU:\System\GameConfigStore', 'GameDVR_FSEBehaviorMode', 'DWord', 2),
+            @('HKCU:\System\GameConfigStore', 'GameDVR_FSEBehavior', 'DWord', 2),
+            @('HKCU:\System\GameConfigStore', 'GameDVR_HonorUserFSEBehaviorMode', 'DWord', 1),
+            @('HKCU:\System\GameConfigStore', 'GameDVR_DXGIHonorFSEWindowsCompatible', 'DWord', 1)
+        )
+    },
+    @{
+        Id = 'coreparking'; Cat = 'latency'; Risk = 'caution'; Presets = @('competitive')
+        Title = @{ it = 'Tutti i core sempre pronti (no parcheggio dei core)'; en = 'All cores always ready (no core parking)' }
+        Desc = @{ it = 'Windows non "parcheggia" più i core inattivi: quando arriva un picco di lavoro tutti i core rispondono subito, senza il ritardo di risveglio.'; en = 'Windows stops "parking" idle cores: when a burst of work arrives every core answers right away, with no wake-up delay.' }
+        Warn = @{ it = 'Consumi un po'' più alti a PC fermo.'; en = 'Slightly higher power draw when idle.' }
+        When = { param($hw) -not $hw.IsLaptop }
+        Rec = { param($hw) if ($hw.CPU.IsX3DDual) { @{ level = 'notrec'; why = @{ it = 'I Ryzen X3D a due CCD usano il parcheggio dei core per mandare i giochi sui core con la cache 3D'; en = 'Dual-CCD Ryzen X3D chips use core parking to send games to the 3D-cache cores' } } } }
+        Apply = {
+            param($hw)
+            & powercfg -attributes 54533251-82be-4824-96c1-47b60b740d00 0cc5b647-c1df-4637-891a-dec35c318583 -ATTRIB_HIDE 2>&1 | Out-Null
+            Set-VxPower '54533251-82be-4824-96c1-47b60b740d00' '0cc5b647-c1df-4637-891a-dec35c318583' 100
+        }
+        Test = {
+            param($hw)
+            $s = Get-VxActiveScheme; if (-not $s) { return $false }
+            $v = Get-VxPowerValue $s.guid '54533251-82be-4824-96c1-47b60b740d00' '0cc5b647-c1df-4637-891a-dec35c318583'
+            return ($v -and $v.ac -eq 100)
+        }
+    },
+    @{
+        Id = 'mpo'; Cat = 'latency'; Risk = 'advanced'; Reboot = $true; Presets = @()
+        Title = @{ it = 'Correzione scatti e sfarfallio (Multi-Plane Overlay off)'; en = 'Fix stutter and flicker (Multi-Plane Overlay off)' }
+        Desc = @{ it = 'Disattiva i "piani sovrapposti" di Windows, causa nota di micro-scatti, sfarfallii e schermo nero con alcune schede video e più monitor.'; en = 'Turns off Windows "multi-plane overlay", a known cause of micro-stutter, flicker and black screens with some graphics cards and multi-monitor setups.' }
+        Warn = @{ it = 'Usala solo se hai scatti o sfarfallii: su PC senza problemi non porta benefici.'; en = 'Only use it if you have stutter or flicker: on PCs without issues it brings no benefit.' }
+        Reg = @(, @('HKLM:\SOFTWARE\Microsoft\Windows\Dwm', 'OverlayTestMode', 'DWord', 5))
+    },
+
     # ======================================================= INPUT
     @{
         Id = 'mouseaccel'; Cat = 'input'; Risk = 'safe'; Presets = @('gaming', 'competitive')
@@ -560,7 +607,7 @@ function Invoke-VxTweak {
 
 # Settings stored inside the active power plan (or per network interface) get lost when Windows or another
 # program switches plan / adds an interface. If the user turned them on (backup entry exists), put them back.
-$script:VxHealIds = @('powerlat', 'cpumin', 'wifipower', 'nagle')
+$script:VxHealIds = @('powerlat', 'cpumin', 'wifipower', 'nagle', 'coreparking')
 $script:VxHealTried = @{}
 function Repair-VxLostTweaks {
     param($Hw)
@@ -576,7 +623,7 @@ function Repair-VxLostTweaks {
             $script:VxHealTried[$id] = [DateTime]::Now
             $r = Invoke-VxTweak $t $Hw
             if ($r.ok) { $fixed += $id; Write-VxLog "Re-applied lost setting: $id" }
-            if ($r.ok -and $id -match '^(powerlat|cpumin|wifipower)$' -and -not (Test-VxTweakApplied $t $Hw)) {
+            if ($r.ok -and $id -match '^(powerlat|cpumin|wifipower|coreparking)$' -and -not (Test-VxTweakApplied $t $Hw)) {
                 # still off right after applying: write what the power plan reports, to find who changes it back
                 try {
                     $sch = Get-VxActiveScheme
