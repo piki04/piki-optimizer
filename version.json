@@ -1,8 +1,8 @@
 {
-  "version": "1.7.5",
+  "version": "1.7.6",
   "notes": {
-    "it": "Nuovo preset Piki Max: gioco e After Effects al massimo con la latenza più bassa, in un clic. Salta da solo ciò che non va bene per il tuo PC.",
-    "en": "New Piki Max preset: gaming and After Effects at full power with the lowest latency, in one click. It skips what is not right for your PC."
+    "it": "Corretto: \"Metti in background\" e la chiusura con \"Resta attiva in background\" ora lasciano Piki accanto all'orologio invece di chiuderlo. Anche l'avvio con Windows resta in background.",
+    "en": "Fixed: \"Send to background\" and closing with \"Keep running in background\" now keep Piki next to the clock instead of quitting. Starting with Windows stays in the background too."
   },
   "files": [
     {
@@ -37,8 +37,8 @@
     },
     {
       "path": "app/VeloxPC.ps1",
-      "sha256": "936ae36cede214a2a640f10bf735b1457a5b885073f96cbc1bc920d3d7482831",
-      "size": 117605
+      "sha256": "b5dabcf590e540585c8d08a8dd707a76c5d067a4c56d70c4b147b26e41f30426",
+      "size": 117884
     },
     {
       "path": "app/assets/logo.png",

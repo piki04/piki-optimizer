@@ -2249,8 +2249,12 @@ $script:Window.add_Closing({
     Write-VxLog '---- VeloxPC exit'
 })
 
+# the window runs on a normal message loop, not ShowDialog: hiding a modal window ends its loop,
+# which made "send to background" quit the whole app
+$script:Window.add_Closed({ try { $script:Window.Dispatcher.InvokeShutdown() } catch { } })
 try {
-    [void]$script:Window.ShowDialog()
+    $script:Window.Show()
+    [System.Windows.Threading.Dispatcher]::Run()
 } catch {
     Show-VxFatal ($_.Exception.Message + "`n" + $_.ScriptStackTrace)
 } finally {
