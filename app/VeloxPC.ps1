@@ -1627,7 +1627,7 @@ function Set-VxAutoStart {
 # =====================================================================
 #  NAVIGATION
 # =====================================================================
-$script:PageNames = @('Home', 'Health', 'Optimize', 'Processes', 'Network', 'Remote', 'Ae', 'Cleanup', 'Restore', 'Settings')
+$script:PageNames = @('Home', 'Health', 'Optimize', 'Processes', 'Network', 'Ae', 'Cleanup', 'Restore', 'Settings')
 # the selected-section capsule slides to the clicked item with a gentle spring
 $script:EaseSlide = New-Object System.Windows.Media.Animation.BackEase
 $script:EaseSlide.EasingMode = 'EaseOut'; $script:EaseSlide.Amplitude = 0.22; $script:EaseSlide.Freeze()
@@ -1757,30 +1757,6 @@ function Invoke-VxPageLoad {
     }
 }
 
-# remote assistance: Microsoft Quick Assist (free, encrypted, works over the Internet like AnyDesk)
-function Start-VxQuickAssist {
-    try {
-        $hasProto = Test-Path -LiteralPath 'Registry::HKEY_CLASSES_ROOT\ms-quick-assist'
-        $exe = Join-Path $env:WINDIR 'System32\quickassist.exe'
-        if ($hasProto) {
-            # through explorer so it runs as the normal user, not elevated like this app
-            Start-Process -FilePath 'explorer.exe' -ArgumentList 'ms-quick-assist:'
-        } elseif (Test-Path -LiteralPath $exe) {
-            Start-Process -FilePath 'explorer.exe' -ArgumentList $exe
-        } else {
-            Start-Process -FilePath 'explorer.exe' -ArgumentList 'ms-windows-store://pdp/?productid=9P7BP5VNWKX5'
-            $ui.RemoteStatus.Text = T 'remote.install'
-            Write-VxLog 'remote: Quick Assist missing, opened Store'
-            return
-        }
-        $ui.RemoteStatus.Text = T 'remote.opened'
-        Write-VxLog 'remote: Quick Assist started'
-    } catch {
-        $ui.RemoteStatus.Text = (T 'common.error') + ' ' + $_.Exception.Message
-        Write-VxLog "remote: $($_.Exception.Message)" 'WARN'
-    }
-}
-
 function Hide-VxSplash {
     $a = New-VxAnim 0 420 1
     $a.add_Completed({ $ui.SplashOverlay.Visibility = 'Collapsed' })
@@ -1795,8 +1771,6 @@ function Hide-VxSplash {
 $ui.BtnMin.add_Click({ if ($script:Settings.tray) { Send-VxToTray } else { $script:Window.WindowState = 'Minimized' } })
 if ($ui.BtnTray) { $ui.BtnTray.add_Click({ Write-VxLog 'tray button'; Send-VxToTray }) }
 $script:Window.add_PreviewMouseLeftButtonDown({ param($s, $e) try { $script:ClickPt = $e.GetPosition($ui.Root); $script:ClickAt = [DateTime]::Now } catch { } })
-$ui.BtnRemoteGet.add_Click({ Start-VxQuickAssist })
-$ui.BtnRemoteGive.add_Click({ Start-VxQuickAssist })
 $ui.BtnMax.add_Click({ if ($script:Window.WindowState -eq 'Maximized') { $script:Window.WindowState = 'Normal' } else { $script:Window.WindowState = 'Maximized' } })
 $ui.BtnClose.add_Click({ $script:Window.Close() })
 $ui.SplashClose.add_Click({ $script:Window.Close() })

@@ -1,8 +1,8 @@
 {
-  "version": "1.7.9",
+  "version": "1.8.0",
   "notes": {
-    "it": "Consigli Topaz più precisi per le versioni 3 e 4 (export paralleli adatti alla memoria della scheda video).",
-    "en": "More accurate Topaz advice for versions 3 and 4 (parallel exports matched to video memory)."
+    "it": "Rimossa la sezione Assistenza remota: l'app è più semplice e leggera.",
+    "en": "Removed the Remote assistance section: the app is simpler and lighter."
   },
   "files": [
     {
@@ -37,8 +37,8 @@
     },
     {
       "path": "app/VeloxPC.ps1",
-      "sha256": "389c099cde66d74a8ced5b421c1c3990f133999c4c1e8f7e4ceddff4958a51b2",
-      "size": 118393
+      "sha256": "a442d9f3a01a02107e1a71d3aeb690d54eed8ffd5619860f9b2072ec64722e0f",
+      "size": 117118
     },
     {
       "path": "app/assets/logo.png",
@@ -147,13 +147,13 @@
     },
     {
       "path": "app/ui/MainWindow.safe.xaml",
-      "sha256": "7037ed1af1db1cadf8715a9fdc98d86916b2a82cfbefb476ddbe29148018c461",
-      "size": 127155
+      "sha256": "ee8626636a5ae063f69670cb0aad468f19eaa0c69d4aaac4bc1855e3438c7e5e",
+      "size": 122754
     },
     {
       "path": "app/ui/MainWindow.xaml",
-      "sha256": "a654f221d5e98abe6673c955de182fa0fa6246c7a82833f118d47e8293f17f9a",
-      "size": 169564
+      "sha256": "01615dfab6802e57745050d929d77ecf8fae9579ea5b58f22d7500ff51ac1da1",
+      "size": 165151
     },
     {
       "path": "config.json",
