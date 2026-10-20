@@ -345,5 +345,8 @@
   "svc.state.on": "Serviço ligado",
   "svc.state.off": "Serviço desligado",
   "proc.switch.help": "Como ler os botões: VERDE = o serviço ou a função é DESLIGADO para deixar o PC mais leve. CINZA = continua LIGADO como agora. Ao lado de cada botão está escrito o que acontece. As alterações só começam quando você clica em \"Aplicar\".",
-  "tray.hide.tip": "Enviar para segundo plano (continua ativa perto do relógio)"
+  "tray.hide.tip": "Enviar para segundo plano (continua ativa perto do relógio)",
+  "preset.max": "Piki Max",
+  "preset.max.d": "Jogos e After Effects no máximo, latência mínima",
+  "preset.max.badge": "RECOMENDADO"
 }

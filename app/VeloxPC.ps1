@@ -921,7 +921,7 @@ function Invoke-VxFindingAction {
 # =====================================================================
 function Show-VxWizard {
     if (-not $script:Hw -or $script:States.Count -eq 0) { Show-VxToast (T 'common.wait') 'info'; return }
-    foreach ($n in @('WizGaming', 'WizCompetitive', 'WizCreator', 'WizBalanced', 'WizLaptop')) { $ui[$n].IsChecked = $false }
+    foreach ($n in @('WizMax', 'WizGaming', 'WizCompetitive', 'WizCreator', 'WizBalanced', 'WizLaptop')) { if ($ui[$n]) { $ui[$n].IsChecked = $false } }
     $ui.WizSummary.Text = T 'wiz.pick'; $ui.WizDetail.Text = ''
     $ui.WizGo.IsEnabled = $false
     $script:WizPreset = $null
@@ -931,7 +931,7 @@ function Show-VxWizard {
 function Get-VxWizardPlan {
     param([string]$Preset)
     $sel = @(Get-VxPresetSelection -Preset $Preset -Hw $script:Hw -States $script:States | Where-Object { -not $script:States[$_].applied })
-    $level = 1
+    $level = if ($Preset -eq 'max') { 2 } else { 1 }
     $svc = @($script:SvcRows | Where-Object { $_.Entry.Level -ge 1 -and $_.Entry.Level -le $level -and -not $_.Need -and -not $_.Applied } | ForEach-Object { $_.Id })
     return @{ tweaks = $sel; services = $svc }
 }
@@ -1822,7 +1822,8 @@ $ui.BtnHealthRun.add_Click({ Start-VxHealthCheck })
 
 # wizard
 $ui.WizClose.add_Click({ Hide-VxOverlay $ui.WizardOverlay })
-foreach ($n in @('WizGaming', 'WizCompetitive', 'WizCreator', 'WizBalanced', 'WizLaptop')) {
+foreach ($n in @('WizMax', 'WizGaming', 'WizCompetitive', 'WizCreator', 'WizBalanced', 'WizLaptop')) {
+    if (-not $ui[$n]) { continue }
     $ui[$n].add_Checked({ param($s, $e) Update-VxWizardSummary ([string]$s.Tag) })
 }
 $ui.WizGo.add_Click({
@@ -1834,7 +1835,8 @@ $ui.WizGo.add_Click({
 })
 
 # optimize presets
-foreach ($n in @('PresetGaming', 'PresetCompetitive', 'PresetCreator', 'PresetBalanced', 'PresetLaptop')) {
+foreach ($n in @('PresetMax', 'PresetGaming', 'PresetCompetitive', 'PresetCreator', 'PresetBalanced', 'PresetLaptop')) {
+    if (-not $ui[$n]) { continue }
     $ui[$n].add_Click({ param($s, $e) Select-VxPreset ([string]$s.Tag) })
 }
 
@@ -1842,7 +1844,7 @@ foreach ($n in @('PresetGaming', 'PresetCompetitive', 'PresetCreator', 'PresetBa
 $ui.BtnPendingApply.add_Click({ Invoke-VxPendingApply })
 $ui.BtnPendingReset.add_Click({
     foreach ($it in (Get-VxAllItems)) { if ($it.IsDirty) { $it.IsChecked = $it.IsApplied } }
-    foreach ($n in @('PresetGaming', 'PresetCompetitive', 'PresetCreator', 'PresetBalanced', 'PresetLaptop', 'LevelLight', 'LevelBalanced', 'LevelMax')) { $ui[$n].IsChecked = $false }
+    foreach ($n in @('PresetMax', 'PresetGaming', 'PresetCompetitive', 'PresetCreator', 'PresetBalanced', 'PresetLaptop', 'LevelLight', 'LevelBalanced', 'LevelMax')) { if ($ui[$n]) { $ui[$n].IsChecked = $false } }
     Update-VxPendingBar
 })
 

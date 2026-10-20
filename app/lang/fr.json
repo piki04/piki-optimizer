@@ -345,5 +345,8 @@
   "svc.state.on": "Service actif",
   "svc.state.off": "Service arrêté",
   "proc.switch.help": "Comment lire les interrupteurs : VERT = le service ou la fonction est ARRÊTÉ pour alléger le PC. GRIS = il reste ACTIF comme maintenant. À côté de chaque interrupteur, il est écrit ce qui se passe. Les modifications ne démarrent qu'en appuyant sur « Appliquer ».",
-  "tray.hide.tip": "Mettre en arrière-plan (reste active près de l'horloge)"
+  "tray.hide.tip": "Mettre en arrière-plan (reste active près de l'horloge)",
+  "preset.max": "Piki Max",
+  "preset.max.d": "Jeu et After Effects à fond, latence minimale",
+  "preset.max.badge": "CONSEILLÉ"
 }

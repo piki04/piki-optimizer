@@ -659,8 +659,13 @@ function Get-VxPresetSelection {
     # Which tweaks a preset turns on for this PC (skips "not recommended for you")
     param([string]$Preset, $Hw, [hashtable]$States)
     $ids = @()
+    # "max": everything for gaming + competitive + After Effects on this PC, except what slows renders down
+    $maxSkip = @('prioritysep', 'transparency', 'visualfx')   # keep render speed, glass and animations
     foreach ($t in (Get-VxAllTweaks)) {
-        if (-not ($t.Presets -contains $Preset)) { continue }
+        if ($Preset -eq 'max') {
+            if (-not ($t.Presets -contains 'gaming' -or $t.Presets -contains 'competitive' -or $t.Presets -contains 'creator')) { continue }
+            if ($maxSkip -contains $t.Id) { continue }
+        } elseif (-not ($t.Presets -contains $Preset)) { continue }
         $st = $States[$t.Id]
         if (-not $st -or -not $st.applicable) { continue }
         if ($st.rec -and $st.rec.level -eq 'notrec') { continue }

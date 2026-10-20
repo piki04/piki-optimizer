@@ -1,8 +1,8 @@
 {
-  "version": "1.7.4",
+  "version": "1.7.5",
   "notes": {
-    "it": "Nuove opzioni per la latenza (timer ad alta precisione, schermo intero esclusivo, core sempre pronti, correzione scatti) e pulsante per mettere l'app in background.",
-    "en": "New latency options (high-precision timer, exclusive fullscreen, no core parking, stutter fix) and a button to send the app to the background."
+    "it": "Nuovo preset Piki Max: gioco e After Effects al massimo con la latenza più bassa, in un clic. Salta da solo ciò che non va bene per il tuo PC.",
+    "en": "New Piki Max preset: gaming and After Effects at full power with the lowest latency, in one click. It skips what is not right for your PC."
   },
   "files": [
     {
@@ -37,8 +37,8 @@
     },
     {
       "path": "app/VeloxPC.ps1",
-      "sha256": "53305c6a04d3bad011e16368c344b6461ac48029f9e208dc59e8a0e8cd7a12cd",
-      "size": 117417
+      "sha256": "936ae36cede214a2a640f10bf735b1457a5b885073f96cbc1bc920d3d7482831",
+      "size": 117605
     },
     {
       "path": "app/assets/logo.png",
@@ -92,8 +92,8 @@
     },
     {
       "path": "app/core/Tweaks.ps1",
-      "sha256": "730553c61ce4bcbce34e47b552de0a7f7eaf2becf0724db56997e4348ec71193",
-      "size": 49245
+      "sha256": "cc5c0ddeae9d5dc6af27442fe4567e3d1f76f3696e15b8554c78921792477489",
+      "size": 49692
     },
     {
       "path": "app/core/Updater.ps1",
@@ -102,48 +102,48 @@
     },
     {
       "path": "app/lang/de.json",
-      "sha256": "674cfceb9c66751ac58cf977b6cc5aeb31def623ca30543fa6655bf81fb72c18",
-      "size": 21005
+      "sha256": "4bae3b49f20af7b5f60e2f47cb62a9537d13d65bb3f91ba5cdcad1413513eadf",
+      "size": 21143
     },
     {
       "path": "app/lang/en.json",
-      "sha256": "3215860be740e155a7bc9ace5a9e6ef2aeae940879699def7098b7cbe18f43c2",
-      "size": 19198
+      "sha256": "6f11609aad34c0044b215ab560800430992190a3e06a94efdf949e5a56e7311d",
+      "size": 19339
     },
     {
       "path": "app/lang/es.json",
-      "sha256": "773836d80122a76f243cde99c6e1c838c9c77a03c864a5f77b875125c95fc028",
-      "size": 20344
+      "sha256": "793f6dc9aaed75b01b64fe2585396f9febe965bda860e52a69f6f8df25ab11a6",
+      "size": 20482
     },
     {
       "path": "app/lang/fr.json",
-      "sha256": "24cde3a14f0dc942898def74378d7165443fb602537795768c98ab46b76e02bd",
-      "size": 21363
+      "sha256": "705fd32b046e5efe6122ffa0c23dca991f84c211135035680bdd26ccce37dc3a",
+      "size": 21495
     },
     {
       "path": "app/lang/it.json",
-      "sha256": "c22fc7c69629ae7535971075cc6e9235e125a74a2aacbb831dbf426fcd88d8a5",
-      "size": 20319
+      "sha256": "27cd380eb178f760e70098393361d2ae8937c1286ab0ec7e608fca14f8e2b039",
+      "size": 20454
     },
     {
       "path": "app/lang/ja.json",
-      "sha256": "44b1d23751c8ec45dead3e605ae0bcd679ac3985539845b5ea994c4ab659d8af",
-      "size": 24006
+      "sha256": "971d45ea4c0d05f8d320fb3fd41548bb3bd052fe7325cc13e61fdfd18362b52a",
+      "size": 24160
     },
     {
       "path": "app/lang/pt.json",
-      "sha256": "94dfd696e0603d4cd28e4202ba90f76493f4722b8e11cf50e6301b87fd12d016",
-      "size": 20331
+      "sha256": "2bfeb126016f1182e4e68aff6e652110b0e19a1919fc6b2f2c3ffbe8f058cc58",
+      "size": 20469
     },
     {
       "path": "app/lang/ru.json",
-      "sha256": "9f0ff99c62cf7faea0336f334714787ff487e72864b82402f65cff8728be0bea",
-      "size": 29291
+      "sha256": "d1dffd4194cc1c8d9132a51242a622eea61b03a0721ba8b6a71248a0b061ea9d",
+      "size": 29477
     },
     {
       "path": "app/lang/zh.json",
-      "sha256": "9faf6a35c33b0a7d8c2c462b544624540051448d9c689c1833587369ca78925a",
-      "size": 18857
+      "sha256": "e23816067a4d007ef41141f4da82efb544dbb21bbad76ee74da3a80d282e03af",
+      "size": 18990
     },
     {
       "path": "app/ui/MainWindow.safe.xaml",
@@ -152,8 +152,8 @@
     },
     {
       "path": "app/ui/MainWindow.xaml",
-      "sha256": "1226f76562e1c535cdd82b9438598b36cc2f2a74f187e7a01a4f150a7f3a67f0",
-      "size": 168112
+      "sha256": "a654f221d5e98abe6673c955de182fa0fa6246c7a82833f118d47e8293f17f9a",
+      "size": 169564
     },
     {
       "path": "config.json",

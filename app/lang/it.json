@@ -345,5 +345,8 @@
   "svc.state.on": "Servizio acceso",
   "svc.state.off": "Servizio spento",
   "proc.switch.help": "Come leggere gli interruttori: VERDE = il servizio o la funzione viene SPENTO per alleggerire il PC. GRIGIO = resta ACCESO come adesso. Accanto a ogni interruttore c'è scritto cosa succede. Le modifiche partono solo quando premi «Applica».",
-  "tray.hide.tip": "Metti in background (resta attiva vicino all'orologio)"
+  "tray.hide.tip": "Metti in background (resta attiva vicino all'orologio)",
+  "preset.max": "Piki Max",
+  "preset.max.d": "Gioco e After Effects al massimo, latenza minima",
+  "preset.max.badge": "CONSIGLIATO"
 }
