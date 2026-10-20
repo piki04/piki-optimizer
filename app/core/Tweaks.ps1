@@ -346,10 +346,16 @@ $script:VxTweaks = @(
         Desc = @{ it = 'Il pannello Widget (meteo, notizie, borsa) tiene aperti diversi processi web anche se non lo guardi mai.'; en = 'The Widgets panel (weather, news, stocks) keeps several web processes open even if you never look at it.' }
         Apply = {
             param($hw)
-            if ($hw.OS.IsWin11) { Set-VxReg 'HKLM:\SOFTWARE\Policies\Microsoft\Dsh' 'AllowNewsAndInterests' 'DWord' 0 }
+            if ($hw.OS.IsWin11) {
+                try { Set-VxReg 'HKLM:\SOFTWARE\Policies\Microsoft\Dsh' 'AllowNewsAndInterests' 'DWord' 0 }
+                catch {
+                    # some Windows 11 builds lock the policy key: hide the panel from the taskbar instead
+                    Set-VxReg 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' 'TaskbarDa' 'DWord' 0
+                }
+            }
             else { Set-VxReg 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Feeds' 'EnableFeeds' 'DWord' 0 }
         }
-        Test = { param($hw) if ($hw.OS.IsWin11) { Test-VxRegValue 'HKLM:\SOFTWARE\Policies\Microsoft\Dsh' 'AllowNewsAndInterests' 0 } else { Test-VxRegValue 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Feeds' 'EnableFeeds' 0 } }
+        Test = { param($hw) if ($hw.OS.IsWin11) { (Test-VxRegValue 'HKLM:\SOFTWARE\Policies\Microsoft\Dsh' 'AllowNewsAndInterests' 0) -or (Test-VxRegValue 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' 'TaskbarDa' 0) } else { Test-VxRegValue 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Feeds' 'EnableFeeds' 0 } }
     },
     @{
         Id = 'edgeboost'; Cat = 'proc'; Risk = 'safe'; Presets = @('gaming', 'competitive', 'creator', 'laptop')
@@ -612,7 +618,10 @@ $script:VxHealTried = @{}
 function Repair-VxLostTweaks {
     param($Hw)
     $fixed = @()
-    foreach ($id in $script:VxHealIds) {
+    # every setting the user turned on (it has a backup entry) is put back if Windows or an update undid it
+    $ids = @($script:VxHealIds)
+    try { $b = Get-VxBackup; foreach ($k in @($b.entries.Keys)) { if ($k -notlike 'svc:*' -and $ids -notcontains $k -and (Find-VxTweak $k)) { $ids += $k } } } catch { }
+    foreach ($id in $ids) {
         try {
             # at most one attempt per setting every few hours (no loop if Windows keeps changing it back)
             if ($script:VxHealTried.ContainsKey($id) -and ([DateTime]::Now - $script:VxHealTried[$id]).TotalHours -lt 6) { continue }

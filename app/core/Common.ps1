@@ -211,9 +211,9 @@ function Set-VxReg {
     param([string]$Path, [string]$Name, [string]$Type, $Value)
     $prev = Get-VxRegState -Path $Path -Name $Name
     Add-VxTxItem @{ key = "reg|$Path|$Name"; kind = 'reg'; path = $Path; name = $Name; existed = $prev.existed; keyExisted = $prev.keyExisted; type = $prev.type; value = $prev.value }
-    if (-not (Test-Path -LiteralPath $Path)) { New-Item -Path $Path -Force | Out-Null }
+    if (-not (Test-Path -LiteralPath $Path)) { New-Item -Path $Path -Force -ErrorAction Stop | Out-Null }
     if ($Type -eq 'Binary' -and $Value -is [string]) { $Value = [Convert]::FromBase64String($Value) }
-    New-ItemProperty -LiteralPath $Path -Name $Name -PropertyType $Type -Value $Value -Force | Out-Null
+    New-ItemProperty -LiteralPath $Path -Name $Name -PropertyType $Type -Value $Value -Force -ErrorAction Stop | Out-Null
 }
 
 function Remove-VxReg {
@@ -263,9 +263,10 @@ function Set-VxSvc {
 function Get-VxActiveScheme {
     $out = (& powercfg /getactivescheme 2>$null) -join ' '
     if ($out -match '([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})') {
+        $guid = $Matches[1].ToLower()
         $name = ''
         if ($out -match '\(([^)]+)\)\s*$') { $name = $Matches[1] }
-        return @{ guid = $Matches[1].ToLower(); name = $name }
+        return @{ guid = $guid; name = $name }
     }
     return $null
 }

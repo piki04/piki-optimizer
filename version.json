@@ -1,8 +1,8 @@
 {
-  "version": "1.7.6",
+  "version": "1.7.7",
   "notes": {
-    "it": "Corretto: \"Metti in background\" e la chiusura con \"Resta attiva in background\" ora lasciano Piki accanto all'orologio invece di chiuderlo. Anche l'avvio con Windows resta in background.",
-    "en": "Fixed: \"Send to background\" and closing with \"Keep running in background\" now keep Piki next to the clock instead of quitting. Starting with Windows stays in the background too."
+    "it": "Le impostazioni restano attive anche dopo il riavvio di Windows: Piki rimette da solo quelle che Windows annulla. Corretto un errore che impediva di salvare le opzioni di risparmio energetico (USB/PCIe, CPU, core parking). \"Riduci a icona\" ora manda Piki accanto all'orologio.",
+    "en": "Settings now stay on after a Windows restart: Piki puts back the ones Windows undoes. Fixed a bug that kept power options (USB/PCIe, CPU, core parking) from being saved. Minimize now sends Piki next to the clock."
   },
   "files": [
     {
@@ -37,8 +37,8 @@
     },
     {
       "path": "app/VeloxPC.ps1",
-      "sha256": "b5dabcf590e540585c8d08a8dd707a76c5d067a4c56d70c4b147b26e41f30426",
-      "size": 117884
+      "sha256": "6e3e65a39d6efc259b61c049b90e7ee8a5c3e8121d5e26844bcf48b5e02e9238",
+      "size": 118199
     },
     {
       "path": "app/assets/logo.png",
@@ -57,13 +57,13 @@
     },
     {
       "path": "app/core/Cleanup.ps1",
-      "sha256": "2ae3cd92e4d8df40b7f0869d928dcf3074efe4b9396f651e589131951f5c6eea",
-      "size": 6622
+      "sha256": "e56382b8816f1fd56135b1a62cfceca861bf0b4700fe0014adf477dc234d5172",
+      "size": 6638
     },
     {
       "path": "app/core/Common.ps1",
-      "sha256": "b888df5eb2361d1d90b0ecbf83da0604b49375538c75495f1c329506fd71e507",
-      "size": 21664
+      "sha256": "1184f96ff5a7c54a581db0576eb241b69a6b78288b528c5f409672ac582a193b",
+      "size": 21722
     },
     {
       "path": "app/core/Hardware.ps1",
@@ -92,8 +92,8 @@
     },
     {
       "path": "app/core/Tweaks.ps1",
-      "sha256": "cc5c0ddeae9d5dc6af27442fe4567e3d1f76f3696e15b8554c78921792477489",
-      "size": 49692
+      "sha256": "45aab888b01ba04ea2a56a300376fe20a1f30debc9bddb32d6abd6ffa25a85b1",
+      "size": 50398
     },
     {
       "path": "app/core/Updater.ps1",

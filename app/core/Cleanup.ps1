@@ -75,7 +75,7 @@ function Invoke-VxClean {
                 & $c.Clean
                 $after = [int64]0
                 foreach ($p in $paths) { if ($p) { $after += ([VeloxPC.Native]::DirSize($p))[0] } }
-                $freed += [math]::Max(0, $before - $after)
+                $freed += [math]::Max([int64]0, [int64]($before - $after))
             } else {
                 if ($c.Pre) { & $c.Pre }
                 foreach ($p in $paths) { if ($p) { $freed += [VeloxPC.Native]::DeleteContents($p, '*') } }

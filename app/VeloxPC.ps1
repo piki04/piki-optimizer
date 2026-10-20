@@ -1593,6 +1593,7 @@ function Send-VxToTray {
     try {
         if (-not $script:TrayIcon) { Update-VxTrayIcon }
         if ($script:TrayIcon) { $script:TrayIcon.Visible = $true }
+        $script:Window.ShowInTaskbar = $false
         $script:Window.Hide()
         if ($script:TrayIcon -and -not $script:TrayHintShown) {
             $script:TrayHintShown = $true; $script:BalloonKind = 'hint'
@@ -1789,8 +1790,9 @@ function Hide-VxSplash {
 # =====================================================================
 #  EVENT WIRING
 # =====================================================================
-$ui.BtnMin.add_Click({ $script:Window.WindowState = 'Minimized' })
-if ($ui.BtnTray) { $ui.BtnTray.add_Click({ Send-VxToTray }) }
+# with "Keep running in background" on, minimize also goes next to the clock (like Discord / Steam)
+$ui.BtnMin.add_Click({ if ($script:Settings.tray) { Send-VxToTray } else { $script:Window.WindowState = 'Minimized' } })
+if ($ui.BtnTray) { $ui.BtnTray.add_Click({ Write-VxLog 'tray button'; Send-VxToTray }) }
 $script:Window.add_PreviewMouseLeftButtonDown({ param($s, $e) try { $script:ClickPt = $e.GetPosition($ui.Root); $script:ClickAt = [DateTime]::Now } catch { } })
 $ui.BtnRemoteGet.add_Click({ Start-VxQuickAssist })
 $ui.BtnRemoteGive.add_Click({ Start-VxQuickAssist })
@@ -2239,6 +2241,8 @@ $script:Window.add_Closing({
     param($s, $e)
     if ($script:Settings.tray -and -not $script:ReallyExit) {
         $e.Cancel = $true
+        Write-VxLog 'close -> background'
+        $script:Window.ShowInTaskbar = $false
         $script:Window.Hide()
         if (-not $script:TrayHintShown -and $script:TrayIcon) { $script:TrayHintShown = $true; $script:BalloonKind = 'hint'; $script:TrayIcon.ShowBalloonTip(3000, 'Piki Optimizer', (T 'tray.still'), 'Info') }
         return
