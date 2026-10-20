@@ -344,5 +344,6 @@
   "opt.state.off": "Nicht aktiv",
   "svc.state.on": "Dienst läuft",
   "svc.state.off": "Dienst aus",
-  "proc.switch.help": "So liest du die Schalter: GRÜN = der Dienst oder die Funktion wird AUSGESCHALTET, um den PC zu entlasten. GRAU = bleibt AN wie jetzt. Neben jedem Schalter steht, was passiert. Änderungen starten erst, wenn du „Anwenden“ drückst."
+  "proc.switch.help": "So liest du die Schalter: GRÜN = der Dienst oder die Funktion wird AUSGESCHALTET, um den PC zu entlasten. GRAU = bleibt AN wie jetzt. Neben jedem Schalter steht, was passiert. Änderungen starten erst, wenn du „Anwenden“ drückst.",
+  "tray.hide.tip": "In den Hintergrund (läuft neben der Uhr weiter)"
 }

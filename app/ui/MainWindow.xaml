@@ -1158,6 +1158,7 @@
             <Grid Background="Transparent">
                 <TextBlock x:Name="TitlePc" Text="" Foreground="{StaticResource FaintBrush}" FontSize="13" VerticalAlignment="Center" Margin="28,0,0,0"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button x:Name="BtnTray" Style="{StaticResource TitleBtn}" Content="&#xE70D;" ToolTip="@{tray.hide.tip}"/>
                     <Button x:Name="BtnMin" Style="{StaticResource TitleBtn}" Content="&#xE921;"/>
                     <Button x:Name="BtnMax" Style="{StaticResource TitleBtn}" Content="&#xE922;"/>
                     <Button x:Name="BtnClose" Style="{StaticResource CloseBtn}" Content="&#xE8BB;"/>

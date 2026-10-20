@@ -344,5 +344,6 @@
   "opt.state.off": "Off",
   "svc.state.on": "Service running",
   "svc.state.off": "Service turned off",
-  "proc.switch.help": "How to read the switches: GREEN = the service or feature is TURNED OFF to lighten your PC. GREY = it stays ON as it is now. Next to each switch it says what happens. Changes only start when you press \"Apply\"."
+  "proc.switch.help": "How to read the switches: GREEN = the service or feature is TURNED OFF to lighten your PC. GREY = it stays ON as it is now. Next to each switch it says what happens. Changes only start when you press \"Apply\".",
+  "tray.hide.tip": "Send to background (keeps running next to the clock)"
 }

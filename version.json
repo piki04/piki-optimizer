@@ -1,8 +1,8 @@
 {
-  "version": "1.7.2",
+  "version": "1.7.3",
   "notes": {
-    "it": "Latenza più bassa: l'app risponde subito ai clic e le animazioni sono più rapide, sempre fluide.",
-    "en": "Lower latency: the app reacts instantly to clicks and animations are quicker, still smooth."
+    "it": "Nuovo pulsante in alto per mettere l'app in background con un clic: resta attiva vicino all'orologio.",
+    "en": "New title-bar button to send the app to the background in one click: it keeps running next to the clock."
   },
   "files": [
     {
@@ -37,8 +37,8 @@
     },
     {
       "path": "app/VeloxPC.ps1",
-      "sha256": "323674391735bad15396830f78a9b4a97b3f3cc2f2acc1276d0a1915972ad857",
-      "size": 116536
+      "sha256": "53305c6a04d3bad011e16368c344b6461ac48029f9e208dc59e8a0e8cd7a12cd",
+      "size": 117417
     },
     {
       "path": "app/assets/logo.png",
@@ -102,48 +102,48 @@
     },
     {
       "path": "app/lang/de.json",
-      "sha256": "b8805859013eefb661d5f13236ff76b8357e28d5f25041afef92112e9ea8796d",
-      "size": 20934
+      "sha256": "674cfceb9c66751ac58cf977b6cc5aeb31def623ca30543fa6655bf81fb72c18",
+      "size": 21005
     },
     {
       "path": "app/lang/en.json",
-      "sha256": "20bd8c57d0ee46e2e205f5840a36af01509f77c372e345aedb9364e012145408",
-      "size": 19123
+      "sha256": "3215860be740e155a7bc9ace5a9e6ef2aeae940879699def7098b7cbe18f43c2",
+      "size": 19198
     },
     {
       "path": "app/lang/es.json",
-      "sha256": "579fbd48d6632c8d247619de5bb7ef25daba7a74d7e22d9da71265a02dfdc712",
-      "size": 20269
+      "sha256": "773836d80122a76f243cde99c6e1c838c9c77a03c864a5f77b875125c95fc028",
+      "size": 20344
     },
     {
       "path": "app/lang/fr.json",
-      "sha256": "d6f15f18df26f26584ce802c2ec85d5d6c9664f9602e9f88ea25427581db467c",
-      "size": 21283
+      "sha256": "24cde3a14f0dc942898def74378d7165443fb602537795768c98ab46b76e02bd",
+      "size": 21363
     },
     {
       "path": "app/lang/it.json",
-      "sha256": "1fde934e3787635ed261973f17d34106fa1a18ca5831dbfbee904ff3f0fdd0fc",
-      "size": 20242
+      "sha256": "c22fc7c69629ae7535971075cc6e9235e125a74a2aacbb831dbf426fcd88d8a5",
+      "size": 20319
     },
     {
       "path": "app/lang/ja.json",
-      "sha256": "c27c896299c852ce21cc8f87a78efdea4e6abbedda91aa4719541db083b3bb0e",
-      "size": 23914
+      "sha256": "44b1d23751c8ec45dead3e605ae0bcd679ac3985539845b5ea994c4ab659d8af",
+      "size": 24006
     },
     {
       "path": "app/lang/pt.json",
-      "sha256": "99322041bcbf4cf362ffffe10142b5513dfd3b595e114ab59c95373b1f7dde61",
-      "size": 20248
+      "sha256": "94dfd696e0603d4cd28e4202ba90f76493f4722b8e11cf50e6301b87fd12d016",
+      "size": 20331
     },
     {
       "path": "app/lang/ru.json",
-      "sha256": "68e8e231cbaf3aa73ca66a210a75480c1d12b1eb777f41f3c4f298f51f12db92",
-      "size": 29182
+      "sha256": "9f0ff99c62cf7faea0336f334714787ff487e72864b82402f65cff8728be0bea",
+      "size": 29291
     },
     {
       "path": "app/lang/zh.json",
-      "sha256": "247183a453baf7b378059d155f01fc60ffc66273089ec4b45d1b84818207e5b9",
-      "size": 18792
+      "sha256": "9faf6a35c33b0a7d8c2c462b544624540051448d9c689c1833587369ca78925a",
+      "size": 18857
     },
     {
       "path": "app/ui/MainWindow.safe.xaml",
@@ -152,8 +152,8 @@
     },
     {
       "path": "app/ui/MainWindow.xaml",
-      "sha256": "2768fa694d6ce85836ed21735c5862eefe409882f8f382743ac55e4957c0283b",
-      "size": 167985
+      "sha256": "1226f76562e1c535cdd82b9438598b36cc2f2a74f187e7a01a4f150a7f3a67f0",
+      "size": 168112
     },
     {
       "path": "config.json",

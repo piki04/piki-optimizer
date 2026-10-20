@@ -1584,6 +1584,22 @@ function Show-VxFromTray {
     $script:Window.Show()
     if ($script:Window.WindowState -eq 'Minimized') { $script:Window.WindowState = 'Normal' }
     $script:Window.Activate() | Out-Null
+    # the icon was shown only for this trip to the background: hide it again if the user turned it off
+    if ($script:TrayIcon -and -not $script:Settings.tray) { $script:TrayIcon.Visible = $false }
+}
+
+# one click: the app goes to the background and keeps running next to the clock
+function Send-VxToTray {
+    try {
+        if (-not $script:TrayIcon) { Update-VxTrayIcon }
+        if ($script:TrayIcon) { $script:TrayIcon.Visible = $true }
+        $script:Window.Hide()
+        if ($script:TrayIcon -and -not $script:TrayHintShown) {
+            $script:TrayHintShown = $true; $script:BalloonKind = 'hint'
+            $script:TrayIcon.ShowBalloonTip(3000, 'Piki Optimizer', (T 'tray.still'), 'Info')
+        }
+        Write-VxLog 'sent to background'
+    } catch { Write-VxLog "tray: $($_.Exception.Message)" 'WARN' }
 }
 
 function Set-VxAutoStart {
@@ -1774,6 +1790,7 @@ function Hide-VxSplash {
 #  EVENT WIRING
 # =====================================================================
 $ui.BtnMin.add_Click({ $script:Window.WindowState = 'Minimized' })
+if ($ui.BtnTray) { $ui.BtnTray.add_Click({ Send-VxToTray }) }
 $script:Window.add_PreviewMouseLeftButtonDown({ param($s, $e) try { $script:ClickPt = $e.GetPosition($ui.Root); $script:ClickAt = [DateTime]::Now } catch { } })
 $ui.BtnRemoteGet.add_Click({ Start-VxQuickAssist })
 $ui.BtnRemoteGive.add_Click({ Start-VxQuickAssist })
