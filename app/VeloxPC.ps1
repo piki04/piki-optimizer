@@ -226,7 +226,7 @@ function Start-VxJob {
     if ($script:CoreFile) {
         $load = "try { [System.Threading.Thread]::CurrentThread.Priority = 'Lowest' } catch { }`n" +
             "if (-not (Get-Command Initialize-VxPaths -CommandType Function -ErrorAction SilentlyContinue)) { . '" + ($script:CoreFile -replace "'", "''") + "' }`n" +
-            "`$script:VxAeCache = `$null; `$script:VxTx = `$null; `$script:VxNicRestart = `$false; `$script:VxBatch = `$null`n"
+            "`$script:VxAeCache = `$null; `$script:VxTopazCache = `$null; `$script:VxTx = `$null; `$script:VxNicRestart = `$false; `$script:VxBatch = `$null`n"
         [void]$ps.AddScript($load + $wrap)
     } else {
         [void]$ps.AddScript($script:CoreText + $wrap)
@@ -1209,6 +1209,7 @@ function Switch-VxRenderMode {
             if ((Stop-VxProcessGroup $n) -gt 0) { $rm.closed += $n }
         }
         foreach ($p in @(Get-Process -Name 'AfterFX', 'aerender', 'Adobe Media Encoder' -ErrorAction SilentlyContinue)) { try { $p.PriorityClass = 'High' } catch { } }
+        foreach ($p in @(Get-Process -Name 'Topaz Video AI', 'Topaz Video' -ErrorAction SilentlyContinue)) { try { $p.PriorityClass = 'AboveNormal' } catch { } }
         try { [void][VeloxPC.Native]::PurgeStandbyList() } catch { }
         $script:RenderMode = $rm
         $ui.BtnRenderMode.Content = T 'ae.render.off'

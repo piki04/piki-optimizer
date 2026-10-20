@@ -1,8 +1,8 @@
 {
-  "version": "1.7.7",
+  "version": "1.7.8",
   "notes": {
-    "it": "Le impostazioni restano attive anche dopo il riavvio di Windows: Piki rimette da solo quelle che Windows annulla. Corretto un errore che impediva di salvare le opzioni di risparmio energetico (USB/PCIe, CPU, core parking). \"Riduci a icona\" ora manda Piki accanto all'orologio.",
-    "en": "Settings now stay on after a Windows restart: Piki puts back the ones Windows undoes. Fixed a bug that kept power options (USB/PCIe, CPU, core parking) from being saved. Minimize now sends Piki next to the clock."
+    "it": "Nuovo nella sezione After Effects: ottimizzazione per Topaz Video AI e Topaz Video, su misura per la versione che hai (scheda video dedicata, priorità, niente rallentamenti, antivirus più leggero sui modelli) e le impostazioni consigliate da mettere in Topaz.",
+    "en": "New in the After Effects section: optimization for Topaz Video AI and Topaz Video, tailored to your version (dedicated GPU, priority, no throttling, lighter antivirus on models) plus the recommended settings to use inside Topaz."
   },
   "files": [
     {
@@ -37,8 +37,8 @@
     },
     {
       "path": "app/VeloxPC.ps1",
-      "sha256": "6e3e65a39d6efc259b61c049b90e7ee8a5c3e8121d5e26844bcf48b5e02e9238",
-      "size": 118199
+      "sha256": "389c099cde66d74a8ced5b421c1c3990f133999c4c1e8f7e4ceddff4958a51b2",
+      "size": 118393
     },
     {
       "path": "app/assets/logo.png",
@@ -52,8 +52,8 @@
     },
     {
       "path": "app/core/AfterEffects.ps1",
-      "sha256": "05704b574205398548bd097cfa10c334310af99e7e0d825a741631f8c3aedcd2",
-      "size": 17420
+      "sha256": "21d3878e47a1b64351319d3a9476bf5f593e7e3a96bff2a866318f2c21f85553",
+      "size": 29614
     },
     {
       "path": "app/core/Cleanup.ps1",
