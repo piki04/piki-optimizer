@@ -346,7 +346,7 @@
   "svc.state.off": "サービス停止",
   "proc.switch.help": "スイッチの見方：緑 = PCを軽くするためにサービスや機能を停止します。グレー = 今のままオンです。各スイッチの横に何が起きるか表示されます。変更は「適用」を押したときだけ実行されます。",
   "tray.hide.tip": "バックグラウンドへ（時計の横で動作を続けます）",
-  "preset.max": "Piki Max",
+  "preset.max": "Piki Preset",
   "preset.max.d": "ゲームと After Effects を最大性能で、遅延は最小に",
   "preset.max.badge": "おすすめ"
 }

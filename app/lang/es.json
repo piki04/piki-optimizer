@@ -346,7 +346,7 @@
   "svc.state.off": "Servicio apagado",
   "proc.switch.help": "Cómo leer los interruptores: VERDE = el servicio o la función se APAGA para aligerar el PC. GRIS = sigue ENCENDIDO como ahora. Junto a cada interruptor se indica qué pasa. Los cambios solo empiezan al pulsar «Aplicar».",
   "tray.hide.tip": "Enviar a segundo plano (sigue activa junto al reloj)",
-  "preset.max": "Piki Max",
+  "preset.max": "Piki Preset",
   "preset.max.d": "Juegos y After Effects al máximo, latencia mínima",
   "preset.max.badge": "RECOMENDADO"
 }

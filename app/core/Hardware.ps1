@@ -185,8 +185,14 @@ function Get-VxHardware {
     $disks = @()
     $sysDiskNumber = -1
     try { $sysDiskNumber = (Get-Partition -DriveLetter ($env:SystemDrive.Substring(0, 1)) -ErrorAction Stop | Get-Disk -ErrorAction Stop).Number } catch { }
+    # disks Windows really sees right now (empty card readers, unplugged or "ghost" drives are left out)
+    $present = $null
+    try { $present = @(Get-Disk -ErrorAction Stop | Where-Object { [int64]$_.Size -gt 0 } | ForEach-Object { [int]$_.Number }) } catch { }
     try {
         foreach ($d in @(Get-PhysicalDisk -ErrorAction Stop)) {
+            if ([int64]$d.Size -le 0) { continue }
+            if (([string]($d.OperationalStatus -join ',')) -match 'Lost Communication|Detached|No Media|Not Present|Removed') { continue }
+            if ($present -and $present.Count -gt 0 -and ($present -notcontains [int]$d.DeviceId)) { continue }
             $rel = $null
             if (-not $Quick) { try { $rel = $d | Get-StorageReliabilityCounter -ErrorAction Stop } catch { } }
             $media = [string]$d.MediaType

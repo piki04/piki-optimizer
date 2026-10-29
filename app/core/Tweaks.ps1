@@ -385,6 +385,71 @@ $script:VxTweaks = @(
         }
     },
 
+    # ======================================================= MORE (1.9.0)
+    @{
+        Id = 'startupdelay'; Cat = 'system'; Risk = 'safe'; Presets = @('gaming', 'competitive', 'creator', 'balanced')
+        Title = @{ it = 'Programmi di avvio senza attesa'; en = 'Startup apps without delay' }
+        Desc = @{ it = 'Windows aspetta circa 10 secondi prima di aprire i programmi di avvio. Togliendo l''attesa il PC è pronto prima dopo l''accensione.'; en = 'Windows waits about 10 seconds before opening startup apps. Removing the wait makes the PC ready sooner after boot.' }
+        Reg = @(, @('HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Serialize', 'StartupDelayInMSec', 'DWord', 0))
+    },
+    @{
+        Id = 'hibernate'; Cat = 'system'; Risk = 'caution'; Presets = @()
+        Title = @{ it = 'Niente ibernazione (libera spazio)'; en = 'No hibernation (frees space)' }
+        Desc = @{ it = 'Cancella il file di ibernazione, grande quanto una parte della RAM: su un PC fisso sono spesso decine di GB liberati sul disco di Windows. La sospensione normale continua a funzionare.'; en = 'Deletes the hibernation file, sized as a share of your RAM: on a desktop that is often tens of GB freed on the Windows drive. Normal sleep keeps working.' }
+        Warn = @{ it = 'Non potrai più usare "Iberna" né l''avvio rapido.'; en = 'You will no longer be able to use "Hibernate" or Fast Startup.' }
+        When = { param($hw) -not $hw.IsLaptop }
+        Rec = { param($hw) if ($hw.RAM.GB -ge 32) { @{ level = 'rec'; why = @{ it = "Con $($hw.RAM.GB) GB di RAM il file è molto grande"; en = "With $($hw.RAM.GB) GB of RAM the file is very large" } } } }
+        Apply = {
+            param($hw)
+            Set-VxReg 'HKLM:\SYSTEM\CurrentControlSet\Control\Power' 'HibernateEnabled' 'DWord' 0
+            & powercfg /hibernate off 2>&1 | Out-Null
+        }
+        Test = { param($hw) Test-VxRegValue 'HKLM:\SYSTEM\CurrentControlSet\Control\Power' 'HibernateEnabled' 0 }
+    },
+    @{
+        Id = 'menudelay'; Cat = 'visual'; Risk = 'safe'; Presets = @('gaming', 'competitive', 'creator', 'balanced')
+        Title = @{ it = 'Menu istantanei'; en = 'Instant menus' }
+        Desc = @{ it = 'I sottomenu di Windows (clic destro, Start) si aprono subito invece di aspettare quasi mezzo secondo.'; en = 'Windows submenus (right-click, Start) open right away instead of waiting almost half a second.' }
+        Reg = @(, @('HKCU:\Control Panel\Desktop', 'MenuShowDelay', 'String', '0'))
+    },
+    @{
+        Id = 'activity'; Cat = 'privacy'; Risk = 'safe'; Presets = @('gaming', 'competitive', 'creator', 'balanced', 'laptop')
+        Title = @{ it = 'Niente cronologia attività'; en = 'No activity history' }
+        Desc = @{ it = 'Windows smette di registrare quali file e programmi apri per inviarli a Microsoft. Meno lavoro in background e più privacy.'; en = 'Windows stops recording which files and apps you open to send them to Microsoft. Less background work and more privacy.' }
+        Reg = @(
+            @('HKLM:\SOFTWARE\Policies\Microsoft\Windows\System', 'EnableActivityFeed', 'DWord', 0),
+            @('HKLM:\SOFTWARE\Policies\Microsoft\Windows\System', 'PublishUserActivities', 'DWord', 0),
+            @('HKLM:\SOFTWARE\Policies\Microsoft\Windows\System', 'UploadUserActivities', 'DWord', 0)
+        )
+    },
+    @{
+        Id = 'recall'; Cat = 'proc'; Risk = 'safe'; Presets = @('gaming', 'competitive', 'creator', 'balanced', 'laptop')
+        Title = @{ it = 'Niente Recall (istantanee dello schermo)'; en = 'No Recall (screen snapshots)' }
+        Desc = @{ it = 'Ferma Recall, che fotografa lo schermo ogni pochi secondi e lo analizza con l''AI: meno CPU, disco e spazio occupato, e più privacy.'; en = 'Stops Recall, which takes a screenshot every few seconds and analyses it with AI: less CPU, disk and space used, and more privacy.' }
+        When = { param($hw) $hw.OS.IsWin11 -and $hw.OS.Build -ge 26100 }
+        Reg = @(
+            @('HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI', 'DisableAIDataAnalysis', 'DWord', 1),
+            @('HKCU:\Software\Policies\Microsoft\Windows\WindowsAI', 'DisableAIDataAnalysis', 'DWord', 1)
+        )
+    },
+    @{
+        Id = 'copilot'; Cat = 'proc'; Risk = 'caution'; Presets = @('competitive')
+        Title = @{ it = 'Copilot non parte da solo'; en = 'Copilot does not start on its own' }
+        Desc = @{ it = 'Spegne Copilot di Windows e il suo pulsante: un processo in meno sempre acceso. Se lo usi, lascia questa opzione spenta.'; en = 'Turns off Windows Copilot and its button: one less always-on process. If you use it, leave this option off.' }
+        When = { param($hw) $hw.OS.IsWin11 }
+        Reg = @(
+            @('HKCU:\Software\Policies\Microsoft\Windows\WindowsCopilot', 'TurnOffWindowsCopilot', 'DWord', 1),
+            @('HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsCopilot', 'TurnOffWindowsCopilot', 'DWord', 1),
+            @('HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced', 'ShowCopilotButton', 'DWord', 0)
+        )
+    },
+    @{
+        Id = 'storeupd'; Cat = 'proc'; Risk = 'caution'; Presets = @('competitive')
+        Title = @{ it = 'App dello Store aggiornate solo quando vuoi tu'; en = 'Store apps update only when you choose' }
+        Desc = @{ it = 'Il Microsoft Store non scarica più aggiornamenti in background mentre giochi o renderizzi: niente picchi di disco e rete. Gli aggiornamenti li fai tu dallo Store.'; en = 'The Microsoft Store no longer downloads updates in the background while you game or render: no disk and network spikes. You update from the Store yourself.' }
+        Warn = @{ it = 'Ricordati di aprire lo Store ogni tanto per aggiornare le app (anche Xbox e Game Bar).'; en = 'Remember to open the Store now and then to update apps (including Xbox and Game Bar).' }
+        Reg = @(, @('HKLM:\SOFTWARE\Policies\Microsoft\WindowsStore', 'AutoDownload', 'DWord', 2))
+    },
     # ======================================================= NETWORK (Network page)
     @{
         Id = 'nagle'; Cat = 'net'; Risk = 'safe'; Presets = @('gaming', 'competitive')
@@ -669,7 +734,7 @@ function Get-VxPresetSelection {
     param([string]$Preset, $Hw, [hashtable]$States)
     $ids = @()
     # "max": everything for gaming + competitive + After Effects on this PC, except what slows renders down
-    $maxSkip = @('prioritysep', 'transparency', 'visualfx')   # keep render speed, glass and animations
+    $maxSkip = @('prioritysep', 'transparency', 'visualfx', 'copilot', 'storeupd')   # keep render speed, glass and animations
     foreach ($t in (Get-VxAllTweaks)) {
         if ($Preset -eq 'max') {
             if (-not ($t.Presets -contains 'gaming' -or $t.Presets -contains 'competitive' -or $t.Presets -contains 'creator')) { continue }

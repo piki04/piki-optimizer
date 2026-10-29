@@ -1,8 +1,8 @@
 {
-  "version": "1.8.0",
+  "version": "1.9.0",
   "notes": {
-    "it": "Rimossa la sezione Assistenza remota: l'app è più semplice e leggera.",
-    "en": "Removed the Remote assistance section: the app is simpler and lighter."
+    "it": "Grande aggiornamento: Topaz riconosciuto in automatico (qualsiasi versione e cartella) con consigli su misura; \"Piki Max\" ora si chiama \"Piki Preset\"; nuove ottimizzazioni (avvio senza attesa, menu istantanei, niente Recall/Copilot, ibernazione) e nuove pulizie (installer driver, log, miniature, cache app, cache After Effects). Check-up più preciso: niente allarmi sulla RAM con XMP/EXPO e niente errori da dischi non collegati.",
+    "en": "Big update: Topaz detected automatically (any version and folder) with tailored advice; \"Piki Max\" is now \"Piki Preset\"; new optimizations (no startup delay, instant menus, no Recall/Copilot, hibernation) and new cleanups (driver installers, logs, thumbnails, app caches, After Effects cache). More accurate check-up: no RAM alarms with XMP/EXPO and no errors from disks that are not connected."
   },
   "files": [
     {
@@ -52,13 +52,13 @@
     },
     {
       "path": "app/core/AfterEffects.ps1",
-      "sha256": "520356ec8dd7a377c9cfed727be4b595837161c95de19d807c801640423bb1b0",
-      "size": 29729
+      "sha256": "c33f53a192da5bb24c9c9cb00da0849b0da98d50adf9fb6ef06ed6c3f9be13a1",
+      "size": 32906
     },
     {
       "path": "app/core/Cleanup.ps1",
-      "sha256": "e56382b8816f1fd56135b1a62cfceca861bf0b4700fe0014adf477dc234d5172",
-      "size": 6638
+      "sha256": "d6ad1cca9858023b0a770b46462dd40065c551d9d0978af3b0c1ba9eed98afbd",
+      "size": 10329
     },
     {
       "path": "app/core/Common.ps1",
@@ -67,13 +67,13 @@
     },
     {
       "path": "app/core/Hardware.ps1",
-      "sha256": "59866ad113d77223384037abe007f39a231f1f1b0e06f0d2df930bcdadc7c0e4",
-      "size": 17122
+      "sha256": "771492206c15665c90f6b4a0ac595950a2e326ef58f94eea1d604c0027875c67",
+      "size": 17688
     },
     {
       "path": "app/core/Health.ps1",
-      "sha256": "37a4b3a6ccea8d36d2ec320497747cb1dcbd3cd70fb5304d2e54107e541252f8",
-      "size": 41577
+      "sha256": "53530c5aeb763c550461588487d5d30ee486496f49b1d35901a7732054362edc",
+      "size": 43142
     },
     {
       "path": "app/core/Native.cs",
@@ -92,8 +92,8 @@
     },
     {
       "path": "app/core/Tweaks.ps1",
-      "sha256": "45aab888b01ba04ea2a56a300376fe20a1f30debc9bddb32d6abd6ffa25a85b1",
-      "size": 50398
+      "sha256": "4e43ab78fd70782628ac1698ca22d5ee43d218a1ee6a0a9de3c57852164c3b99",
+      "size": 56375
     },
     {
       "path": "app/core/Updater.ps1",
@@ -102,48 +102,48 @@
     },
     {
       "path": "app/lang/de.json",
-      "sha256": "4bae3b49f20af7b5f60e2f47cb62a9537d13d65bb3f91ba5cdcad1413513eadf",
-      "size": 21143
+      "sha256": "62d9ba2df8010dc5d301bb667298032b5d5f163d975342589f9e4408d0735791",
+      "size": 21146
     },
     {
       "path": "app/lang/en.json",
-      "sha256": "6f11609aad34c0044b215ab560800430992190a3e06a94efdf949e5a56e7311d",
-      "size": 19339
+      "sha256": "697577bc96310fe5eec7a1d3c8ef57b1bb4b6861106a877dccb88a3ae20fcf66",
+      "size": 19342
     },
     {
       "path": "app/lang/es.json",
-      "sha256": "793f6dc9aaed75b01b64fe2585396f9febe965bda860e52a69f6f8df25ab11a6",
-      "size": 20482
+      "sha256": "5c01b8f6f94db5a95f63be884636bff94a805f0ddaf7544bae9a719b0502b4c9",
+      "size": 20485
     },
     {
       "path": "app/lang/fr.json",
-      "sha256": "705fd32b046e5efe6122ffa0c23dca991f84c211135035680bdd26ccce37dc3a",
-      "size": 21495
+      "sha256": "dc136a2b6529abcfdf7b81bbebee0bc8bf4fb8b0331ed4c338b6ec53113ac9d1",
+      "size": 21498
     },
     {
       "path": "app/lang/it.json",
-      "sha256": "27cd380eb178f760e70098393361d2ae8937c1286ab0ec7e608fca14f8e2b039",
-      "size": 20454
+      "sha256": "f4293b58a84c61927f682f6fcd4f55219e158ae060feed37f35c771ba2af3d35",
+      "size": 20457
     },
     {
       "path": "app/lang/ja.json",
-      "sha256": "971d45ea4c0d05f8d320fb3fd41548bb3bd052fe7325cc13e61fdfd18362b52a",
-      "size": 24160
+      "sha256": "760e930e23b2545f5aa4f504cda3acb8a7ebffbca6acc72407d754ca4b8529bc",
+      "size": 24163
     },
     {
       "path": "app/lang/pt.json",
-      "sha256": "2bfeb126016f1182e4e68aff6e652110b0e19a1919fc6b2f2c3ffbe8f058cc58",
-      "size": 20469
+      "sha256": "6c7c6066183fe3111eb09776c20464a7b9d4d18de63c6e616b707e018696d6bc",
+      "size": 20472
     },
     {
       "path": "app/lang/ru.json",
-      "sha256": "d1dffd4194cc1c8d9132a51242a622eea61b03a0721ba8b6a71248a0b061ea9d",
-      "size": 29477
+      "sha256": "45400638feb590fee4a6704dfc34d733751d5c6c9d760f1abc7ea9c768be48c5",
+      "size": 29480
     },
     {
       "path": "app/lang/zh.json",
-      "sha256": "e23816067a4d007ef41141f4da82efb544dbb21bbad76ee74da3a80d282e03af",
-      "size": 18990
+      "sha256": "d21bc0737af33089790dd3abdccf84bdac2d6d8f9a02d4590e5ebf295508c705",
+      "size": 18993
     },
     {
       "path": "app/ui/MainWindow.safe.xaml",

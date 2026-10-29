@@ -74,35 +74,55 @@ function Get-VxMediaCacheDirs {
 # ---- Topaz Video AI / Topaz Video
 $script:VxTopazCache = $null
 function Get-VxTopazApps {
+    # Finds every Topaz video app the user has, whatever the version or install folder:
+    # Video Enhance AI (1-2), Video AI (3-7) and the renamed Topaz Video (1.x, Studio)
     if ($script:VxTopazCache) { return $script:VxTopazCache }
-    $dirs = @()
-    foreach ($pf in @($env:ProgramFiles, ${env:ProgramW6432})) {
+    $exeRx = '^Topaz Video( Enhance)?( AI)?( Studio)?\.exe$'
+    $dirs = @(); $regVer = @{}
+    foreach ($pf in @($env:ProgramFiles, ${env:ProgramW6432}, ${env:ProgramFiles(x86)})) {
         if (-not $pf) { continue }
         $r = Join-Path $pf 'Topaz Labs LLC'
         if (Test-Path -LiteralPath $r) { $dirs += @(Get-ChildItem -LiteralPath $r -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -match '^Topaz Video' } | ForEach-Object { $_.FullName }) }
     }
-    foreach ($u in @('HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*', 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*')) {
-        foreach ($e in @(Get-ItemProperty $u -ErrorAction SilentlyContinue | Where-Object { $_.DisplayName -match '^Topaz Video' -and $_.InstallLocation })) {
-            $d = ([string]$e.InstallLocation).TrimEnd('\')
-            if (Test-Path -LiteralPath $d) { $dirs += $d }
+    # custom install folders (other drives) from the uninstall list
+    foreach ($u in @('HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*', 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*', 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*')) {
+        foreach ($e in @(Get-ItemProperty $u -ErrorAction SilentlyContinue | Where-Object { $_.DisplayName -match '^Topaz Video' })) {
+            $d = [string]$e.InstallLocation
+            if (-not $d -and $e.DisplayIcon) { $d = Split-Path -Parent (([string]$e.DisplayIcon) -replace '"', '' -replace ',\d+$', '') }
+            if ($d) {
+                $d = $d.TrimEnd('\')
+                if (Test-Path -LiteralPath $d) { $dirs += $d; if ($e.DisplayVersion) { $regVer[$d.ToLower()] = [string]$e.DisplayVersion } }
+            }
         }
+    }
+    # a copy that is running right now (portable or unusual folder)
+    foreach ($p in @(Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.ProcessName -like 'Topaz Video*' })) {
+        try { if ($p.Path) { $dirs += (Split-Path -Parent $p.Path) } } catch { }
     }
     $apps = @()
     foreach ($d in @($dirs | Select-Object -Unique)) {
-        $exe = @(Get-ChildItem -LiteralPath $d -Filter 'Topaz Video*.exe' -File -ErrorAction SilentlyContinue | Sort-Object Length -Descending) | Select-Object -First 1
+        $exe = @(Get-ChildItem -LiteralPath $d -Filter 'Topaz Video*.exe' -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -match $exeRx } | Sort-Object Length -Descending) | Select-Object -First 1
         if (-not $exe) { continue }
         $ver = ''
         try { $ver = [string][System.Diagnostics.FileVersionInfo]::GetVersionInfo($exe.FullName).ProductVersion } catch { }
-        $major = 0
-        if ($ver -match '^(\d+)') { $major = [int]$Matches[1] }
-        # "Topaz Video AI" 3.x-7.x, then the renamed "Topaz Video" (cloud / Starlight models)
-        $isNew = ($exe.BaseName -notmatch '\bAI\b') -and ((Split-Path -Leaf $d) -notmatch '\bAI\b')
-        $gen = if ($isNew) { 'tv' } elseif ($major -gt 0 -and $major -le 4) { 'legacy' } else { 'v5' }
-        $name = if ($isNew) { 'Topaz Video' } else { 'Topaz Video AI' }
+        if ((-not $ver -or $ver -notmatch '^\d') -and $regVer.ContainsKey($d.ToLower())) { $ver = $regVer[$d.ToLower()] }
+        $ver = ([regex]::Match([string]$ver, '^\d+(\.\d+){0,3}')).Value
+        $major = 0; $minor = 0
+        if ($ver -match '^(\d+)(?:\.(\d+))?') { $major = [int]$Matches[1]; if ($Matches[2]) { $minor = [int]$Matches[2] } }
+        $leaf = Split-Path -Leaf $d
+        if ($exe.BaseName -match 'Enhance' -or $leaf -match 'Enhance') { $gen = 'vea'; $name = 'Topaz Video Enhance AI' }
+        elseif ($exe.BaseName -match '\bAI\b' -or $leaf -match '\bAI\b') {
+            $name = 'Topaz Video AI'
+            $gen = if ($major -gt 0 -and $major -le 4) { 'legacy' } else { 'v5' }
+        } else { $gen = 'tv'; $name = 'Topaz Video' }
+        # NVIDIA RTX 50 (Blackwell) needs Video AI 6.2+ or the new Topaz Video
+        $rtx50ok = ($gen -eq 'tv') -or ($gen -eq 'v5' -and ($major -gt 6 -or ($major -eq 6 -and $minor -ge 2)))
         $ff = Join-Path $d 'ffmpeg.exe'
-        $apps += [pscustomobject]@{ Name = $name; Version = $ver; Major = $major; Gen = $gen; Dir = $d; Exe = $exe.FullName; ExeName = $exe.Name; Ffmpeg = $(if (Test-Path -LiteralPath $ff) { $ff } else { $null }) }
+        $apps += [pscustomobject]@{ Name = $name; Version = $ver; Major = $major; Minor = $minor; Gen = $gen; Rtx50Ok = $rtx50ok; Dir = $d; Exe = $exe.FullName; ExeName = $exe.Name; Ffmpeg = $(if (Test-Path -LiteralPath $ff) { $ff } else { $null }) }
     }
-    $script:VxTopazCache = [pscustomobject]@{ Apps = @($apps | Sort-Object Major -Descending); Installed = ($apps.Count -gt 0) }
+    # newest first: the new Topaz Video, then Video AI by version, then Enhance AI
+    $rank = @{ tv = 3; v5 = 2; legacy = 1; vea = 0 }
+    $script:VxTopazCache = [pscustomobject]@{ Apps = @($apps | Sort-Object @{ Expression = { $rank[$_.Gen] }; Descending = $true }, @{ Expression = { $_.Major * 100 + $_.Minor }; Descending = $true }); Installed = ($apps.Count -gt 0) }
     return $script:VxTopazCache
 }
 
@@ -118,7 +138,8 @@ function Get-VxTopazModelDirs {
         $v = [Environment]::GetEnvironmentVariable($n, 'Machine'); if (-not $v) { $v = [Environment]::GetEnvironmentVariable($n, 'User') }
         if ($v -and (Test-Path -LiteralPath $v)) { $list += $v.TrimEnd('\') }
     }
-    foreach ($d in @('Topaz Video AI', 'Topaz Video')) { $p = Join-Path $env:ProgramData "Topaz Labs LLC\$d"; if (Test-Path -LiteralPath $p) { $list += $p } }
+    $pd = Join-Path $env:ProgramData 'Topaz Labs LLC'
+    if (Test-Path -LiteralPath $pd) { $list += @(Get-ChildItem -LiteralPath $pd -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -match '^Topaz Video' } | ForEach-Object { $_.FullName }) }
     return @($list | Select-Object -Unique)
 }
 
@@ -186,7 +207,18 @@ function Get-VxTopazReport {
     $ramGB = [int]$Hw.RAM.GB
     $gpu = $Hw.GPU
     $vgb = if ($gpu -and $gpu.VramBytes) { [math]::Round($gpu.VramBytes / 1GB) } else { 0 }
-    $where = if ($a.Gen -eq 'legacy') { (L @{ it = 'Preferenze'; en = 'Preferences' }) } else { (L @{ it = 'File > Preferenze > Processing'; en = 'File > Preferences > Processing' }) }
+    $where = switch ($a.Gen) {
+        'vea' { (L @{ it = 'Preferenze'; en = 'Preferences' }) }
+        'legacy' { (L @{ it = 'File > Preferenze > Processing'; en = 'File > Preferences > Processing' }) }
+        default { (L @{ it = 'File > Preferenze > Processing'; en = 'File > Preferences > Processing' }) }
+    }
+    $genLabel = switch ($a.Gen) {
+        'vea' { L @{ it = 'versione storica (Enhance AI)'; en = 'early version (Enhance AI)' } }
+        'legacy' { L @{ it = 'versione 3-4'; en = 'version 3-4' } }
+        'v5' { L @{ it = 'versione 5-7'; en = 'version 5-7' } }
+        default { L @{ it = 'nuova versione (Studio)'; en = 'new version (Studio)' } }
+    }
+    $rows += @{ K = $pre + (L @{ it = 'Versione rilevata'; en = 'Detected version' }); V = ("$($a.Name) $($a.Version)").Trim(); H = ((L @{ it = 'Consigli adatti alla '; en = 'Advice tailored to the ' }) + $genLabel + '.') }
 
     $proc = (L @{ it = 'La scheda video dedicata'; en = 'The dedicated graphics card' })
     if ($gpu -and -not $gpu.Integrated) { $proc = $gpu.Name }
@@ -199,13 +231,13 @@ function Get-VxTopazReport {
     $maxp = if ($vgb -ge 16) { 3 } elseif ($vgb -ge 8) { 2 } else { 1 }
     # older versions load a full model copy per process: with less than 16 GB of video memory keep one
     if ($a.Gen -eq 'legacy') { $maxp = if ($vgb -ge 16) { 2 } else { 1 } }
-    $rows += @{ K = $pre + 'Max Processes'; V = "$maxp"; H = (L @{ it = "$where > Max Processes. Con $vgb GB di memoria video $maxp export in parallelo è il punto giusto: di più rallenta ognuno."; en = "$where > Max Processes. With $vgb GB of video memory, $maxp parallel exports is the sweet spot: more slows each one down." }) }
+    if ($a.Gen -ne 'vea') { $rows += @{ K = $pre + 'Max Processes'; V = "$maxp"; H = (L @{ it = "$where > Max Processes. Con $vgb GB di memoria video $maxp export in parallelo è il punto giusto: di più rallenta ognuno."; en = "$where > Max Processes. With $vgb GB of video memory, $maxp parallel exports is the sweet spot: more slows each one down." }) } }
 
     if ($gpu -and $gpu.Vendor -eq 'NVIDIA') {
         $enc = if ($gpu.Name -match 'RTX\s*(40|50)\d\d') { 'H.265 NVENC (AV1 NVENC)' } else { 'H.265 NVENC' }
         $rows += @{ K = $pre + (L @{ it = 'Encoder video'; en = 'Video encoder' }); V = $enc; H = (L @{ it = 'Nelle impostazioni di export: l''encoder della scheda video libera la CPU e accorcia l''export.'; en = 'In the export settings: the graphics card encoder frees the CPU and shortens the export.' }) }
     }
-    if ($a.Gen -ne 'legacy') {
+    if ($a.Gen -eq 'v5' -or $a.Gen -eq 'tv') {
         $rows += @{ K = $pre + 'Hardware Decoding'; V = (L @{ it = 'Attivo'; en = 'On' }); H = (L @{ it = "$where. Accelera la lettura di H.264, H.265 e AV1. Spegnilo solo se un video dà errori di decodifica."; en = "$where. Speeds up reading H.264, H.265 and AV1. Turn it off only if a video gives decode errors." }) }
     }
     $best = Get-VxBestCacheDrive $Hw
@@ -217,7 +249,10 @@ function Get-VxTopazReport {
         $rows += @{ K = $pre + 'Live Render in Preview'; V = $(if ($vgb -ge 12) { (L @{ it = 'A piacere'; en = 'Your choice' }) } else { (L @{ it = 'Spento'; en = 'Off' }) }); H = (L @{ it = 'Preferenze > Advanced. Occupa la GPU anche mentre guardi l''anteprima: spegnilo se l''interfaccia scatta.'; en = 'Preferences > Advanced. Keeps the GPU busy while you watch the preview: turn it off if the interface stutters.' }) }
         $rows += @{ K = $pre + 'Cloud Processing'; V = (L @{ it = 'Solo se usi Starlight'; en = 'Only if you use Starlight' }); H = (L @{ it = 'Preferenze > Advanced. Se non usi i modelli Starlight puoi spegnerlo: niente connessioni in background.'; en = 'Preferences > Advanced. If you do not use Starlight models you can turn it off: no background connections.' }) }
     }
-    if ($a.Gen -eq 'legacy') {
+    $isRtx50 = $gpu -and ($gpu.Name -match 'RTX\s*50\d\d')
+    if ($isRtx50 -and -not $a.Rtx50Ok) {
+        $checks += @{ sev = 'warn'; t = (L @{ it = "$($a.Name) $($a.Version) non sfrutta la tua $($gpu.Name): il supporto alle RTX 50 è arrivato con Video AI 6.2. Aggiorna almeno alla 6.2.2 (o alla 7.1) e gli export saranno molto più veloci."; en = "$($a.Name) $($a.Version) does not make use of your $($gpu.Name): RTX 50 support arrived in Video AI 6.2. Update to at least 6.2.2 (or 7.1) and exports will be much faster." }) }
+    } elseif ($a.Gen -eq 'legacy' -or $a.Gen -eq 'vea') {
         $checks += @{ sev = 'info'; t = (L @{ it = "Hai $($a.Name) $($a.Version): le versioni 5 e successive sono molto più veloci sulle schede video recenti.";  en = "You have $($a.Name) $($a.Version): version 5 and later are much faster on recent graphics cards." }) }
     }
     $checks += @{ sev = 'ok'; t = ((L @{ it = 'Trovato: '; en = 'Found: ' }) + (($tz.Apps | ForEach-Object { ("$($_.Name) $($_.Version)").Trim() }) -join ', ')) }

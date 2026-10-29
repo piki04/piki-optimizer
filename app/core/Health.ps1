@@ -42,7 +42,8 @@ function Invoke-VxHealthCheck {
             $diskProblems++
             [void]$f.Add((New-VxFinding 'disk' 'warn' @{ it = "SSD usurato: $name ($($d.Wear)%)"; en = "SSD wearing out: $name ($($d.Wear)%)" } @{ it = 'Funziona, ma tieni dei backup aggiornati.'; en = 'It works, but keep backups up to date.' }))
         }
-        if ($d.ReadErrors -gt 0) {
+        # USB adapters often report made-up error counters: only trust internal disks
+        if ($d.ReadErrors -gt 0 -and $d.Bus -ne 'USB') {
             $diskProblems++
             [void]$f.Add((New-VxFinding 'disk' 'warn' @{ it = "Errori di lettura su $name"; en = "Read errors on $name" } @{ it = "$($d.ReadErrors) errori non corretti registrati dal disco. Tieni d'occhio il disco e fai backup."; en = "$($d.ReadErrors) uncorrected errors logged by the disk. Keep an eye on it and back up." } 'fix:chkdsk' @{ it = 'Controlla e ripara'; en = 'Check and repair' }))
         }
@@ -58,6 +59,9 @@ function Invoke-VxHealthCheck {
         }
     } catch { }
     $diskEvt = @(Get-VxEvents @{ LogName = 'System'; ProviderName = @('disk', 'Ntfs', 'stornvme', 'storahci', 'iaStorAC', 'iaStorVD'); StartTime = $since30 } | Where-Object { @(7, 11, 51, 55, 98, 129, 153) -contains $_.Id })
+    # errors from a disk that is no longer connected (old USB stick, card reader) do not count
+    $nums = @($Hw.Disks | ForEach-Object { [int]$_.Number })
+    $diskEvt = @($diskEvt | Where-Object { $m = [regex]::Match([string]$_.Message, 'Harddisk(\d+)'); (-not $m.Success) -or ($nums -contains [int]$m.Groups[1].Value) })
     if ($diskEvt.Count -ge 3) {
         $diskProblems++
         [void]$f.Add((New-VxFinding 'disk' 'warn' @{ it = "$($diskEvt.Count) errori del disco negli ultimi 30 giorni"; en = "$($diskEvt.Count) disk errors in the last 30 days" } @{ it = 'Possibili cause: cavo SATA allentato, disco che invecchia o driver del controller. Controlla i collegamenti e fai backup.'; en = 'Possible causes: loose SATA cable, ageing disk or controller driver. Check connections and back up.' } 'fix:chkdsk' @{ it = 'Controlla e ripara'; en = 'Check and repair' }))
@@ -93,17 +97,25 @@ function Invoke-VxHealthCheck {
     $kp = @(Get-VxEvents @{ LogName = 'System'; ProviderName = 'Microsoft-Windows-Kernel-Power'; Id = 41; StartTime = $since30 })
     $whea = @(Get-VxEvents @{ LogName = 'System'; ProviderName = 'Microsoft-Windows-WHEA-Logger'; StartTime = $since30 })
     $wheaFatal = @($whea | Where-Object { $_.Level -le 2 })
+    # RAM running its XMP/EXPO profile is a choice the user made (and usually tested): do not blame it
+    $ramTuned = -not $Hw.RAM.XmpProbablyOff
     if ($bsod.Count -gt 0) {
         $last = $bsod[0].TimeCreated.ToString('dd/MM HH:mm')
-        [void]$f.Add((New-VxFinding 'stability' 'crit' @{ it = "$($bsod.Count) schermate blu negli ultimi 30 giorni"; en = "$($bsod.Count) blue screens in the last 30 days" } @{ it = "L'ultima il $last. Cause tipiche: RAM con XMP/EXPO instabile, overclock, driver della scheda video o un disco difettoso."; en = "Last one on $last. Typical causes: unstable XMP/EXPO RAM, overclocking, graphics driver or a faulty disk." } 'fix:memtest' @{ it = 'Test della RAM'; en = 'Test RAM' }))
+        if ($ramTuned) {
+            [void]$f.Add((New-VxFinding 'stability' 'crit' @{ it = "$($bsod.Count) schermate blu negli ultimi 30 giorni"; en = "$($bsod.Count) blue screens in the last 30 days" } @{ it = "L'ultima il $last. Cause tipiche: driver della scheda video, un disco difettoso o un overclock della CPU. Aggiorna i driver e il BIOS."; en = "Last one on $last. Typical causes: graphics driver, a faulty disk or a CPU overclock. Update drivers and BIOS." }))
+        } else {
+            [void]$f.Add((New-VxFinding 'stability' 'crit' @{ it = "$($bsod.Count) schermate blu negli ultimi 30 giorni"; en = "$($bsod.Count) blue screens in the last 30 days" } @{ it = "L'ultima il $last. Cause tipiche: RAM difettosa, overclock, driver della scheda video o un disco difettoso."; en = "Last one on $last. Typical causes: faulty RAM, overclocking, graphics driver or a faulty disk." } 'fix:memtest' @{ it = 'Test della RAM'; en = 'Test RAM' }))
+        }
     }
     if ($kp.Count -gt 0 -and $bsod.Count -eq 0) {
-        [void]$f.Add((New-VxFinding 'stability' 'warn' @{ it = "$($kp.Count) spegnimenti improvvisi negli ultimi 30 giorni"; en = "$($kp.Count) unexpected shutdowns in the last 30 days" } @{ it = 'Il PC si è spento senza chiudere Windows. Se non hai staccato tu la corrente: alimentatore, temperature o overclock instabile.'; en = 'The PC turned off without shutting down Windows. If you did not pull the plug: power supply, temperatures or unstable overclock.' } 'fix:memtest' @{ it = 'Test della RAM'; en = 'Test RAM' }))
+        # most of these are a held power button, a power cut or a frozen game: a hint, not a danger
+        $kpSev = if ($kp.Count -ge 5) { 'warn' } else { 'info' }
+        [void]$f.Add((New-VxFinding 'stability' $kpSev @{ it = "$($kp.Count) spegnimenti improvvisi negli ultimi 30 giorni"; en = "$($kp.Count) unexpected shutdowns in the last 30 days" } @{ it = 'Il PC si è spento senza chiudere Windows. Se hai tenuto premuto il pulsante o è saltata la corrente, ignoralo. Se succede da solo: controlla alimentatore e temperature.'; en = 'The PC turned off without shutting down Windows. If you held the power button or the power went out, ignore it. If it happens on its own: check the power supply and temperatures.' }))
     }
     if ($wheaFatal.Count -gt 0) {
-        [void]$f.Add((New-VxFinding 'stability' 'crit' @{ it = "$($wheaFatal.Count) errori hardware gravi (WHEA)"; en = "$($wheaFatal.Count) serious hardware errors (WHEA)" } @{ it = 'La CPU o la RAM hanno segnalato errori. Nel 90% dei casi è un overclock, un undervolt o un profilo XMP/EXPO troppo spinto: prova a riportarli a default nel BIOS.'; en = 'The CPU or RAM reported errors. 90% of the time it is an overclock, undervolt or an aggressive XMP/EXPO profile: try reverting them to default in the BIOS.' } 'fix:bios' @{ it = 'Apri il BIOS'; en = 'Open BIOS' }))
+        [void]$f.Add((New-VxFinding 'stability' 'crit' @{ it = "$($wheaFatal.Count) errori hardware gravi (WHEA)"; en = "$($wheaFatal.Count) serious hardware errors (WHEA)" } $(if ($ramTuned) { @{ it = 'La CPU o la scheda madre hanno segnalato errori. Spesso è un overclock o un undervolt della CPU troppo spinto, oppure un BIOS da aggiornare.'; en = 'The CPU or motherboard reported errors. Often it is an aggressive CPU overclock or undervolt, or a BIOS that needs updating.' } } else { @{ it = 'La CPU o la RAM hanno segnalato errori. Spesso è un overclock o un undervolt troppo spinto: prova a riportarli a default nel BIOS.'; en = 'The CPU or RAM reported errors. Often it is an aggressive overclock or undervolt: try reverting them to default in the BIOS.' } }) 'fix:bios' @{ it = 'Apri il BIOS'; en = 'Open BIOS' }))
     } elseif ($whea.Count -ge 5) {
-        [void]$f.Add((New-VxFinding 'stability' 'warn' @{ it = "$($whea.Count) errori hardware corretti (WHEA)"; en = "$($whea.Count) corrected hardware errors (WHEA)" } @{ it = 'Windows li ha corretti, ma indicano instabilità (spesso PCIe o RAM). Se hai scatti o crash, controlla overclock/XMP e aggiorna il BIOS.'; en = 'Windows corrected them, but they point to instability (often PCIe or RAM). If you get stutters or crashes, check overclock/XMP and update the BIOS.' } 'fix:bios' @{ it = 'Apri il BIOS'; en = 'Open BIOS' }))
+        [void]$f.Add((New-VxFinding 'stability' 'warn' @{ it = "$($whea.Count) errori hardware corretti (WHEA)"; en = "$($whea.Count) corrected hardware errors (WHEA)" } @{ it = 'Windows li ha corretti da solo. Spesso vengono dal collegamento PCIe (scheda video, SSD): se non hai scatti o crash puoi ignorarli, altrimenti aggiorna il BIOS.'; en = 'Windows corrected them on its own. They often come from the PCIe link (graphics card, SSD): if you have no stutters or crashes you can ignore them, otherwise update the BIOS.' } 'fix:bios' @{ it = 'Apri il BIOS'; en = 'Open BIOS' }))
     }
     if ($bsod.Count -eq 0 -and $kp.Count -eq 0 -and $wheaFatal.Count -eq 0) {
         [void]$f.Add((New-VxFinding 'stability' 'ok' @{ it = 'Nessuna schermata blu o crash di sistema'; en = 'No blue screens or system crashes' } @{ it = 'Negli ultimi 30 giorni il sistema è stato stabile.'; en = 'The system has been stable for the last 30 days.' }))

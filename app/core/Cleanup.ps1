@@ -25,6 +25,34 @@ $script:VxCleanItems = @(
         Desc = @{ it = 'File di anteprima audio/video di After Effects e Premiere: vengono ricreati quando servono. Saltato se Adobe è aperto.'; en = 'After Effects and Premiere audio/video preview files: recreated when needed. Skipped if Adobe is open.' }
         Paths = { @(Get-VxMediaCacheDirs) }
         Skip = { Test-VxProcessRunning @('AfterFX', 'Adobe Premiere Pro', 'Adobe Media Encoder', 'aerender') } },
+    @{ Id = 'gpudriver'; Risk = 'safe'; Default = $true
+        Title = @{ it = 'Installer vecchi dei driver video'; en = 'Old graphics driver installers' }
+        Desc = @{ it = 'File di installazione dei driver NVIDIA e AMD già installati: spesso diversi GB. Il driver in uso non viene toccato.'; en = 'Setup files of already-installed NVIDIA and AMD drivers: often several GB. The driver in use is not touched.' }
+        Paths = { @((Join-Path $env:SystemDrive 'NVIDIA'), (Join-Path $env:SystemDrive 'AMD'), (Join-Path $env:ProgramData 'NVIDIA Corporation\Downloader')) } },
+    @{ Id = 'winlogs'; Risk = 'safe'; Default = $true
+        Title = @{ it = 'Log di Windows'; en = 'Windows logs' }
+        Desc = @{ it = 'Registri di installazione e manutenzione di Windows già chiusi. Quelli in uso vengono saltati.'; en = 'Windows setup and servicing logs that are already closed. Logs in use are skipped.' }
+        Paths = { @((Join-Path $env:windir 'Logs\CBS'), (Join-Path $env:windir 'Logs\DISM'), (Join-Path $env:windir 'Logs\MoSetup'), (Join-Path $env:windir 'Logs\WindowsUpdate')) } },
+    @{ Id = 'thumbs'; Risk = 'safe'; Default = $false
+        Title = @{ it = 'Anteprime delle immagini'; en = 'Image thumbnails' }
+        Desc = @{ it = 'Le miniature di foto e video in Esplora file. Utile se mostrano immagini sbagliate; vengono ricreate quando apri le cartelle.'; en = 'Photo and video thumbnails in File Explorer. Useful if they show the wrong image; they are recreated when you open folders.' }
+        Paths = { @((Join-Path $env:LOCALAPPDATA 'Microsoft\Windows\Explorer')) }
+        Clean = { Get-ChildItem -LiteralPath (Join-Path $env:LOCALAPPDATA 'Microsoft\Windows\Explorer') -Filter 'thumbcache_*.db' -File -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue } },
+    @{ Id = 'appcache'; Risk = 'caution'; Default = $false
+        Title = @{ it = 'Cache di Discord, Steam e Teams'; en = 'Discord, Steam and Teams caches' }
+        Desc = @{ it = 'Immagini e file temporanei salvati da queste app: vengono riscaricati quando servono. Account e chat NON vengono toccati. Saltato se l''app è aperta.'; en = 'Images and temporary files saved by these apps: downloaded again when needed. Accounts and chats are NOT touched. Skipped if the app is open.' }
+        Paths = {
+            $out = @()
+            if (-not (Get-Process -Name 'Discord' -ErrorAction SilentlyContinue)) { foreach ($n in @('Cache', 'Code Cache', 'GPUCache')) { $out += (Join-Path $env:APPDATA "discord\$n") } }
+            if (-not (Get-Process -Name 'steamwebhelper', 'steam' -ErrorAction SilentlyContinue)) { $out += (Join-Path $env:LOCALAPPDATA 'Steam\htmlcache') }
+            if (-not (Get-Process -Name 'ms-teams', 'Teams' -ErrorAction SilentlyContinue)) { $out += (Join-Path $env:LOCALAPPDATA 'Packages\MSTeams_8wekyb3d8bbwe\LocalCache\Microsoft\MSTeams\EBWebView\Default\Cache') }
+            $out
+        } },
+    @{ Id = 'aedisk'; Risk = 'safe'; Default = $false
+        Title = @{ it = 'Cache disco di After Effects'; en = 'After Effects disk cache' }
+        Desc = @{ it = 'Le anteprime già calcolate salvate da After Effects nella cartella creata da Piki: vengono ricalcolate quando servono. Saltato se After Effects è aperto.'; en = 'Previews already rendered by After Effects in the folder Piki created: recalculated when needed. Skipped if After Effects is open.' }
+        Paths = { @(Get-PSDrive -PSProvider FileSystem -ErrorAction SilentlyContinue | ForEach-Object { Join-Path $_.Root 'VeloxPC Cache\After Effects Disk Cache' } | Where-Object { Test-Path -LiteralPath $_ }) }
+        Skip = { Test-VxProcessRunning @('AfterFX', 'aerender') } },
     @{ Id = 'browser'; Risk = 'caution'; Default = $false
         Title = @{ it = 'Cache dei browser'; en = 'Browser caches' }
         Desc = @{ it = 'Immagini e file dei siti salvati da Chrome, Edge e Brave. Password e accessi NON vengono toccati. Saltato se il browser è aperto.'; en = 'Site images and files saved by Chrome, Edge and Brave. Passwords and logins are NOT touched. Skipped if the browser is open.' }
