@@ -2,7 +2,7 @@
 # Each tweak is data: registry values (Reg) and/or a custom Apply block that only
 # uses the Set-Vx* helpers, so every change is recorded and can be undone.
 
-$script:VxPresets = @('max', 'piki', 'gaming', 'competitive', 'creator', 'balanced', 'laptop')
+$script:VxPresets = @('piki', 'gaming', 'competitive', 'creator', 'balanced', 'laptop')
 
 $script:VxTweaks = @(
     # ======================================================= GAMING & LATENCY
@@ -920,17 +920,12 @@ $script:VxPikiIds = @(
 function Get-VxPresetSelection {
     # Which tweaks a preset turns on for this PC (skips "not recommended for you")
     param([string]$Preset, $Hw, [hashtable]$States)
-    if ($Preset -eq 'aesthetic') { $Preset = 'piki' }   # settings saved by 1.10.x
+    # "aesthetic" (1.10.x) and "max" (Piki Max, removed in 1.11.2) now mean the Piki preset
+    if ($Preset -eq 'aesthetic' -or $Preset -eq 'max') { $Preset = 'piki' }
     $ids = @()
-    # "max": everything for gaming + competitive + After Effects on this PC, except what slows renders down,
-    # changes the look, or trades stability for a tiny gain (exclusive fullscreen, grouped svchost, NIC interrupts)
-    $maxSkip = @('prioritysep', 'transparency', 'visualfx', 'copilot', 'storeupd', 'fso', 'svchost', 'nicirq')
     foreach ($t in (Get-VxAllTweaks)) {
         if ($Preset -eq 'piki') {
             if (-not ($t.Cat -eq 'ae' -or $script:VxPikiIds -contains $t.Id)) { continue }
-        } elseif ($Preset -eq 'max') {
-            if (-not ($t.Presets -contains 'gaming' -or $t.Presets -contains 'competitive' -or $t.Presets -contains 'creator')) { continue }
-            if ($maxSkip -contains $t.Id) { continue }
         } elseif (-not ($t.Presets -contains $Preset)) { continue }
         $st = $States[$t.Id]
         if (-not $st -or -not $st.applicable) { continue }

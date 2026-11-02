@@ -346,8 +346,6 @@
   "svc.state.off": "Servicio apagado",
   "proc.switch.help": "Cómo leer los interruptores: VERDE = el servicio o la función se APAGA para aligerar el PC. GRIS = sigue ENCENDIDO como ahora. Junto a cada interruptor se indica qué pasa. Los cambios solo empiezan al pulsar «Aplicar».",
   "tray.hide.tip": "Enviar a segundo plano (sigue activa junto al reloj)",
-  "preset.max": "Piki Max",
-  "preset.max.d": "Juegos, red y After Effects al máximo, con CPU y núcleos siempre listos si tu procesador lo admite y servicios innecesarios apagados. Latencia mínima y renders rápidos; animaciones intactas.",
   "preset.max.badge": "RECOMENDADO",
   "preset.piki": "Piki",
   "preset.piki.d": "Latencia mínima para jugar y editar: entrada, temporizador, red, energía, privacidad, After Effects y Topaz. En Ryzen X3D lleva los juegos a la caché 3D. No toca aspecto, barra/Nexus, NVIDIA ni servicios.",

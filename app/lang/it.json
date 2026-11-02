@@ -346,8 +346,6 @@
   "svc.state.off": "Servizio spento",
   "proc.switch.help": "Come leggere gli interruttori: VERDE = il servizio o la funzione viene SPENTO per alleggerire il PC. GRIGIO = resta ACCESO come adesso. Accanto a ogni interruttore c'è scritto cosa succede. Le modifiche partono solo quando premi «Applica».",
   "tray.hide.tip": "Metti in background (resta attiva vicino all'orologio)",
-  "preset.max": "Piki Max",
-  "preset.max.d": "Gioco, rete e After Effects al massimo, con CPU e core sempre pronti dove adatti al tuo processore e servizi non necessari spenti. Latenza minima e render veloci; animazioni intatte.",
   "preset.max.badge": "CONSIGLIATO",
   "preset.piki": "Piki",
   "preset.piki.d": "Latenza minima per gioco ed editing: input, timer, rete, energia, privacy, After Effects e Topaz. Sui Ryzen X3D porta i giochi sulla cache 3D. Non tocca aspetto, barra/Nexus, NVIDIA e servizi.",

@@ -346,8 +346,6 @@
   "svc.state.off": "Service turned off",
   "proc.switch.help": "How to read the switches: GREEN = the service or feature is TURNED OFF to lighten your PC. GREY = it stays ON as it is now. Next to each switch it says what happens. Changes only start when you press \"Apply\".",
   "tray.hide.tip": "Send to background (keeps running next to the clock)",
-  "preset.max": "Piki Max",
-  "preset.max.d": "Gaming, network and After Effects at full power, with CPU and cores always ready where your processor suits it and unneeded services off. Lowest latency and fast renders; animations kept.",
   "preset.max.badge": "RECOMMENDED",
   "preset.piki": "Piki",
   "preset.piki.d": "Lowest latency for gaming and editing: input, timer, network, power, privacy, After Effects and Topaz. On Ryzen X3D it keeps games on the 3D cache. Leaves looks, taskbar/Nexus, NVIDIA and services alone.",

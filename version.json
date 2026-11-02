@@ -1,8 +1,8 @@
 {
-  "version": "1.11.1",
+  "version": "1.11.2",
   "notes": {
-    "it": "Ryzen X3D: se il parcheggio dei core (\"min cores\") ha un intervallo rotto 0-0 o un valore di fabbrica al 100%, Piki lo ripara (con annullamento) e imposta il 10% del piano Bilanciato. Rimette ai valori di Windows anche \"app in background bloccate\" e \"raggruppa servizi\" lasciati da versioni vecchie o altri programmi.",
-    "en": "Ryzen X3D: if core parking (\"min cores\") has a broken 0-0 range or a 100% factory value, Piki repairs it (with undo) and sets the Balanced plan to 10%. It also resets \"background apps blocked\" and \"group services\" left by older versions or other tools to Windows defaults."
+    "it": "Tolto il preset \"Piki Max\": ora il preset consigliato è \"Piki\". Chi aveva scelto Piki Max passa in automatico a Piki; le modifiche già applicate restano e si possono annullare dalla pagina Ripristino.",
+    "en": "Removed the \"Piki Max\" preset: the recommended preset is now \"Piki\". If you had picked Piki Max you move to Piki automatically; changes already applied stay and can be undone from the Restore page."
   },
   "files": [
     {
@@ -47,8 +47,8 @@
     },
     {
       "path": "app/VeloxPC.ps1",
-      "sha256": "54f28318c25f5d656e5201e2ad4fd9208a70adf9c03fdce39262bbf440d785f0",
-      "size": 119445
+      "sha256": "24e4976915081ba00c5228ef5d6d1aff12c3ed4be2673ae485775af859b8aa2b",
+      "size": 119427
     },
     {
       "path": "app/assets/logo.png",
@@ -102,8 +102,8 @@
     },
     {
       "path": "app/core/Tweaks.ps1",
-      "sha256": "f1d335eb995a7e670099db2c4ba5a827782a14383f46314a8d8d55a1c6b1a6c1",
-      "size": 70753
+      "sha256": "975cebe78fc24c108938c8ca79fabfd299f558b15ce22bef9b8d250177747ea8",
+      "size": 70260
     },
     {
       "path": "app/core/Updater.ps1",
@@ -112,48 +112,48 @@
     },
     {
       "path": "app/lang/de.json",
-      "sha256": "2963c8f46c72e2408b9ace70005f328d5b096cdb94fa6c8b6b33d8e41a11663d",
-      "size": 22906
+      "sha256": "2e7f249e76ec157d597dd28c44db809d9f6f38ddf42d01cfc6631c4b60296f92",
+      "size": 22653
     },
     {
       "path": "app/lang/en.json",
-      "sha256": "c394d9fff3cf9f6e5cc0805c4f155124fc6cd332ad6dc11ac42ccef91cad8de2",
-      "size": 20932
+      "sha256": "489be29c9cecf4ae0306cded186093726944fa64c3a4b39720cbac0ef5c6775e",
+      "size": 20695
     },
     {
       "path": "app/lang/es.json",
-      "sha256": "d0502312a1bebc6d37d84777760c0479c373e97c02ec21685492d5148058e924",
-      "size": 22161
+      "sha256": "d82d1d99e23d03ef4219b7d868d7b726280fdf13cdad092a03889fa5314334f5",
+      "size": 21917
     },
     {
       "path": "app/lang/fr.json",
-      "sha256": "53ff585a68663542efa1f94bb430403ab2aba03745ef60839eb36dc3eca3d542",
-      "size": 23331
+      "sha256": "ce234def889a5f9917d1b532e7861d7e8650a98c1bce88baab47fc48b81b2a17",
+      "size": 23088
     },
     {
       "path": "app/lang/it.json",
-      "sha256": "3608d4f82ec54c71b63094b09442178374ef11b10c8feec7e0c5e6b21e9b3ca3",
-      "size": 22087
+      "sha256": "b02831c180531f3a1fd96eb679f571e47f8670159b6ed75a41ba6ac8888a4e06",
+      "size": 21855
     },
     {
       "path": "app/lang/ja.json",
-      "sha256": "82b79c5b508551fb55008f59ffc7acda2617955cb35b101a87b851894c8c669f",
-      "size": 26360
+      "sha256": "d3e1c520e786577e2ba277121f9f89250287f38893b172c4d5f97b028c09a3fa",
+      "size": 26060
     },
     {
       "path": "app/lang/pt.json",
-      "sha256": "007ca832ca55de7585e731986ae3cd16432830f8f2576658718f35828d28e7e4",
-      "size": 22121
+      "sha256": "f6d1592ddbce240e2c81b0a5669a6a6c1d5540af359eeae28754dcdd69cb8b99",
+      "size": 21865
     },
     {
       "path": "app/lang/ru.json",
-      "sha256": "50dfb971baddd0f53bf00fd6d33b7cc25b532021709875b6ba4e495e424e3298",
-      "size": 32188
+      "sha256": "f39a56ebdd9bcc9463b2594e9cc9e332ed21769217a10997aa4af8132b128064",
+      "size": 31806
     },
     {
       "path": "app/lang/zh.json",
-      "sha256": "d1a2d4d8e73106ecc1236cddac91d1feb2b5e1452459bfb8587c985916c42b8c",
-      "size": 20617
+      "sha256": "c9fd81a5db26f45c719c3b7c412a8c12c5378402e6517067c9310c9349005467",
+      "size": 20391
     },
     {
       "path": "app/ui/MainWindow.safe.xaml",
@@ -162,8 +162,8 @@
     },
     {
       "path": "app/ui/MainWindow.xaml",
-      "sha256": "b92da738c18c59697d4cd4b716d07529720560836c984cea0c82c7859b5f36a0",
-      "size": 166722
+      "sha256": "cc04d906998b5936524f9b7f7aba6d04314a659e55d4ee98d01e7ee4e91dc87b",
+      "size": 165820
     },
     {
       "path": "config.json",

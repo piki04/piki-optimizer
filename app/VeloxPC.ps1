@@ -107,7 +107,7 @@ Write-VxLog '---- Piki Optimizer start'
 try { if (Test-Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\PikiOptimizer') { $lmv = Get-VxLocalManifest; if ($lmv) { Set-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\PikiOptimizer' -Name DisplayVersion -Value ([string]$lmv.version) } } } catch { }
 
 $script:Settings = Get-VxSettings
-if ($script:Settings.profile -eq 'aesthetic') { $script:Settings.profile = 'piki' }   # preset renamed in 1.11.0
+if ($script:Settings.profile -eq 'aesthetic' -or $script:Settings.profile -eq 'max') { $script:Settings.profile = 'piki' }   # renamed in 1.11.0 / Piki Max removed in 1.11.2
 if (-not $script:Settings.lang) {
     $cul = (Get-UICulture).TwoLetterISOLanguageName
     if (-not (Test-Path -LiteralPath (Join-Path $AppDir "lang\$cul.json"))) { $cul = (Get-Culture).TwoLetterISOLanguageName }
@@ -936,7 +936,7 @@ function Invoke-VxFindingAction {
 # =====================================================================
 function Show-VxWizard {
     if (-not $script:Hw -or $script:States.Count -eq 0) { Show-VxToast (T 'common.wait') 'info'; return }
-    foreach ($n in @('WizMax', 'WizPiki', 'WizGaming', 'WizCompetitive', 'WizCreator', 'WizBalanced', 'WizLaptop')) { if ($ui[$n]) { $ui[$n].IsChecked = $false } }
+    foreach ($n in @('WizPiki', 'WizGaming', 'WizCompetitive', 'WizCreator', 'WizBalanced', 'WizLaptop')) { if ($ui[$n]) { $ui[$n].IsChecked = $false } }
     $ui.WizSummary.Text = T 'wiz.pick'; $ui.WizDetail.Text = ''
     $ui.WizGo.IsEnabled = $false
     $script:WizPreset = $null
@@ -946,7 +946,7 @@ function Show-VxWizard {
 function Get-VxWizardPlan {
     param([string]$Preset)
     $sel = @(Get-VxPresetSelection -Preset $Preset -Hw $script:Hw -States $script:States | Where-Object { -not $script:States[$_].applied })
-    $level = if ($Preset -eq 'max') { 2 } elseif ($Preset -eq 'piki') { 0 } else { 1 }
+    $level = if ($Preset -eq 'piki') { 0 } else { 1 }
     $svc = @($script:SvcRows | Where-Object { $_.Entry.Level -ge 1 -and $_.Entry.Level -le $level -and -not $_.Need -and -not $_.Applied } | ForEach-Object { $_.Id })
     return @{ tweaks = $sel; services = $svc }
 }
@@ -1816,7 +1816,7 @@ $ui.BtnHealthRun.add_Click({ Start-VxHealthCheck })
 
 # wizard
 $ui.WizClose.add_Click({ Hide-VxOverlay $ui.WizardOverlay })
-foreach ($n in @('WizMax', 'WizPiki', 'WizGaming', 'WizCompetitive', 'WizCreator', 'WizBalanced', 'WizLaptop')) {
+foreach ($n in @('WizPiki', 'WizGaming', 'WizCompetitive', 'WizCreator', 'WizBalanced', 'WizLaptop')) {
     if (-not $ui[$n]) { continue }
     $ui[$n].add_Checked({ param($s, $e) Update-VxWizardSummary ([string]$s.Tag) })
 }
@@ -1829,7 +1829,7 @@ $ui.WizGo.add_Click({
 })
 
 # optimize presets
-foreach ($n in @('PresetMax', 'PresetPiki', 'PresetGaming', 'PresetCompetitive', 'PresetCreator', 'PresetBalanced', 'PresetLaptop')) {
+foreach ($n in @('PresetPiki', 'PresetGaming', 'PresetCompetitive', 'PresetCreator', 'PresetBalanced', 'PresetLaptop')) {
     if (-not $ui[$n]) { continue }
     $ui[$n].add_Click({ param($s, $e) Select-VxPreset ([string]$s.Tag) })
 }
@@ -1838,7 +1838,7 @@ foreach ($n in @('PresetMax', 'PresetPiki', 'PresetGaming', 'PresetCompetitive',
 $ui.BtnPendingApply.add_Click({ Invoke-VxPendingApply })
 $ui.BtnPendingReset.add_Click({
     foreach ($it in (Get-VxAllItems)) { if ($it.IsDirty) { $it.IsChecked = $it.IsApplied } }
-    foreach ($n in @('PresetMax', 'PresetPiki', 'PresetGaming', 'PresetCompetitive', 'PresetCreator', 'PresetBalanced', 'PresetLaptop', 'LevelLight', 'LevelBalanced', 'LevelMax')) { if ($ui[$n]) { $ui[$n].IsChecked = $false } }
+    foreach ($n in @('PresetPiki', 'PresetGaming', 'PresetCompetitive', 'PresetCreator', 'PresetBalanced', 'PresetLaptop', 'LevelLight', 'LevelBalanced', 'LevelMax')) { if ($ui[$n]) { $ui[$n].IsChecked = $false } }
     Update-VxPendingBar
 })
 

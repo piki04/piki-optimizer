@@ -346,8 +346,6 @@
   "svc.state.off": "Dienst aus",
   "proc.switch.help": "So liest du die Schalter: GRÜN = der Dienst oder die Funktion wird AUSGESCHALTET, um den PC zu entlasten. GRAU = bleibt AN wie jetzt. Neben jedem Schalter steht, was passiert. Änderungen starten erst, wenn du „Anwenden“ drückst.",
   "tray.hide.tip": "In den Hintergrund (läuft neben der Uhr weiter)",
-  "preset.max": "Piki Max",
-  "preset.max.d": "Gaming, Netzwerk und After Effects auf Maximum, mit CPU und Kernen immer bereit, wo dein Prozessor es verträgt, und unnötigen Diensten aus. Minimale Latenz und schnelle Renderings; Animationen bleiben.",
   "preset.max.badge": "EMPFOHLEN",
   "preset.piki": "Piki",
   "preset.piki.d": "Minimale Latenz für Gaming und Schnitt: Eingabe, Timer, Netzwerk, Energie, Datenschutz, After Effects und Topaz. Auf Ryzen X3D bleiben Spiele auf dem 3D-Cache. Optik, Taskleiste/Nexus, NVIDIA und Dienste bleiben unberührt.",

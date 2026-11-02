@@ -346,8 +346,6 @@
   "svc.state.off": "Service arrêté",
   "proc.switch.help": "Comment lire les interrupteurs : VERT = le service ou la fonction est ARRÊTÉ pour alléger le PC. GRIS = il reste ACTIF comme maintenant. À côté de chaque interrupteur, il est écrit ce qui se passe. Les modifications ne démarrent qu'en appuyant sur « Appliquer ».",
   "tray.hide.tip": "Mettre en arrière-plan (reste active près de l'horloge)",
-  "preset.max": "Piki Max",
-  "preset.max.d": "Jeu, réseau et After Effects à fond, avec CPU et cœurs toujours prêts si ton processeur s'y prête et services inutiles coupés. Latence minimale et rendus rapides ; animations conservées.",
   "preset.max.badge": "CONSEILLÉ",
   "preset.piki": "Piki",
   "preset.piki.d": "Latence minimale pour le jeu et le montage : entrées, minuteur, réseau, énergie, confidentialité, After Effects et Topaz. Sur Ryzen X3D, garde les jeux sur le cache 3D. Ne touche ni l'apparence, ni la barre/Nexus, ni NVIDIA, ni les services.",

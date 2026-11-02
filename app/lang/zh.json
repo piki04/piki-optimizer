@@ -346,8 +346,6 @@
   "svc.state.off": "服务已关闭",
   "proc.switch.help": "如何看开关：绿色 = 关闭该服务或功能，为电脑减负。灰色 = 保持开启，与现在一样。每个开关旁都会写明效果。只有点击“应用”后才会生效。",
   "tray.hide.tip": "转到后台（在时钟旁继续运行）",
-  "preset.max": "Piki Max",
-  "preset.max.d": "游戏、网络和 After Effects 全开：在处理器适合时让 CPU 与核心随时待命，并关闭不必要的服务。延迟最低、渲染更快；动画保持不变。",
   "preset.max.badge": "推荐",
   "preset.piki": "Piki",
   "preset.piki.d": "为游戏和剪辑带来最低延迟：输入、计时器、网络、电源、隐私、After Effects 和 Topaz。在 Ryzen X3D 上让游戏留在 3D 缓存核心。不改外观、任务栏/Nexus、NVIDIA 设置和服务。",
