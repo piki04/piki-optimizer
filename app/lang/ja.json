@@ -250,9 +250,9 @@
   "restore.point.creating": "復元ポイントを作成中",
   "restore.point.ok": "復元ポイントを作成しました。",
   "restore.point.fail": "Windows が復元ポイントを作成できませんでした（システムの保護がオフ？）。",
-  "restore.all": "すべて元に戻す",
-  "restore.all.sub": "Piki Optimizer が変更したすべての設定を元に戻します。",
-  "restore.all.btn": "すべての変更を元に戻す",
+  "restore.all": "元に戻す",
+  "restore.all.sub": "変更前に保存したレジストリ、サービス、電源プランの元の値を復元します。アプリが開かない場合は Piki フォルダーの「Ripristina Piki.cmd」（またはスタートメニューの「Ripristina Piki Optimizer」）を使ってください。",
+  "restore.all.btn": "元に戻す",
   "restore.all.q": "本当に Piki Optimizer を使う前の状態にすべて戻しますか？",
   "restore.active": "有効な変更",
   "restore.none": "有効な変更はありません。",
@@ -348,5 +348,8 @@
   "tray.hide.tip": "バックグラウンドへ（時計の横で動作を続けます）",
   "preset.max": "Piki Preset",
   "preset.max.d": "ゲームと After Effects を最大性能で、遅延は最小に",
-  "preset.max.badge": "おすすめ"
+  "preset.max.badge": "おすすめ",
+  "preset.aesthetic": "見た目 + パフォーマンス",
+  "preset.aesthetic.d": "アニメーション・透明効果・外観はそのままで、より速く快適に",
+  "nexus.detected": "Winstep Nexus を検出：ドックとタスクバーの設定は保護されています"
 }

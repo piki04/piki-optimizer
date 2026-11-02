@@ -921,7 +921,7 @@ function Invoke-VxFindingAction {
 # =====================================================================
 function Show-VxWizard {
     if (-not $script:Hw -or $script:States.Count -eq 0) { Show-VxToast (T 'common.wait') 'info'; return }
-    foreach ($n in @('WizMax', 'WizGaming', 'WizCompetitive', 'WizCreator', 'WizBalanced', 'WizLaptop')) { if ($ui[$n]) { $ui[$n].IsChecked = $false } }
+    foreach ($n in @('WizMax', 'WizAesthetic', 'WizGaming', 'WizCompetitive', 'WizCreator', 'WizBalanced', 'WizLaptop')) { if ($ui[$n]) { $ui[$n].IsChecked = $false } }
     $ui.WizSummary.Text = T 'wiz.pick'; $ui.WizDetail.Text = ''
     $ui.WizGo.IsEnabled = $false
     $script:WizPreset = $null
@@ -1799,7 +1799,7 @@ $ui.BtnHealthRun.add_Click({ Start-VxHealthCheck })
 
 # wizard
 $ui.WizClose.add_Click({ Hide-VxOverlay $ui.WizardOverlay })
-foreach ($n in @('WizMax', 'WizGaming', 'WizCompetitive', 'WizCreator', 'WizBalanced', 'WizLaptop')) {
+foreach ($n in @('WizMax', 'WizAesthetic', 'WizGaming', 'WizCompetitive', 'WizCreator', 'WizBalanced', 'WizLaptop')) {
     if (-not $ui[$n]) { continue }
     $ui[$n].add_Checked({ param($s, $e) Update-VxWizardSummary ([string]$s.Tag) })
 }
@@ -1812,7 +1812,7 @@ $ui.WizGo.add_Click({
 })
 
 # optimize presets
-foreach ($n in @('PresetMax', 'PresetGaming', 'PresetCompetitive', 'PresetCreator', 'PresetBalanced', 'PresetLaptop')) {
+foreach ($n in @('PresetMax', 'PresetAesthetic', 'PresetGaming', 'PresetCompetitive', 'PresetCreator', 'PresetBalanced', 'PresetLaptop')) {
     if (-not $ui[$n]) { continue }
     $ui[$n].add_Click({ param($s, $e) Select-VxPreset ([string]$s.Tag) })
 }
@@ -1821,7 +1821,7 @@ foreach ($n in @('PresetMax', 'PresetGaming', 'PresetCompetitive', 'PresetCreato
 $ui.BtnPendingApply.add_Click({ Invoke-VxPendingApply })
 $ui.BtnPendingReset.add_Click({
     foreach ($it in (Get-VxAllItems)) { if ($it.IsDirty) { $it.IsChecked = $it.IsApplied } }
-    foreach ($n in @('PresetMax', 'PresetGaming', 'PresetCompetitive', 'PresetCreator', 'PresetBalanced', 'PresetLaptop', 'LevelLight', 'LevelBalanced', 'LevelMax')) { if ($ui[$n]) { $ui[$n].IsChecked = $false } }
+    foreach ($n in @('PresetMax', 'PresetAesthetic', 'PresetGaming', 'PresetCompetitive', 'PresetCreator', 'PresetBalanced', 'PresetLaptop', 'LevelLight', 'LevelBalanced', 'LevelMax')) { if ($ui[$n]) { $ui[$n].IsChecked = $false } }
     Update-VxPendingBar
 })
 
@@ -2130,6 +2130,24 @@ $script:LiveTimer.Start()
 # =====================================================================
 $ui.VersionText.Text = "v$script:Version"
 Update-VxLook
+# Winstep Nexus: dock settings, taskbar and its startup entry are protected
+try {
+    $nx = Test-VxNexus
+    if ($nx.Detected -and $ui.NexusNote) {
+        $ui.NexusNote.Visibility = 'Visible'
+        Write-VxLog ("Winstep Nexus detected (running={0}, autostart={1}): dock settings protected" -f $nx.Running, $nx.Autostart)
+    }
+} catch { }
+# Start menu entry for "Ripristina Piki.cmd" (installs updated in-app do not run the setup again)
+try {
+    $rstCmd = Join-Path $Root 'Ripristina Piki.cmd'
+    $rstLnk = Join-Path ([Environment]::GetFolderPath('Programs')) 'Ripristina Piki Optimizer.lnk'
+    if ((Test-Path -LiteralPath $rstCmd) -and -not (Test-Path -LiteralPath $rstLnk) -and (Test-Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\PikiOptimizer')) {
+        $wsh = New-Object -ComObject WScript.Shell
+        $l = $wsh.CreateShortcut($rstLnk); $l.TargetPath = $rstCmd; $l.WorkingDirectory = $Root
+        $l.IconLocation = "$env:SystemRoot\System32\shell32.dll,238"; $l.Description = 'Piki Optimizer - Ripristina come prima'; $l.Save()
+    }
+} catch { }
 $script:Window.add_SourceInitialized({ Enable-VxGlass })
 if ($Tray) {
     # started with Windows: live only in the notification area until opened

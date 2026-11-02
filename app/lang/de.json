@@ -250,9 +250,9 @@
   "restore.point.creating": "Wiederherstellungspunkt wird erstellt",
   "restore.point.ok": "Wiederherstellungspunkt erstellt.",
   "restore.point.fail": "Windows konnte keinen Wiederherstellungspunkt erstellen (Computerschutz deaktiviert?).",
-  "restore.all": "Alles rückgängig",
-  "restore.all.sub": "Setzt alle von Piki Optimizer geänderten Einstellungen zurück.",
-  "restore.all.btn": "Alle Änderungen rückgängig machen",
+  "restore.all": "Wie vorher wiederherstellen",
+  "restore.all.sub": "Stellt die vor jeder Änderung gespeicherten Originalwerte von Registry, Diensten und Energieplan wieder her. Wenn die App nicht startet, nutze \"Ripristina Piki.cmd\" im Piki-Ordner (oder \"Ripristina Piki Optimizer\" im Startmenü).",
+  "restore.all.btn": "Wie vorher wiederherstellen",
   "restore.all.q": "Wirklich alles auf den Stand vor Piki Optimizer zurücksetzen?",
   "restore.active": "Aktive Änderungen",
   "restore.none": "Keine aktiven Änderungen.",
@@ -348,5 +348,8 @@
   "tray.hide.tip": "In den Hintergrund (läuft neben der Uhr weiter)",
   "preset.max": "Piki Preset",
   "preset.max.d": "Gaming und After Effects auf Maximum, minimale Latenz",
-  "preset.max.badge": "EMPFOHLEN"
+  "preset.max.badge": "EMPFOHLEN",
+  "preset.aesthetic": "Optik + Leistung",
+  "preset.aesthetic.d": "Schneller und reaktionsfreudiger, ohne Animationen, Transparenz oder Aussehen zu ändern",
+  "nexus.detected": "Winstep Nexus erkannt: Dock- und Taskleisten-Einstellungen sind geschützt"
 }

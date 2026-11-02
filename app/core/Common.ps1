@@ -112,7 +112,7 @@ function Stop-VxBatch {
     $bt = $script:VxBatch
     $script:VxBatch = $null
     if (-not $bt) { return }
-    if ($bt.backup) { Write-VxJson 'backup.json' $bt.backup }
+    if ($bt.backup) { Write-VxBackupFile $bt.backup }
     if ($null -ne $bt.history) { Write-VxJson 'history.json' @($bt.history) }
 }
 
@@ -128,6 +128,17 @@ function Get-VxBackup {
 function Save-VxBackup {
     param([hashtable]$Backup)
     if ($script:VxBatch) { $script:VxBatch.backup = $Backup; return }
+    Write-VxBackupFile $Backup
+}
+
+# backup.json holds the ORIGINAL value of everything Piki changed (registry, services, power plan...).
+# The previous copy is kept as backup.prev.json, so "Ripristina Piki.cmd" still works if one write goes wrong.
+function Write-VxBackupFile {
+    param([hashtable]$Backup)
+    try {
+        $cur = Join-Path $script:VxData 'backup.json'
+        if (Test-Path -LiteralPath $cur) { Copy-Item -LiteralPath $cur -Destination (Join-Path $script:VxData 'backup.prev.json') -Force -ErrorAction SilentlyContinue }
+    } catch { }
     Write-VxJson 'backup.json' $Backup
 }
 
@@ -207,8 +218,39 @@ function Get-VxRegState {
     return $state
 }
 
+# ---- Winstep Nexus (dock that replaces the taskbar): its settings and the taskbar are never touched
+$script:VxNexusCache = $null
+function Test-VxNexus {
+    if ($script:VxNexusCache -and ([DateTime]::Now - $script:VxNexusCache.At).TotalSeconds -lt 60) { return $script:VxNexusCache }
+    $running = $false; $auto = $false
+    try { $running = [bool](Get-Process -Name 'Nexus' -ErrorAction SilentlyContinue) } catch { }
+    foreach ($k in @('HKCU:\Software\Microsoft\Windows\CurrentVersion\Run', 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run', 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run')) {
+        try {
+            $key = Get-Item -LiteralPath $k -ErrorAction Stop
+            foreach ($n in $key.GetValueNames()) { if (([string]$key.GetValue($n)) -match '(?i)\\Nexus\.exe|Winstep') { $auto = $true } }
+        } catch { }
+    }
+    foreach ($d in @([Environment]::GetFolderPath('Startup'), [Environment]::GetFolderPath('CommonStartup'))) {
+        try { if ($d -and @(Get-ChildItem -LiteralPath $d -File -ErrorAction Stop | Where-Object { $_.Name -match '(?i)nexus|winstep' }).Count -gt 0) { $auto = $true } } catch { }
+    }
+    $script:VxNexusCache = @{ Running = $running; Autostart = $auto; Detected = ($running -or $auto); At = [DateTime]::Now }
+    return $script:VxNexusCache
+}
+
+function Test-VxProtectedReg {
+    param([string]$Path, [string]$Name)
+    if ($Path -match '(?i)WinSTEP2000') { return $true }
+    if (-not (Test-VxNexus).Detected) { return $false }
+    if ($Path -match '(?i)StuckRects|\\Taskband') { return $true }
+    if ($Path -match '(?i)\\Explorer\\Advanced$' -and $Name -match '(?i)^(Taskbar|ShowCopilotButton|ShowTaskViewButton)') { return $true }
+    if ($Name -match '(?i)^SearchboxTaskbarMode') { return $true }
+    if ($Path -match '(?i)\\Themes\\Personalize$' -and $Name -eq 'EnableTransparency') { return $true }
+    return $false
+}
+
 function Set-VxReg {
     param([string]$Path, [string]$Name, [string]$Type, $Value)
+    if (Test-VxProtectedReg $Path $Name) { throw (L @{ it = 'Impostazione protetta: Winstep Nexus'; en = 'Protected setting: Winstep Nexus' }) }
     $prev = Get-VxRegState -Path $Path -Name $Name
     Add-VxTxItem @{ key = "reg|$Path|$Name"; kind = 'reg'; path = $Path; name = $Name; existed = $prev.existed; keyExisted = $prev.keyExisted; type = $prev.type; value = $prev.value }
     if (-not (Test-Path -LiteralPath $Path)) { New-Item -Path $Path -Force -ErrorAction Stop | Out-Null }
@@ -218,6 +260,7 @@ function Set-VxReg {
 
 function Remove-VxReg {
     param([string]$Path, [string]$Name)
+    if (Test-VxProtectedReg $Path $Name) { return }
     $prev = Get-VxRegState -Path $Path -Name $Name
     if (-not $prev.existed) { return }
     Add-VxTxItem @{ key = "reg|$Path|$Name"; kind = 'reg'; path = $Path; name = $Name; existed = $true; keyExisted = $true; type = $prev.type; value = $prev.value }

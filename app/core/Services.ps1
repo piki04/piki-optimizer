@@ -230,6 +230,7 @@ function Set-VxServiceOptimized {
 
 # ---------------------------------------------------------------- startup apps
 $script:VxStartupAdvice = @(
+    @{ P = 'Nexus|Winstep'; Risk = 'avoid'; A = @{ it = 'Dock Winstep Nexus: protetta da Piki, resta all''avvio.'; en = 'Winstep Nexus dock: protected by Piki, it stays at startup.' } },
     @{ P = 'SecurityHealth|Windows Security|WindowsDefender'; Risk = 'avoid'; A = @{ it = 'Sicurezza di Windows: lasciala attiva.'; en = 'Windows Security: keep it on.' } },
     @{ P = 'SynTP|ETDCtrl|Elan|Synaptics|TouchPad|Precision'; Risk = 'avoid'; A = @{ it = 'Driver del touchpad: senza, gesti e scorrimento possono smettere di funzionare.'; en = 'Touchpad driver: without it gestures and scrolling may stop working.' } },
     @{ P = 'RtkAud|RAVCpl|RAVBg|Realtek|Waves|MaxxAudio|Nahimic|A-Volute|DTS|Dolby|SonicStudio|Sonic Studio'; Risk = 'caution'; A = @{ it = 'Pannello/effetti audio: senza, alcuni effetti o il rilevamento del jack cuffie potrebbero non funzionare.'; en = 'Audio panel/effects: without it some effects or headphone-jack detection may not work.' } },
@@ -330,6 +331,8 @@ function Get-VxStartupItems {
 
 function Set-VxStartupEnabled {
     param($Item, [bool]$Enabled)
+    # the Winstep Nexus dock is never removed from startup
+    if (-not $Enabled -and (([string]$Item.Name + ' ' + [string]$Item.Command) -match '(?i)nexus|winstep')) { Write-VxLog "startup: $($Item.Name) is protected (Winstep Nexus)"; return }
     if (-not $Enabled) {
         Start-VxTx -Id $Item.Id -Title ("Avvio: " + $Item.Name)
         if ($Item.Kind -eq 'appx') {
@@ -353,6 +356,7 @@ function Set-VxStartupEnabled {
 
 # ---------------------------------------------------------------- running processes
 $script:VxProcDb = @(
+    @{ P = '^(Nexus|NexusDock|WinstepXP|Winstep.*)$'; Risk = 'avoid'; A = @{ it = 'Dock Winstep Nexus: protetta, non chiuderla.'; en = 'Winstep Nexus dock: protected, do not close it.' } },
     @{ P = '^(System|Idle|Registry|smss|csrss|wininit|winlogon|services|lsass|LsaIso|svchost|fontdrvhost|Memory Compression|dwm|sihost|ctfmon|conhost|dllhost|taskhostw|WmiPrvSE|spoolsv|audiodg|SgrmBroker|MsMpEng|NisSrv|SecurityHealthService|SecurityHealthSystray|MpDefenderCoreService|WUDFHost|wlanext|unsecapp|SearchIndexer|smartscreen|TextInputHost|ShellExperienceHost|StartMenuExperienceHost|SearchHost|SearchApp|explorer|RuntimeBroker|ApplicationFrameHost|SystemSettingsBroker|ShellHost|AggregatorHost|dasHost|WindowsTerminal|OpenConsole|powershell|pwsh|LockApp|UserOOBEBroker|CompPkgSrv|vmmem|vmmemWSL|Secure System|MemCompression|atiesrxx|atieclxx|amdfendrsr|nvcontainer|NVDisplay\.Container|igfxEM|IntelCpHDCPSvc|RtkAudUService64|SecurityHealthHost|wudfhost|crss|winlogon|lsm|WmiApSrv|MoUsoCoreWorker|TiWorker|TrustedInstaller|msiexec|mobsync|PresentationFontCache|SppExtComObj|sppsvc|ngen|ngentask|backgroundTaskHost|smss|CrossDeviceResume|Widgets?Board)$'
         Risk = 'avoid'; A = @{ it = 'Parte di Windows o di un driver: non chiuderlo.'; en = 'Part of Windows or a driver: do not close it.' } },
     @{ P = '^(Widgets|WidgetService|PhoneExperienceHost|YourPhone|GameBar|GameBarFTServer|Cortana|Copilot|M365Copilot|msedgewebview2|OneDriveStandaloneUpdater|GoogleUpdate|MicrosoftEdgeUpdate|AdobeCollabSync|CCXProcess|AdobeIPCBroker|Creative Cloud|Creative Cloud Helper|Overwolf|OverwolfBrowser|Medal|steamwebhelper|EpicWebHelper|jusched|SkypeApp|SkypeBackgroundHost|ms-teams|Teams|msteams|Spotify|EADesktop|EABackgroundService|upc|UplayWebCore|RockstarService|Launcher|Battle\.net|GalaxyClient|AnyDesk)$'
@@ -403,6 +407,8 @@ function Get-VxProcessGroups {
 function Stop-VxProcessGroup {
     param([string]$Name)
     $n = 0
+    # never close the shell or the Winstep Nexus dock from here
+    if ($Name -match '(?i)^(explorer|Nexus|NexusDock|Winstep.*)$') { Write-VxLog "Not closing $Name (protected)"; return 0 }
     foreach ($p in @(Get-Process -Name $Name -ErrorAction SilentlyContinue)) {
         if ($p.Id -eq $PID) { continue }
         try { $p.Kill(); $n++ } catch { }

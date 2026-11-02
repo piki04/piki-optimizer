@@ -20,6 +20,7 @@ try { Start-Process -FilePath $psExe -Verb RunAs -WindowStyle Hidden -ArgumentLi
 
 foreach ($f in @([Environment]::GetFolderPath('Programs'), [Environment]::GetFolderPath('Desktop'))) {
     Remove-Item -LiteralPath (Join-Path $f 'Piki Optimizer.lnk') -Force -ErrorAction SilentlyContinue
+    Remove-Item -LiteralPath (Join-Path $f 'Ripristina Piki Optimizer.lnk') -Force -ErrorAction SilentlyContinue
 }
 Remove-Item -LiteralPath 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\PikiOptimizer' -Recurse -Force -ErrorAction SilentlyContinue
 [System.Windows.MessageBox]::Show((Tx 'Piki Optimizer è stato disinstallato.' 'Piki Optimizer has been uninstalled.'), 'Piki Optimizer') | Out-Null

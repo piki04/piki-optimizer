@@ -17,7 +17,7 @@ function Install-Piki {
         }
         if ($Progress) { & $Progress 20 }
         New-Item -ItemType Directory -Path $Dest -Force | Out-Null
-        foreach ($item in @('app', 'Avvia Piki Optimizer.cmd', 'config.json', 'version.json', 'README.md', 'install.ps1')) {
+        foreach ($item in @('app', 'Avvia Piki Optimizer.cmd', 'Ripristina Piki.cmd', 'config.json', 'version.json', 'README.md', 'install.ps1')) {
             $s = Join-Path $SrcRoot $item
             if (Test-Path -LiteralPath $s) { Copy-Item -LiteralPath $s -Destination $Dest -Recurse -Force }
         }
@@ -43,6 +43,16 @@ function Install-Piki {
         $lnk.IconLocation = $ico
         $lnk.WindowStyle = 7
         $lnk.Description = 'Piki Optimizer'
+        $lnk.Save()
+    }
+    # Start menu: "Ripristina Piki" puts back every original setting, even if the app does not open
+    $rst = Join-Path $Dest 'Ripristina Piki.cmd'
+    if (Test-Path -LiteralPath $rst) {
+        $lnk = $sh.CreateShortcut((Join-Path ([Environment]::GetFolderPath('Programs')) 'Ripristina Piki Optimizer.lnk'))
+        $lnk.TargetPath = $rst
+        $lnk.WorkingDirectory = $Dest
+        $lnk.IconLocation = "$env:SystemRoot\System32\shell32.dll,238"
+        $lnk.Description = 'Piki Optimizer - Ripristina come prima'
         $lnk.Save()
     }
     $ver = '1.0.0'

@@ -250,9 +250,9 @@
   "restore.point.creating": "正在创建还原点",
   "restore.point.ok": "还原点已创建。",
   "restore.point.fail": "Windows 无法创建还原点（系统保护是否已关闭？）。",
-  "restore.all": "全部撤销",
-  "restore.all.sub": "将 Piki Optimizer 更改的所有设置恢复原样。",
-  "restore.all.btn": "撤销所有更改",
+  "restore.all": "恢复原样",
+  "restore.all.sub": "恢复每次更改前保存的注册表、服务和电源计划原始值。如果应用无法打开，请运行 Piki 文件夹中的“Ripristina Piki.cmd”（或开始菜单中的“Ripristina Piki Optimizer”）。",
+  "restore.all.btn": "恢复原样",
   "restore.all.q": "确定要将一切恢复到使用 Piki Optimizer 之前的状态吗？",
   "restore.active": "生效中的更改",
   "restore.none": "没有生效中的更改。",
@@ -348,5 +348,8 @@
   "tray.hide.tip": "转到后台（在时钟旁继续运行）",
   "preset.max": "Piki Preset",
   "preset.max.d": "游戏与 After Effects 全力运行，延迟最低",
-  "preset.max.badge": "推荐"
+  "preset.max.badge": "推荐",
+  "preset.aesthetic": "美观 + 性能",
+  "preset.aesthetic.d": "更快更流畅，不改动动画、透明效果和外观",
+  "nexus.detected": "检测到 Winstep Nexus：Dock 和任务栏设置已受保护"
 }

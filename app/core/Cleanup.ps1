@@ -52,7 +52,7 @@ $script:VxCleanItems = @(
         Title = @{ it = 'Cache disco di After Effects'; en = 'After Effects disk cache' }
         Desc = @{ it = 'Le anteprime già calcolate salvate da After Effects nella cartella creata da Piki: vengono ricalcolate quando servono. Saltato se After Effects è aperto.'; en = 'Previews already rendered by After Effects in the folder Piki created: recalculated when needed. Skipped if After Effects is open.' }
         Paths = { @(Get-PSDrive -PSProvider FileSystem -ErrorAction SilentlyContinue | ForEach-Object { Join-Path $_.Root 'VeloxPC Cache\After Effects Disk Cache' } | Where-Object { Test-Path -LiteralPath $_ }) }
-        Skip = { Test-VxProcessRunning @('AfterFX', 'aerender') } },
+        Skip = { Test-VxProcessRunning @('AfterFX', 'aerender', 'Adobe Media Encoder') } },
     @{ Id = 'browser'; Risk = 'caution'; Default = $false
         Title = @{ it = 'Cache dei browser'; en = 'Browser caches' }
         Desc = @{ it = 'Immagini e file dei siti salvati da Chrome, Edge e Brave. Password e accessi NON vengono toccati. Saltato se il browser è aperto.'; en = 'Site images and files saved by Chrome, Edge and Brave. Passwords and logins are NOT touched. Skipped if the browser is open.' }
@@ -97,7 +97,8 @@ function Invoke-VxClean {
         try {
             if ($c.Skip -and (& $c.Skip)) { continue }
             $before = [int64]0
-            $paths = @(& $c.Paths)
+            # Winstep (Nexus dock) files are never touched
+            $paths = @(& $c.Paths | Where-Object { $_ -and ([string]$_ -notmatch '(?i)\\Winstep') })
             if ($c.Clean) {
                 foreach ($p in $paths) { if ($p) { $before += ([VeloxPC.Native]::DirSize($p))[0] } }
                 & $c.Clean

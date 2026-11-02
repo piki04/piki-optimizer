@@ -250,9 +250,9 @@
   "restore.point.creating": "Создаю точку восстановления",
   "restore.point.ok": "Точка восстановления создана.",
   "restore.point.fail": "Windows не смогла создать точку восстановления (защита системы отключена?).",
-  "restore.all": "Отменить всё",
-  "restore.all.sub": "Возвращает все настройки, изменённые Piki Optimizer, как было.",
-  "restore.all.btn": "Отменить все изменения",
+  "restore.all": "Вернуть как было",
+  "restore.all.sub": "Возвращает исходные значения реестра, служб и схемы питания, сохранённые перед каждым изменением. Если приложение не открывается, запустите \"Ripristina Piki.cmd\" в папке Piki (или \"Ripristina Piki Optimizer\" в меню Пуск).",
+  "restore.all.btn": "Вернуть как было",
   "restore.all.q": "Точно вернуть всё как было до Piki Optimizer?",
   "restore.active": "Активные изменения",
   "restore.none": "Нет активных изменений.",
@@ -348,5 +348,8 @@
   "tray.hide.tip": "Свернуть в фон (продолжит работать возле часов)",
   "preset.max": "Piki Preset",
   "preset.max.d": "Игры и After Effects на максимум, минимальная задержка",
-  "preset.max.badge": "РЕКОМЕНДУЕМ"
+  "preset.max.badge": "РЕКОМЕНДУЕМ",
+  "preset.aesthetic": "Красота + Скорость",
+  "preset.aesthetic.d": "Быстрее и отзывчивее, без изменения анимаций, прозрачности и внешнего вида",
+  "nexus.detected": "Обнаружен Winstep Nexus: настройки дока и панели задач защищены"
 }

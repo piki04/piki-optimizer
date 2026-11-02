@@ -1,8 +1,8 @@
 {
-  "version": "1.9.0",
+  "version": "1.10.0",
   "notes": {
-    "it": "Grande aggiornamento: Topaz riconosciuto in automatico (qualsiasi versione e cartella) con consigli su misura; \"Piki Max\" ora si chiama \"Piki Preset\"; nuove ottimizzazioni (avvio senza attesa, menu istantanei, niente Recall/Copilot, ibernazione) e nuove pulizie (installer driver, log, miniature, cache app, cache After Effects). Check-up più preciso: niente allarmi sulla RAM con XMP/EXPO e niente errori da dischi non collegati.",
-    "en": "Big update: Topaz detected automatically (any version and folder) with tailored advice; \"Piki Max\" is now \"Piki Preset\"; new optimizations (no startup delay, instant menus, no Recall/Copilot, hibernation) and new cleanups (driver installers, logs, thumbnails, app caches, After Effects cache). More accurate check-up: no RAM alarms with XMP/EXPO and no errors from disks that are not connected."
+    "it": "Nuovo preset \"Estetica + Performance\": solo ottimizzazioni sicure, senza toccare animazioni, trasparenze, effetti visivi, tema, Esplora file e barra, né After Effects. Protezione per Winstep Nexus (dock, barra e avvio automatico non vengono mai toccati). Nuovo \"Ripristina come prima\" in app e \"Ripristina Piki.cmd\" che funziona anche se l'app non si apre.",
+    "en": "New \"Looks + Performance\" preset: only safe optimizations, without touching animations, transparency, visual effects, theme, File Explorer and taskbar, or After Effects. Winstep Nexus protection (dock, taskbar and its startup entry are never touched). New \"Restore as before\" in the app and \"Ripristina Piki.cmd\" that works even if the app does not open."
   },
   "files": [
     {
@@ -26,19 +26,29 @@
       "size": 2055
     },
     {
+      "path": "Ripristina Piki.cmd",
+      "sha256": "8ff65903f836f48f88eaed13d7b9ee0d8daf8bdc7186ba50db8b76099a45aebb",
+      "size": 615
+    },
+    {
+      "path": "app/Restore.ps1",
+      "sha256": "214547c401332aa9c87bf9159c26fd87e9d701505d464749908c4f4835649cb8",
+      "size": 10089
+    },
+    {
       "path": "app/Setup.ps1",
-      "sha256": "2ee5454197670178178ead1e139a10db5cdad4858522880cf1e777544e06a894",
-      "size": 7515
+      "sha256": "c4eb05e138ced17894b38a91321d8e32bb17967d4a9017e612f1ba69c94eaa8d",
+      "size": 8082
     },
     {
       "path": "app/Uninstall.ps1",
-      "sha256": "14af8715a84fbb6c9d9b2bdcb3283c7629a3e6a47e91f85abf83b1426ed5a786",
-      "size": 1970
+      "sha256": "f6d945756a4137c6338c01cfe1c08269fc17b38d0f0810507e8fb04bd327852b",
+      "size": 2083
     },
     {
       "path": "app/VeloxPC.ps1",
-      "sha256": "a442d9f3a01a02107e1a71d3aeb690d54eed8ffd5619860f9b2072ec64722e0f",
-      "size": 117118
+      "sha256": "e20ab5c880073de26d81465f884da3cdb0f82ea799a6b58fcbdae6f6a394c15b",
+      "size": 118267
     },
     {
       "path": "app/assets/logo.png",
@@ -57,13 +67,13 @@
     },
     {
       "path": "app/core/Cleanup.ps1",
-      "sha256": "d6ad1cca9858023b0a770b46462dd40065c551d9d0978af3b0c1ba9eed98afbd",
-      "size": 10329
+      "sha256": "6576f25cad7319c56265bf2f00ebf1dd5950ed4d4d83176e92b12b29b6975690",
+      "size": 10477
     },
     {
       "path": "app/core/Common.ps1",
-      "sha256": "1184f96ff5a7c54a581db0576eb241b69a6b78288b528c5f409672ac582a193b",
-      "size": 21722
+      "sha256": "872557c7b7dd059b0563b71a87612c4f162ed64ee444f7ffe66bae77a144e040",
+      "size": 24370
     },
     {
       "path": "app/core/Hardware.ps1",
@@ -87,13 +97,13 @@
     },
     {
       "path": "app/core/Services.ps1",
-      "sha256": "f184a4b0fe3f4d7fbce9f04d0d1cdc49e49335ebf65a95f4c7f87df54de0c05c",
-      "size": 39154
+      "sha256": "f92fde25a7585ff9248755b740894334b843246acc5436d040344cd9c0db6954",
+      "size": 39965
     },
     {
       "path": "app/core/Tweaks.ps1",
-      "sha256": "4e43ab78fd70782628ac1698ca22d5ee43d218a1ee6a0a9de3c57852164c3b99",
-      "size": 56375
+      "sha256": "0feff33a2c87f8d530c8772f79cc2e426ab7c4048d8f024db666afc28427a715",
+      "size": 57180
     },
     {
       "path": "app/core/Updater.ps1",
@@ -102,58 +112,58 @@
     },
     {
       "path": "app/lang/de.json",
-      "sha256": "62d9ba2df8010dc5d301bb667298032b5d5f163d975342589f9e4408d0735791",
-      "size": 21146
+      "sha256": "62f0fe5f3ef7427c3159bc205cb95f6104af1fc1c23715f1760956f9ae47d29e",
+      "size": 21573
     },
     {
       "path": "app/lang/en.json",
-      "sha256": "697577bc96310fe5eec7a1d3c8ef57b1bb4b6861106a877dccb88a3ae20fcf66",
-      "size": 19342
+      "sha256": "91191878c80d8015f1743e6b83eb36577a26ebfaa533d1808271adf07b372423",
+      "size": 19741
     },
     {
       "path": "app/lang/es.json",
-      "sha256": "5c01b8f6f94db5a95f63be884636bff94a805f0ddaf7544bae9a719b0502b4c9",
-      "size": 20485
+      "sha256": "39d8c4a9176ee842bdebffb9a287be1545bec9bd04ce918c7d0781094653039a",
+      "size": 20889
     },
     {
       "path": "app/lang/fr.json",
-      "sha256": "dc136a2b6529abcfdf7b81bbebee0bc8bf4fb8b0331ed4c338b6ec53113ac9d1",
-      "size": 21498
+      "sha256": "b458df585140ea8c868d7b5f3e18ac933c86f39aa9e07a5ba1f24e040f5f9022",
+      "size": 21951
     },
     {
       "path": "app/lang/it.json",
-      "sha256": "f4293b58a84c61927f682f6fcd4f55219e158ae060feed37f35c771ba2af3d35",
-      "size": 20457
+      "sha256": "a559bcf6478cbb2c708d7751aaefd2f11e94ff199a77aef3128968bbb5b80014",
+      "size": 20848
     },
     {
       "path": "app/lang/ja.json",
-      "sha256": "760e930e23b2545f5aa4f504cda3acb8a7ebffbca6acc72407d754ca4b8529bc",
-      "size": 24163
+      "sha256": "0253b8cdfd9ddab464c27779d24838f6776471c39cce514b39727accd3df6ca8",
+      "size": 24636
     },
     {
       "path": "app/lang/pt.json",
-      "sha256": "6c7c6066183fe3111eb09776c20464a7b9d4d18de63c6e616b707e018696d6bc",
-      "size": 20472
+      "sha256": "d13318258f28902216b4dd7f8146b25e35925d46a9039e54de2d42b4fffdaf4e",
+      "size": 20864
     },
     {
       "path": "app/lang/ru.json",
-      "sha256": "45400638feb590fee4a6704dfc34d733751d5c6c9d760f1abc7ea9c768be48c5",
-      "size": 29480
+      "sha256": "7f25cbc3ec476c43237f8622673a41589f4debd934c14b733d14f7ae9292093d",
+      "size": 30090
     },
     {
       "path": "app/lang/zh.json",
-      "sha256": "d21bc0737af33089790dd3abdccf84bdac2d6d8f9a02d4590e5ebf295508c705",
-      "size": 18993
+      "sha256": "dc2db0fa70f2f63ea3aebe22d7d225d5d03d13676e74bd81de7b6a5da31ecdfe",
+      "size": 19362
     },
     {
       "path": "app/ui/MainWindow.safe.xaml",
-      "sha256": "ee8626636a5ae063f69670cb0aad468f19eaa0c69d4aaac4bc1855e3438c7e5e",
-      "size": 122754
+      "sha256": "85d43053ea0e64c91f3b36a6382df2cd7083d461700dc05277af6de027e33fdf",
+      "size": 124365
     },
     {
       "path": "app/ui/MainWindow.xaml",
-      "sha256": "01615dfab6802e57745050d929d77ecf8fae9579ea5b58f22d7500ff51ac1da1",
-      "size": 165151
+      "sha256": "2086c61ebb32d29f6c4a59cfb1cf36834dc768e22651eb7b456ec9a3141dc73f",
+      "size": 166762
     },
     {
       "path": "config.json",

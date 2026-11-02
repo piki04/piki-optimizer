@@ -250,9 +250,9 @@
   "restore.point.creating": "Criando ponto de restauração",
   "restore.point.ok": "Ponto de restauração criado.",
   "restore.point.fail": "O Windows não conseguiu criar o ponto de restauração (Proteção do Sistema desativada?).",
-  "restore.all": "Desfazer tudo",
-  "restore.all.sub": "Volta todas as configurações alteradas pelo Piki Optimizer como eram antes.",
-  "restore.all.btn": "Desfazer todas as alterações",
+  "restore.all": "Restaurar como antes",
+  "restore.all.sub": "Repõe os valores originais do registo, serviços e plano de energia guardados antes de cada alteração. Se a app não abrir, usa \"Ripristina Piki.cmd\" na pasta do Piki (ou \"Ripristina Piki Optimizer\" no menu Iniciar).",
+  "restore.all.btn": "Restaurar como antes",
   "restore.all.q": "Quer mesmo voltar tudo como era antes do Piki Optimizer?",
   "restore.active": "Alterações ativas",
   "restore.none": "Nenhuma alteração ativa.",
@@ -348,5 +348,8 @@
   "tray.hide.tip": "Enviar para segundo plano (continua ativa perto do relógio)",
   "preset.max": "Piki Preset",
   "preset.max.d": "Jogos e After Effects no máximo, latência mínima",
-  "preset.max.badge": "RECOMENDADO"
+  "preset.max.badge": "RECOMENDADO",
+  "preset.aesthetic": "Estética + Desempenho",
+  "preset.aesthetic.d": "Mais rápido e responsivo, sem mexer em animações, transparência ou aparência",
+  "nexus.detected": "Winstep Nexus detectado: definições do dock e da barra protegidas"
 }

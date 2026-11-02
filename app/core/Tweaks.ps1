@@ -273,7 +273,7 @@ $script:VxTweaks = @(
 
     # ======================================================= VISUAL
     @{
-        Id = 'visualfx'; Cat = 'visual'; Risk = 'safe'; Reboot = $true; Presets = @('competitive', 'laptop')
+        Id = 'visualfx'; Cat = 'visual'; Risk = 'safe'; Reboot = $true; Shell = $true; Presets = @('competitive', 'laptop')
         Title = @{ it = 'Animazioni di Windows più leggere'; en = 'Lighter Windows animations' }
         Desc = @{ it = 'Menu istantanei e meno animazioni di finestre e barra: Windows sembra più scattante. Testo e anteprime restano belli.'; en = 'Instant menus and fewer window/taskbar animations: Windows feels snappier. Text and thumbnails stay nice.' }
         Reg = @(
@@ -284,7 +284,7 @@ $script:VxTweaks = @(
         )
     },
     @{
-        Id = 'transparency'; Cat = 'visual'; Risk = 'safe'; Presets = @('competitive', 'laptop')
+        Id = 'transparency'; Cat = 'visual'; Risk = 'safe'; Shell = $true; Presets = @('competitive', 'laptop')
         Title = @{ it = 'Niente trasparenze'; en = 'No transparency effects' }
         Desc = @{ it = 'Barra e menu Start diventano opachi: un po'' meno lavoro per la scheda video.'; en = 'Taskbar and Start menu become opaque: slightly less GPU work.' }
         Reg = @(, @('HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize', 'EnableTransparency', 'DWord', 0))
@@ -341,7 +341,7 @@ $script:VxTweaks = @(
         Test = { param($hw) Test-VxRegValue 'HKCU:\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications' 'GlobalUserDisabled' 1 }
     },
     @{
-        Id = 'widgets'; Cat = 'proc'; Risk = 'safe'; Presets = @('gaming', 'competitive', 'creator', 'laptop')
+        Id = 'widgets'; Cat = 'proc'; Risk = 'safe'; Shell = $true; Presets = @('gaming', 'competitive', 'creator', 'laptop')
         Title = @{ it = 'Disattiva Widget e Notizie'; en = 'Turn off Widgets and News' }
         Desc = @{ it = 'Il pannello Widget (meteo, notizie, borsa) tiene aperti diversi processi web anche se non lo guardi mai.'; en = 'The Widgets panel (weather, news, stocks) keeps several web processes open even if you never look at it.' }
         Apply = {
@@ -433,7 +433,7 @@ $script:VxTweaks = @(
         )
     },
     @{
-        Id = 'copilot'; Cat = 'proc'; Risk = 'caution'; Presets = @('competitive')
+        Id = 'copilot'; Cat = 'proc'; Risk = 'caution'; Shell = $true; Presets = @('competitive')
         Title = @{ it = 'Copilot non parte da solo'; en = 'Copilot does not start on its own' }
         Desc = @{ it = 'Spegne Copilot di Windows e il suo pulsante: un processo in meno sempre acceso. Se lo usi, lascia questa opzione spenta.'; en = 'Turns off Windows Copilot and its button: one less always-on process. If you use it, leave this option off.' }
         When = { param($hw) $hw.OS.IsWin11 }
@@ -636,6 +636,8 @@ function Find-VxTweak { param([string]$Id) return (Get-VxAllTweaks | Where-Objec
 
 function Test-VxTweakApplicable {
     param($Tweak, $Hw)
+    # Winstep Nexus replaces the taskbar: settings that touch the taskbar / shell look are left alone
+    if ($Tweak.Shell -and (Test-VxNexus).Detected) { return $false }
     if (-not $Tweak.When) { return $true }
     try { return [bool](& $Tweak.When $Hw) } catch { return $false }
 }
@@ -735,8 +737,14 @@ function Get-VxPresetSelection {
     $ids = @()
     # "max": everything for gaming + competitive + After Effects on this PC, except what slows renders down
     $maxSkip = @('prioritysep', 'transparency', 'visualfx', 'copilot', 'storeupd')   # keep render speed, glass and animations
+    # "aesthetic": only safe speed/responsiveness settings. Never: window animations, transparency, visual effects,
+    # theme, File Explorer / taskbar, GPU driver or graphics settings, After Effects priority/GPU/IFEO
+    $aesSkip = @('visualfx', 'transparency', 'menudelay', 'widgets', 'copilot', 'websearch', 'startupdelay', 'windowedopt', 'hags', 'mpo', 'fso', 'prioritysep', 'storeupd')
     foreach ($t in (Get-VxAllTweaks)) {
-        if ($Preset -eq 'max') {
+        if ($Preset -eq 'aesthetic') {
+            if ($t.Risk -ne 'safe') { continue }
+            if ($t.Cat -eq 'ae' -or $t.Shell -or $aesSkip -contains $t.Id) { continue }
+        } elseif ($Preset -eq 'max') {
             if (-not ($t.Presets -contains 'gaming' -or $t.Presets -contains 'competitive' -or $t.Presets -contains 'creator')) { continue }
             if ($maxSkip -contains $t.Id) { continue }
         } elseif (-not ($t.Presets -contains $Preset)) { continue }
