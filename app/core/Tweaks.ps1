@@ -256,9 +256,13 @@ $script:VxTweaks = @(
             param($hw)
             $bal = '381b4222-f694-41f0-9685-ff5bb260df2e'
             # settings applied earlier that fight the X3D scheduler: put back what was there before
-            foreach ($old in @('powerplan', 'cpumin', 'coreparking', 'bgapps')) {
+            foreach ($old in @('powerplan', 'cpumin', 'coreparking', 'bgapps', 'svchost')) {
                 if (Test-VxBackupEntry $old) { [void](Undo-VxEntry $old); Write-VxLog "x3dfix: undone $old" }
             }
+            # the same settings left by older versions or other tools (no Piki backup): back to Windows defaults
+            [void](Reset-VxX3DLeftovers)
+            # min cores with a broken 0-0 range (powercfg refuses every value) or a 100 % default: repair the definition first
+            if (Repair-VxCoreParkingDef $bal) { Write-VxLog 'x3dfix: core parking definition repaired' }
             $cur = Get-VxActiveScheme
             if (-not $cur -or $cur.guid -ne $bal) {
                 Add-VxCustomUndo 'plan' @{ kind = 'plan'; prev = $(if ($cur) { $cur.guid } else { '' }); created = '' }
@@ -274,6 +278,14 @@ $script:VxTweaks = @(
                 if ($v) { Add-VxTxItem @{ key = "power|$bal|$($s[1])"; kind = 'power'; scheme = $bal; sub = $s[0]; setting = $s[1]; ac = $v.ac; dc = $v.dc } }
                 & powercfg /setacvalueindex $bal $s[0] $s[1] $def.ac 2>&1 | Out-Null
                 & powercfg /setdcvalueindex $bal $s[0] $s[1] $def.dc 2>&1 | Out-Null
+                $chk = Get-VxPowerValueAny $bal $s[0] $s[1]
+                if (-not $chk -or $chk.ac -ne $def.ac -or $chk.dc -ne $def.dc) {
+                    # powercfg refused: write the plan value directly (saved for undo like everything else)
+                    $up = "HKLM:\SYSTEM\CurrentControlSet\Control\Power\User\PowerSchemes\$bal\$($s[0])\$($s[1])"
+                    Set-VxReg $up 'ACSettingIndex' 'DWord' ([int]$def.ac)
+                    Set-VxReg $up 'DCSettingIndex' 'DWord' ([int]$def.dc)
+                    Write-VxLog "x3dfix: $($s[1]) written to the registry ($($def.ac)/$($def.dc))"
+                }
             }
             & powercfg /setactive $bal 2>&1 | Out-Null
             $svc = Get-Service -Name 'amd3dvcacheSvc' -ErrorAction SilentlyContinue
@@ -286,7 +298,9 @@ $script:VxTweaks = @(
             param($hw)
             $bal = '381b4222-f694-41f0-9685-ff5bb260df2e'
             $s = Get-VxActiveScheme; if (-not $s -or $s.guid -ne $bal) { return $false }
-            foreach ($old in @('powerplan', 'cpumin', 'coreparking', 'bgapps')) { if (Test-VxBackupEntry $old) { return $false } }
+            foreach ($old in @('powerplan', 'cpumin', 'coreparking', 'bgapps', 'svchost')) { if (Test-VxBackupEntry $old) { return $false } }
+            if (Test-VxX3DLeftovers) { return $false }
+            if (Test-VxCoreParkingDefBroken $bal) { return $false }
             foreach ($p in @(@('54533251-82be-4824-96c1-47b60b740d00', '0cc5b647-c1df-4637-891a-dec35c318583'), @('54533251-82be-4824-96c1-47b60b740d00', '893dee8e-2bef-41e0-89c6-b55d0929964c'))) {
                 $def = Get-VxPowerDefault $bal $p[0] $p[1]
                 if (-not $def) { continue }
@@ -704,6 +718,75 @@ function Get-VxPowerDefault {
         } catch { }
     }
     return $null
+}
+
+# bgapps / svchost values without a Piki backup (older versions, other tools): they fight the X3D scheduler
+function Test-VxX3DLeftovers {
+    if (Test-VxRegValue 'HKCU:\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications' 'GlobalUserDisabled' 1) { return $true }
+    if (Test-VxRegValue 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy' 'LetAppsRunInBackground' 2) { return $true }
+    $sv = Get-VxRegState 'HKLM:\SYSTEM\CurrentControlSet\Control' 'SvcHostSplitThresholdInKB'
+    if ($sv.existed -and [int64]$sv.value -ne 3670016) { return $true }
+    return $false
+}
+
+function Reset-VxX3DLeftovers {
+    $n = 0
+    if (Test-VxRegValue 'HKCU:\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications' 'GlobalUserDisabled' 1) { Remove-VxReg 'HKCU:\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications' 'GlobalUserDisabled'; $n++ }
+    if (Test-VxRegValue 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy' 'LetAppsRunInBackground' 2) { Remove-VxReg 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy' 'LetAppsRunInBackground'; $n++ }
+    $sv = Get-VxRegState 'HKLM:\SYSTEM\CurrentControlSet\Control' 'SvcHostSplitThresholdInKB'
+    # 3670016 KB (0x380000) is the Windows default
+    if ($sv.existed -and [int64]$sv.value -ne 3670016) { Set-VxReg 'HKLM:\SYSTEM\CurrentControlSet\Control' 'SvcHostSplitThresholdInKB' 'DWord' 3670016; $n++ }
+    if ($n -gt 0) { Write-VxLog "x3dfix: $n background-app / svchost leftovers reset to Windows defaults" }
+    return $n
+}
+
+# Core parking "min cores" (CPMINCORES). On some PCs its definition is broken: range 0-0 (or a list with only 0),
+# so powercfg refuses every value, and the plan default reads 100 % (parking off). Repair it, with undo.
+function Test-VxCoreParkingDefBroken {
+    param([string]$Scheme)
+    $sub = '54533251-82be-4824-96c1-47b60b740d00'; $set = '0cc5b647-c1df-4637-891a-dec35c318583'
+    $def = "HKLM:\SYSTEM\CurrentControlSet\Control\Power\PowerSettings\$sub\$set"
+    if (-not (Test-Path -LiteralPath $def)) { return $false }
+    if (Test-Path -LiteralPath (Join-Path $def 'PossibleSettings')) { return $true }
+    $k = Get-ItemProperty -LiteralPath $def -ErrorAction SilentlyContinue
+    if ($null -eq $k.ValueMax -or [int64]$k.ValueMax -lt 100) { return $true }
+    $d = Get-VxPowerDefault $Scheme $sub $set
+    return ($d -and ($d.ac -eq 100 -or $d.dc -eq 100))
+}
+
+function Repair-VxCoreParkingDef {
+    param([string]$Scheme)
+    $sub = '54533251-82be-4824-96c1-47b60b740d00'; $set = '0cc5b647-c1df-4637-891a-dec35c318583'
+    $def = "HKLM:\SYSTEM\CurrentControlSet\Control\Power\PowerSettings\$sub\$set"
+    if (-not (Test-Path -LiteralPath $def)) { return $false }
+    $fixed = $false
+    $poss = Join-Path $def 'PossibleSettings'
+    if (Test-Path -LiteralPath $poss) {
+        # a percentage must be a range, not a list: export the list (for undo) and remove it
+        $dir = Join-Path $script:VxData 'backup'
+        if (-not (Test-Path -LiteralPath $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
+        $file = Join-Path $dir ("CPMINCORES-PossibleSettings-" + (Get-Date -Format 'yyyyMMdd-HHmmss') + '.reg')
+        & reg.exe export ($poss -replace '^HKLM:\\', 'HKLM\') $file /y 2>&1 | Out-Null
+        if (-not (Test-Path -LiteralPath $file)) { throw (L @{ it = 'Non riesco a salvare PossibleSettings prima di correggerlo'; en = 'Could not back up PossibleSettings before fixing it' }) }
+        Add-VxCustomUndo "regfile|$poss" @{ kind = 'regfile'; file = $file; path = $poss }
+        Remove-Item -LiteralPath $poss -Recurse -Force -ErrorAction Stop
+        $fixed = $true
+    }
+    $k = Get-ItemProperty -LiteralPath $def -ErrorAction SilentlyContinue
+    if ($null -eq $k.ValueMax -or [int64]$k.ValueMax -lt 100 -or ($null -ne $k.ValueMin -and [int64]$k.ValueMin -ne 0)) {
+        Set-VxReg $def 'ValueMin' 'DWord' 0
+        Set-VxReg $def 'ValueMax' 'DWord' 100
+        Set-VxReg $def 'ValueIncrement' 'DWord' 1
+        $fixed = $true
+    }
+    # plan default 100 % = parking off: the Windows value for Balanced is 10 %
+    foreach ($p in @("$def\DefaultPowerSchemeValues\$Scheme", "HKLM:\SYSTEM\CurrentControlSet\Control\Power\User\Default\PowerSchemes\$Scheme\$sub\$set")) {
+        if (-not (Test-Path -LiteralPath $p)) { continue }
+        $v = Get-ItemProperty -LiteralPath $p -ErrorAction SilentlyContinue
+        if ($null -ne $v.ACSettingIndex -and [int64]$v.ACSettingIndex -eq 100) { Set-VxReg $p 'ACSettingIndex' 'DWord' 10; $fixed = $true }
+        if ($null -ne $v.DCSettingIndex -and [int64]$v.DCSettingIndex -eq 100) { Set-VxReg $p 'DCSettingIndex' 'DWord' 10; $fixed = $true }
+    }
+    return $fixed
 }
 
 function Get-VxPowerValueAny {

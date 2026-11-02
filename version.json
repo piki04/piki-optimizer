@@ -1,8 +1,8 @@
 {
-  "version": "1.11.0",
+  "version": "1.11.1",
   "notes": {
-    "it": "Il preset \"Estetica + Performance\" diventa \"Piki\": latenza minima per gioco ed editing (input, timer, rete, energia, privacy, After Effects e Topaz) senza toccare aspetto, barra/Winstep Nexus, impostazioni NVIDIA e servizi. Nuova voce \"Ryzen X3D: giochi sui core con la cache 3D\": piano Bilanciato, core parking e stato minimo del processore ai valori di Windows, servizio AMD 3D V-Cache attivo e Game Bar libera di girare. \"Piki Max\" (ex Piki Preset) non usa più schermo intero esclusivo, raggruppamento dei servizi svchost e moderazione interrupt di rete. Piki non riavvia mai il PC mentre After Effects è aperto e avvisa quando HAGS richiede un riavvio. Descrizioni di tutti i preset riscritte.",
-    "en": "The \"Looks + Performance\" preset becomes \"Piki\": lowest latency for gaming and editing (input, timer, network, power, privacy, After Effects and Topaz) without touching looks, taskbar/Winstep Nexus, NVIDIA settings or services. New \"Ryzen X3D: games on the 3D-cache cores\" item: Balanced plan, core parking and minimum processor state at Windows defaults, AMD 3D V-Cache service running and Game Bar free to run. \"Piki Max\" (formerly Piki Preset) no longer uses exclusive fullscreen, svchost grouping or network interrupt moderation. Piki never restarts the PC while After Effects is open and tells you when HAGS needs a restart. All preset descriptions rewritten."
+    "it": "Ryzen X3D: se il parcheggio dei core (\"min cores\") ha un intervallo rotto 0-0 o un valore di fabbrica al 100%, Piki lo ripara (con annullamento) e imposta il 10% del piano Bilanciato. Rimette ai valori di Windows anche \"app in background bloccate\" e \"raggruppa servizi\" lasciati da versioni vecchie o altri programmi.",
+    "en": "Ryzen X3D: if core parking (\"min cores\") has a broken 0-0 range or a 100% factory value, Piki repairs it (with undo) and sets the Balanced plan to 10%. It also resets \"background apps blocked\" and \"group services\" left by older versions or other tools to Windows defaults."
   },
   "files": [
     {
@@ -32,8 +32,8 @@
     },
     {
       "path": "app/Restore.ps1",
-      "sha256": "214547c401332aa9c87bf9159c26fd87e9d701505d464749908c4f4835649cb8",
-      "size": 10089
+      "sha256": "fba1037d8b8f7a34233b98cce7235f8fdc1aaba8282274e7097e25ed457149cd",
+      "size": 10264
     },
     {
       "path": "app/Setup.ps1",
@@ -47,8 +47,8 @@
     },
     {
       "path": "app/VeloxPC.ps1",
-      "sha256": "d3ab37a26ce1cd540c63965e2c9c9bb0e4c404a2a2f4baf2c2b0fdca2b2c6006",
-      "size": 119434
+      "sha256": "54f28318c25f5d656e5201e2ad4fd9208a70adf9c03fdce39262bbf440d785f0",
+      "size": 119445
     },
     {
       "path": "app/assets/logo.png",
@@ -72,8 +72,8 @@
     },
     {
       "path": "app/core/Common.ps1",
-      "sha256": "872557c7b7dd059b0563b71a87612c4f162ed64ee444f7ffe66bae77a144e040",
-      "size": 24370
+      "sha256": "24817baaf7c1439afd936454ff8e9d496731cc871f2f64c360e5efd1eb7d6c89",
+      "size": 24613
     },
     {
       "path": "app/core/Hardware.ps1",
@@ -102,8 +102,8 @@
     },
     {
       "path": "app/core/Tweaks.ps1",
-      "sha256": "a50ddd5f1bbbfcff603e056c4ebe7efeb30f5c0fb0e61c42496c569dd6b945e8",
-      "size": 64909
+      "sha256": "f1d335eb995a7e670099db2c4ba5a827782a14383f46314a8d8d55a1c6b1a6c1",
+      "size": 70753
     },
     {
       "path": "app/core/Updater.ps1",

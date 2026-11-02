@@ -129,6 +129,7 @@ if ($full) {
                         if ($x.created -and $x.created -match $guid) { & powercfg /delete $x.created 2>&1 | Out-Null }
                     }
                     'pthrottle' { if ($x.path -and (Test-Path -LiteralPath $x.path)) { & powercfg /powerthrottling reset /path "$($x.path)" 2>&1 | Out-Null } }
+                    'regfile' { if ($x.file -and [string]$x.file -like '*.reg' -and (Test-Path -LiteralPath $x.file)) { & reg.exe import ([string]$x.file) 2>&1 | Out-Null } }
                     'defender' { try { if ($x.type -eq 'path') { Remove-MpPreference -ExclusionPath ([string]$x.value) -ErrorAction Stop } } catch { } }
                     'appx' {
                         if ([string]$x.path -like 'HKCU:\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\SystemAppData\*') {

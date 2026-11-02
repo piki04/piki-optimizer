@@ -645,7 +645,7 @@ function Invoke-VxApplyItems {
         # then the Ryzen X3D fix (it switches to the Balanced plan), so power settings land in the right plan too
         $ApplyIds = @(@($ApplyIds | Where-Object { $_ -eq 'powerplan' }) + @($ApplyIds | Where-Object { $_ -eq 'x3dfix' }) + @($ApplyIds | Where-Object { $_ -ne 'powerplan' -and $_ -ne 'x3dfix' }))
         # x3dfix already undoes these itself
-        if ($ApplyIds -contains 'x3dfix') { $RevertIds = @($RevertIds | Where-Object { @('powerplan', 'cpumin', 'coreparking', 'bgapps') -notcontains $_ }) }
+        if ($ApplyIds -contains 'x3dfix') { $RevertIds = @($RevertIds | Where-Object { @('powerplan', 'cpumin', 'coreparking', 'bgapps', 'svchost') -notcontains $_ }) }
         Start-VxBatch
         try {
         foreach ($id in $ApplyIds) {

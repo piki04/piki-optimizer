@@ -424,6 +424,11 @@ function Restore-VxItem {
         'pthrottle' {
             if (Test-Path -LiteralPath $It.path) { & powercfg /powerthrottling reset /path "$($It.path)" 2>&1 | Out-Null }
         }
+        'regfile' {
+            # a registry branch exported before Piki removed it
+            $f = [string]$It.file
+            if ($f -and $f -like '*.reg' -and (Test-Path -LiteralPath $f)) { & reg.exe import $f 2>&1 | Out-Null }
+        }
         'mouse' {
             try { [void][VeloxPC.Native]::SetMouse([int]$It.t1, [int]$It.t2, [int]$It.accel) } catch { }
         }
