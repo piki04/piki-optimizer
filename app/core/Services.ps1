@@ -407,8 +407,8 @@ function Get-VxProcessGroups {
 function Stop-VxProcessGroup {
     param([string]$Name)
     $n = 0
-    # never close the shell or the Winstep Nexus dock from here
-    if ($Name -match '(?i)^(explorer|Nexus|NexusDock|Winstep.*)$') { Write-VxLog "Not closing $Name (protected)"; return 0 }
+    # never close the shell, the Winstep Nexus dock or After Effects / its renders (unsaved work) from here
+    if ($Name -match '(?i)^(explorer|Nexus|NexusDock|Winstep.*|AfterFX|aerender)$') { Write-VxLog "Not closing $Name (protected)"; return 0 }
     foreach ($p in @(Get-Process -Name $Name -ErrorAction SilentlyContinue)) {
         if ($p.Id -eq $PID) { continue }
         try { $p.Kill(); $n++ } catch { }

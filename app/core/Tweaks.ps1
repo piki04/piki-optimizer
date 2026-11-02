@@ -2,7 +2,7 @@
 # Each tweak is data: registry values (Reg) and/or a custom Apply block that only
 # uses the Set-Vx* helpers, so every change is recorded and can be undone.
 
-$script:VxPresets = @('gaming', 'competitive', 'creator', 'balanced', 'laptop')
+$script:VxPresets = @('max', 'piki', 'gaming', 'competitive', 'creator', 'balanced', 'laptop')
 
 $script:VxTweaks = @(
     # ======================================================= GAMING & LATENCY
@@ -242,6 +242,66 @@ $script:VxTweaks = @(
         }
     },
 
+    @{
+        Id = 'x3dfix'; Cat = 'power'; Risk = 'safe'; Presets = @('gaming', 'competitive', 'creator', 'balanced')
+        Title = @{ it = 'Ryzen X3D: giochi sui core con la cache 3D'; en = 'Ryzen X3D: games on the 3D-cache cores' }
+        Desc = @{ it = 'Rimette il PC come lo vuole AMD per i Ryzen X3D a due CCD: piano Bilanciato, parcheggio dei core e stato minimo del processore ai valori di Windows, servizio AMD 3D V-Cache attivo e Game Bar libera di girare. Così i giochi vanno sugli 8 core con la cache 3D: FPS più alti e frame più regolari. Annulla da sola "Prestazioni massime", "Tutti i core sempre pronti", "CPU sempre alla massima frequenza" e "Blocca le app dello Store", se li avevi attivati.'; en = 'Sets the PC up the way AMD wants it for dual-CCD Ryzen X3D chips: Balanced plan, core parking and minimum processor state at Windows defaults, AMD 3D V-Cache service running and Game Bar free to run. Games then land on the 8 cores with the 3D cache: higher FPS and steadier frames. It automatically undoes "Maximum performance", "All cores always ready", "CPU always at full clock" and "Block Store apps" if you had turned them on.' }
+        When = { param($hw) $hw.CPU.IsX3DDual }
+        Rec = {
+            param($hw)
+            if (-not (Get-Service -Name 'amd3dvcacheSvc' -ErrorAction SilentlyContinue)) { return @{ level = 'rec'; why = @{ it = 'Manca il servizio AMD 3D V-Cache: installa il driver chipset AMD'; en = 'The AMD 3D V-Cache service is missing: install the AMD chipset driver' } } }
+            return @{ level = 'rec'; why = @{ it = 'Indispensabile per il tuo Ryzen X3D a due CCD'; en = 'Essential for your dual-CCD Ryzen X3D' } }
+        }
+        Apply = {
+            param($hw)
+            $bal = '381b4222-f694-41f0-9685-ff5bb260df2e'
+            # settings applied earlier that fight the X3D scheduler: put back what was there before
+            foreach ($old in @('powerplan', 'cpumin', 'coreparking', 'bgapps')) {
+                if (Test-VxBackupEntry $old) { [void](Undo-VxEntry $old); Write-VxLog "x3dfix: undone $old" }
+            }
+            $cur = Get-VxActiveScheme
+            if (-not $cur -or $cur.guid -ne $bal) {
+                Add-VxCustomUndo 'plan' @{ kind = 'plan'; prev = $(if ($cur) { $cur.guid } else { '' }); created = '' }
+                & powercfg /setactive $bal 2>&1 | Out-Null
+                $now = Get-VxActiveScheme
+                if (-not $now -or $now.guid -ne $bal) { throw (L @{ it = 'Windows non ha attivato il piano Bilanciato'; en = 'Windows did not activate the Balanced plan' }) }
+            }
+            foreach ($s in @(@('54533251-82be-4824-96c1-47b60b740d00', '0cc5b647-c1df-4637-891a-dec35c318583'), @('54533251-82be-4824-96c1-47b60b740d00', '893dee8e-2bef-41e0-89c6-b55d0929964c'))) {
+                $def = Get-VxPowerDefault $bal $s[0] $s[1]
+                if (-not $def) { Write-VxLog "x3dfix: no Windows default found for $($s[1])" 'WARN'; continue }
+                $v = Get-VxPowerValueAny $bal $s[0] $s[1]
+                if ($v -and $v.ac -eq $def.ac -and $v.dc -eq $def.dc) { continue }
+                if ($v) { Add-VxTxItem @{ key = "power|$bal|$($s[1])"; kind = 'power'; scheme = $bal; sub = $s[0]; setting = $s[1]; ac = $v.ac; dc = $v.dc } }
+                & powercfg /setacvalueindex $bal $s[0] $s[1] $def.ac 2>&1 | Out-Null
+                & powercfg /setdcvalueindex $bal $s[0] $s[1] $def.dc 2>&1 | Out-Null
+            }
+            & powercfg /setactive $bal 2>&1 | Out-Null
+            $svc = Get-Service -Name 'amd3dvcacheSvc' -ErrorAction SilentlyContinue
+            if (-not $svc) { throw (L @{ it = 'Servizio AMD 3D V-Cache (amd3dvcacheSvc) non trovato: installa o reinstalla il driver chipset AMD, poi riapplica questa voce. Il resto è stato sistemato.'; en = 'AMD 3D V-Cache service (amd3dvcacheSvc) not found: install or reinstall the AMD chipset driver, then apply this item again. Everything else was fixed.' }) }
+            $st = Get-VxSvcStart 'amd3dvcacheSvc'
+            if (-not $st -or $st.start -ne 2) { [void](Set-VxSvc -Name 'amd3dvcacheSvc' -StartType 'Automatic') }
+            if ([string]$svc.Status -ne 'Running') { Start-Service -Name 'amd3dvcacheSvc' -ErrorAction Stop }
+        }
+        Test = {
+            param($hw)
+            $bal = '381b4222-f694-41f0-9685-ff5bb260df2e'
+            $s = Get-VxActiveScheme; if (-not $s -or $s.guid -ne $bal) { return $false }
+            foreach ($old in @('powerplan', 'cpumin', 'coreparking', 'bgapps')) { if (Test-VxBackupEntry $old) { return $false } }
+            foreach ($p in @(@('54533251-82be-4824-96c1-47b60b740d00', '0cc5b647-c1df-4637-891a-dec35c318583'), @('54533251-82be-4824-96c1-47b60b740d00', '893dee8e-2bef-41e0-89c6-b55d0929964c'))) {
+                $def = Get-VxPowerDefault $bal $p[0] $p[1]
+                if (-not $def) { continue }
+                $v = Get-VxPowerValueAny $bal $p[0] $p[1]
+                if (-not $v -or $v.ac -ne $def.ac) { return $false }
+            }
+            $svc = Get-Service -Name 'amd3dvcacheSvc' -ErrorAction SilentlyContinue
+            if ($svc) {
+                $st = Get-VxSvcStart 'amd3dvcacheSvc'
+                if (-not $st -or $st.start -ne 2 -or [string]$svc.Status -ne 'Running') { return $false }
+            }
+            return $true
+        }
+    },
+
     # ======================================================= SYSTEM
     @{
         Id = 'fastboot'; Cat = 'system'; Risk = 'safe'; Reboot = $true; Presets = @('gaming', 'competitive', 'creator')
@@ -333,6 +393,7 @@ $script:VxTweaks = @(
         Title = @{ it = 'Blocca le app dello Store in background'; en = 'Block Store apps in the background' }
         Desc = @{ it = 'Le app dello Store (Meteo, Foto, Collegamento al telefono...) non restano attive quando sono chiuse.'; en = 'Store apps (Weather, Photos, Phone Link...) stop running when closed.' }
         Warn = @{ it = 'Le app dello Store chiuse non mandano più notifiche (es. WhatsApp versione Store, Posta).'; en = 'Closed Store apps no longer send notifications (e.g. WhatsApp from the Store, Mail).' }
+        Rec = { param($hw) if ($hw.CPU.IsX3DDual) { @{ level = 'notrec'; why = @{ it = 'Sui Ryzen X3D a due CCD la Game Bar deve poter girare: il driver AMD la usa per riconoscere i giochi e mandarli sui core con la cache 3D'; en = 'On dual-CCD Ryzen X3D the Game Bar must be able to run: the AMD driver uses it to recognise games and send them to the 3D-cache cores' } } } }
         Apply = {
             param($hw)
             if ($hw.OS.IsWin11) { Set-VxReg 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy' 'LetAppsRunInBackground' 'DWord' 2 }
@@ -625,6 +686,37 @@ $script:VxCatNames = @{
     ae = @{ it = 'After Effects'; en = 'After Effects' }
 }
 
+# ---------------------------------------------------------------- Ryzen X3D helpers
+# x3dfix puts core parking (min cores) and minimum processor state back to the Windows default of the plan
+function Get-VxPowerDefault {
+    # factory value of a setting in a built-in plan (what "Restore plan defaults" would write)
+    param([string]$Scheme, [string]$Sub, [string]$Setting)
+    $paths = @(
+        "HKLM:\SYSTEM\CurrentControlSet\Control\Power\User\Default\PowerSchemes\$Scheme\$Sub\$Setting",
+        "HKLM:\SYSTEM\CurrentControlSet\Control\Power\PowerSettings\$Sub\$Setting\DefaultPowerSchemeValues\$Scheme"
+    )
+    foreach ($p in $paths) {
+        try {
+            $k = Get-ItemProperty -LiteralPath $p -ErrorAction Stop
+            $ac = $k.ACSettingIndex; if ($null -eq $ac) { $ac = $k.AcSettingIndex }
+            $dc = $k.DCSettingIndex; if ($null -eq $dc) { $dc = $k.DcSettingIndex }
+            if ($null -ne $ac) { if ($null -eq $dc) { $dc = $ac }; return @{ ac = [int]$ac; dc = [int]$dc } }
+        } catch { }
+    }
+    return $null
+}
+
+function Get-VxPowerValueAny {
+    # like Get-VxPowerValue, but also reads settings Windows hides (core parking is hidden by default)
+    param([string]$Scheme, [string]$Sub, [string]$Setting)
+    $v = Get-VxPowerValue $Scheme $Sub $Setting
+    if ($v) { return $v }
+    $out = & powercfg /qh $Scheme $Sub $Setting 2>$null
+    $hex = @([regex]::Matches(($out -join "`n"), '0x[0-9a-fA-F]{8}') | ForEach-Object { $_.Value })
+    if ($hex.Count -ge 2) { return @{ ac = [Convert]::ToInt32($hex[$hex.Count - 2], 16); dc = [Convert]::ToInt32($hex[$hex.Count - 1], 16) } }
+    return $null
+}
+
 # ---------------------------------------------------------------- engine
 function Get-VxAllTweaks {
     $list = @($script:VxTweaks)
@@ -731,19 +823,28 @@ function Get-VxTweakStates {
     return $res
 }
 
+# "piki": lowest latency without touching the look (animations, transparency), File Explorer / taskbar (Winstep Nexus),
+# NVIDIA driver settings or services. Exactly these tweaks + every After Effects / Topaz item (category 'ae').
+$script:VxPikiIds = @(
+    'gamemode', 'mmcss', 'timerres', 'windowedopt', 'hags', 'prioritysep', 'gamedvr',
+    'mouseaccel', 'keyboard', 'stickykeys',
+    'powerlat', 'powerthrottle', 'fastboot', 'startupdelay', 'memcompress', 'menudelay',
+    'telemetry', 'ads', 'websearch', 'activity', 'recall', 'edgeboost', 'delivopt',
+    'nagle', 'tcpstack', 'netthrottle', 'nicbuffers', 'nicsave',
+    'x3dfix'
+)
+
 function Get-VxPresetSelection {
     # Which tweaks a preset turns on for this PC (skips "not recommended for you")
     param([string]$Preset, $Hw, [hashtable]$States)
+    if ($Preset -eq 'aesthetic') { $Preset = 'piki' }   # settings saved by 1.10.x
     $ids = @()
-    # "max": everything for gaming + competitive + After Effects on this PC, except what slows renders down
-    $maxSkip = @('prioritysep', 'transparency', 'visualfx', 'copilot', 'storeupd')   # keep render speed, glass and animations
-    # "aesthetic": only safe speed/responsiveness settings. Never: window animations, transparency, visual effects,
-    # theme, File Explorer / taskbar, GPU driver or graphics settings, After Effects priority/GPU/IFEO
-    $aesSkip = @('visualfx', 'transparency', 'menudelay', 'widgets', 'copilot', 'websearch', 'startupdelay', 'windowedopt', 'hags', 'mpo', 'fso', 'prioritysep', 'storeupd')
+    # "max": everything for gaming + competitive + After Effects on this PC, except what slows renders down,
+    # changes the look, or trades stability for a tiny gain (exclusive fullscreen, grouped svchost, NIC interrupts)
+    $maxSkip = @('prioritysep', 'transparency', 'visualfx', 'copilot', 'storeupd', 'fso', 'svchost', 'nicirq')
     foreach ($t in (Get-VxAllTweaks)) {
-        if ($Preset -eq 'aesthetic') {
-            if ($t.Risk -ne 'safe') { continue }
-            if ($t.Cat -eq 'ae' -or $t.Shell -or $aesSkip -contains $t.Id) { continue }
+        if ($Preset -eq 'piki') {
+            if (-not ($t.Cat -eq 'ae' -or $script:VxPikiIds -contains $t.Id)) { continue }
         } elseif ($Preset -eq 'max') {
             if (-not ($t.Presets -contains 'gaming' -or $t.Presets -contains 'competitive' -or $t.Presets -contains 'creator')) { continue }
             if ($maxSkip -contains $t.Id) { continue }

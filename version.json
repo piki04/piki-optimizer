@@ -1,8 +1,8 @@
 {
-  "version": "1.10.0",
+  "version": "1.11.0",
   "notes": {
-    "it": "Nuovo preset \"Estetica + Performance\": solo ottimizzazioni sicure, senza toccare animazioni, trasparenze, effetti visivi, tema, Esplora file e barra, né After Effects. Protezione per Winstep Nexus (dock, barra e avvio automatico non vengono mai toccati). Nuovo \"Ripristina come prima\" in app e \"Ripristina Piki.cmd\" che funziona anche se l'app non si apre.",
-    "en": "New \"Looks + Performance\" preset: only safe optimizations, without touching animations, transparency, visual effects, theme, File Explorer and taskbar, or After Effects. Winstep Nexus protection (dock, taskbar and its startup entry are never touched). New \"Restore as before\" in the app and \"Ripristina Piki.cmd\" that works even if the app does not open."
+    "it": "Il preset \"Estetica + Performance\" diventa \"Piki\": latenza minima per gioco ed editing (input, timer, rete, energia, privacy, After Effects e Topaz) senza toccare aspetto, barra/Winstep Nexus, impostazioni NVIDIA e servizi. Nuova voce \"Ryzen X3D: giochi sui core con la cache 3D\": piano Bilanciato, core parking e stato minimo del processore ai valori di Windows, servizio AMD 3D V-Cache attivo e Game Bar libera di girare. \"Piki Max\" (ex Piki Preset) non usa più schermo intero esclusivo, raggruppamento dei servizi svchost e moderazione interrupt di rete. Piki non riavvia mai il PC mentre After Effects è aperto e avvisa quando HAGS richiede un riavvio. Descrizioni di tutti i preset riscritte.",
+    "en": "The \"Looks + Performance\" preset becomes \"Piki\": lowest latency for gaming and editing (input, timer, network, power, privacy, After Effects and Topaz) without touching looks, taskbar/Winstep Nexus, NVIDIA settings or services. New \"Ryzen X3D: games on the 3D-cache cores\" item: Balanced plan, core parking and minimum processor state at Windows defaults, AMD 3D V-Cache service running and Game Bar free to run. \"Piki Max\" (formerly Piki Preset) no longer uses exclusive fullscreen, svchost grouping or network interrupt moderation. Piki never restarts the PC while After Effects is open and tells you when HAGS needs a restart. All preset descriptions rewritten."
   },
   "files": [
     {
@@ -47,8 +47,8 @@
     },
     {
       "path": "app/VeloxPC.ps1",
-      "sha256": "e20ab5c880073de26d81465f884da3cdb0f82ea799a6b58fcbdae6f6a394c15b",
-      "size": 118267
+      "sha256": "d3ab37a26ce1cd540c63965e2c9c9bb0e4c404a2a2f4baf2c2b0fdca2b2c6006",
+      "size": 119434
     },
     {
       "path": "app/assets/logo.png",
@@ -97,13 +97,13 @@
     },
     {
       "path": "app/core/Services.ps1",
-      "sha256": "f92fde25a7585ff9248755b740894334b843246acc5436d040344cd9c0db6954",
-      "size": 39965
+      "sha256": "81684d6a3fb53ada9fcb466591426b043276669fb97a311a1b6f7249ada1d6bd",
+      "size": 40026
     },
     {
       "path": "app/core/Tweaks.ps1",
-      "sha256": "0feff33a2c87f8d530c8772f79cc2e426ab7c4048d8f024db666afc28427a715",
-      "size": 57180
+      "sha256": "a50ddd5f1bbbfcff603e056c4ebe7efeb30f5c0fb0e61c42496c569dd6b945e8",
+      "size": 64909
     },
     {
       "path": "app/core/Updater.ps1",
@@ -112,58 +112,58 @@
     },
     {
       "path": "app/lang/de.json",
-      "sha256": "62f0fe5f3ef7427c3159bc205cb95f6104af1fc1c23715f1760956f9ae47d29e",
-      "size": 21573
+      "sha256": "2963c8f46c72e2408b9ace70005f328d5b096cdb94fa6c8b6b33d8e41a11663d",
+      "size": 22906
     },
     {
       "path": "app/lang/en.json",
-      "sha256": "91191878c80d8015f1743e6b83eb36577a26ebfaa533d1808271adf07b372423",
-      "size": 19741
+      "sha256": "c394d9fff3cf9f6e5cc0805c4f155124fc6cd332ad6dc11ac42ccef91cad8de2",
+      "size": 20932
     },
     {
       "path": "app/lang/es.json",
-      "sha256": "39d8c4a9176ee842bdebffb9a287be1545bec9bd04ce918c7d0781094653039a",
-      "size": 20889
+      "sha256": "d0502312a1bebc6d37d84777760c0479c373e97c02ec21685492d5148058e924",
+      "size": 22161
     },
     {
       "path": "app/lang/fr.json",
-      "sha256": "b458df585140ea8c868d7b5f3e18ac933c86f39aa9e07a5ba1f24e040f5f9022",
-      "size": 21951
+      "sha256": "53ff585a68663542efa1f94bb430403ab2aba03745ef60839eb36dc3eca3d542",
+      "size": 23331
     },
     {
       "path": "app/lang/it.json",
-      "sha256": "a559bcf6478cbb2c708d7751aaefd2f11e94ff199a77aef3128968bbb5b80014",
-      "size": 20848
+      "sha256": "3608d4f82ec54c71b63094b09442178374ef11b10c8feec7e0c5e6b21e9b3ca3",
+      "size": 22087
     },
     {
       "path": "app/lang/ja.json",
-      "sha256": "0253b8cdfd9ddab464c27779d24838f6776471c39cce514b39727accd3df6ca8",
-      "size": 24636
+      "sha256": "82b79c5b508551fb55008f59ffc7acda2617955cb35b101a87b851894c8c669f",
+      "size": 26360
     },
     {
       "path": "app/lang/pt.json",
-      "sha256": "d13318258f28902216b4dd7f8146b25e35925d46a9039e54de2d42b4fffdaf4e",
-      "size": 20864
+      "sha256": "007ca832ca55de7585e731986ae3cd16432830f8f2576658718f35828d28e7e4",
+      "size": 22121
     },
     {
       "path": "app/lang/ru.json",
-      "sha256": "7f25cbc3ec476c43237f8622673a41589f4debd934c14b733d14f7ae9292093d",
-      "size": 30090
+      "sha256": "50dfb971baddd0f53bf00fd6d33b7cc25b532021709875b6ba4e495e424e3298",
+      "size": 32188
     },
     {
       "path": "app/lang/zh.json",
-      "sha256": "dc2db0fa70f2f63ea3aebe22d7d225d5d03d13676e74bd81de7b6a5da31ecdfe",
-      "size": 19362
+      "sha256": "d1a2d4d8e73106ecc1236cddac91d1feb2b5e1452459bfb8587c985916c42b8c",
+      "size": 20617
     },
     {
       "path": "app/ui/MainWindow.safe.xaml",
-      "sha256": "85d43053ea0e64c91f3b36a6382df2cd7083d461700dc05277af6de027e33fdf",
-      "size": 124365
+      "sha256": "92169ef438de3857603b6f3483eebe50451517a0243dab2ee3092f9800ada652",
+      "size": 124325
     },
     {
       "path": "app/ui/MainWindow.xaml",
-      "sha256": "2086c61ebb32d29f6c4a59cfb1cf36834dc768e22651eb7b456ec9a3141dc73f",
-      "size": 166762
+      "sha256": "b92da738c18c59697d4cd4b716d07529720560836c984cea0c82c7859b5f36a0",
+      "size": 166722
     },
     {
       "path": "config.json",

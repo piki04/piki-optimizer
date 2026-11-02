@@ -107,6 +107,7 @@ Write-VxLog '---- Piki Optimizer start'
 try { if (Test-Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\PikiOptimizer') { $lmv = Get-VxLocalManifest; if ($lmv) { Set-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\PikiOptimizer' -Name DisplayVersion -Value ([string]$lmv.version) } } } catch { }
 
 $script:Settings = Get-VxSettings
+if ($script:Settings.profile -eq 'aesthetic') { $script:Settings.profile = 'piki' }   # preset renamed in 1.11.0
 if (-not $script:Settings.lang) {
     $cul = (Get-UICulture).TwoLetterISOLanguageName
     if (-not (Test-Path -LiteralPath (Join-Path $AppDir "lang\$cul.json"))) { $cul = (Get-Culture).TwoLetterISOLanguageName }
@@ -636,12 +637,15 @@ function Invoke-VxApplyItems {
     $script:AfterApply = $After
     Start-VxJob -Name 'apply' -Arguments @($script:Hw, [string[]]$ApplyIds, [string[]]$RevertIds, $RestorePoint) -Script {
         param($Sync, $Hw, $ApplyIds, $RevertIds, $Rp)
-        $res = @{ ok = 0; failed = @(); reboot = $false; noUndo = 0; reverted = 0; rp = $null }
+        $res = @{ ok = 0; failed = @(); reboot = $false; hags = $false; noUndo = 0; reverted = 0; rp = $null }
         $total = [math]::Max(1, $ApplyIds.Count + $RevertIds.Count)
         $i = 0
         if ($Rp) { $Sync.Step = (L @{ it = 'Creo un punto di ripristino...'; en = 'Creating a restore point...' }); $res.rp = New-VxRestorePoint 'VeloxPC' }
         # the power plan goes first: settings stored in the plan must land in the new plan
-        $ApplyIds = @(@($ApplyIds | Where-Object { $_ -eq 'powerplan' }) + @($ApplyIds | Where-Object { $_ -ne 'powerplan' }))
+        # then the Ryzen X3D fix (it switches to the Balanced plan), so power settings land in the right plan too
+        $ApplyIds = @(@($ApplyIds | Where-Object { $_ -eq 'powerplan' }) + @($ApplyIds | Where-Object { $_ -eq 'x3dfix' }) + @($ApplyIds | Where-Object { $_ -ne 'powerplan' -and $_ -ne 'x3dfix' }))
+        # x3dfix already undoes these itself
+        if ($ApplyIds -contains 'x3dfix') { $RevertIds = @($RevertIds | Where-Object { @('powerplan', 'cpumin', 'coreparking', 'bgapps') -notcontains $_ }) }
         Start-VxBatch
         try {
         foreach ($id in $ApplyIds) {
@@ -657,7 +661,7 @@ function Invoke-VxApplyItems {
                 if (-not $t) { continue }
                 $Sync.Step = L $t.Title
                 $r = Invoke-VxTweak $t $Hw
-                if ($r.ok) { $res.ok++; if ($t.Reboot) { $res.reboot = $true } } else { $res.failed += ((L $t.Title) + ': ' + $r.error) }
+                if ($r.ok) { $res.ok++; if ($t.Reboot) { $res.reboot = $true }; if ($id -eq 'hags') { $res.hags = $true } } else { $res.failed += ((L $t.Title) + ': ' + $r.error) }
             }
         }
         foreach ($id in $RevertIds) {
@@ -681,13 +685,24 @@ function Invoke-VxApplyItems {
         if ($r.rp -eq $false) { $msg += "`n`n" + (T 'apply.norp') }
         if ($r.reboot) {
             $msg += "`n`n" + (T 'apply.reboot')
-            Show-VxDialog -Title (T 'apply.title') -Text $msg -YesText (T 'common.rebootnow') -NoText (T 'common.later') -OnYes { Restart-Computer -Force }
+            if ($r.hags) { $msg += "`n" + (T 'apply.reboot.hags') }
+            Show-VxDialog -Title (T 'apply.title') -Text $msg -YesText (T 'common.rebootnow') -NoText (T 'common.later') -OnYes { Restart-VxPc }
         } else {
             Show-VxDialog -Title (T 'apply.title') -Text $msg -YesText 'OK'
         }
         Update-VxStates
         if ($script:AfterApply) { & $script:AfterApply }
     }
+}
+
+# Restart only when the user presses the button, and never while After Effects / a render is open
+# (a forced restart would close it and lose unsaved work)
+function Restart-VxPc {
+    if (Test-VxProcessRunning @('AfterFX', 'aerender', 'Adobe Media Encoder')) {
+        Show-VxDialog -Title (T 'restart.ae.title') -Text (T 'restart.ae.text') -YesText 'OK'
+        return
+    }
+    Restart-Computer -Force
 }
 
 function Invoke-VxPendingApply {
@@ -892,7 +907,7 @@ function Invoke-VxFindingAction {
         Open-VxTarget $map[$Action.Substring(5)]; return
     }
     if ($Action -eq 'restart') {
-        Show-VxDialog -Title (T 'fix.restart.q') -Text (T 'fix.restart.text') -YesText (T 'common.rebootnow') -NoText (T 'common.cancel') -OnYes { Restart-Computer -Force }
+        Show-VxDialog -Title (T 'fix.restart.q') -Text (T 'fix.restart.text') -YesText (T 'common.rebootnow') -NoText (T 'common.cancel') -OnYes { Restart-VxPc }
         return
     }
     if ($Action -eq 'fix:bios') {
@@ -921,7 +936,7 @@ function Invoke-VxFindingAction {
 # =====================================================================
 function Show-VxWizard {
     if (-not $script:Hw -or $script:States.Count -eq 0) { Show-VxToast (T 'common.wait') 'info'; return }
-    foreach ($n in @('WizMax', 'WizAesthetic', 'WizGaming', 'WizCompetitive', 'WizCreator', 'WizBalanced', 'WizLaptop')) { if ($ui[$n]) { $ui[$n].IsChecked = $false } }
+    foreach ($n in @('WizMax', 'WizPiki', 'WizGaming', 'WizCompetitive', 'WizCreator', 'WizBalanced', 'WizLaptop')) { if ($ui[$n]) { $ui[$n].IsChecked = $false } }
     $ui.WizSummary.Text = T 'wiz.pick'; $ui.WizDetail.Text = ''
     $ui.WizGo.IsEnabled = $false
     $script:WizPreset = $null
@@ -931,7 +946,7 @@ function Show-VxWizard {
 function Get-VxWizardPlan {
     param([string]$Preset)
     $sel = @(Get-VxPresetSelection -Preset $Preset -Hw $script:Hw -States $script:States | Where-Object { -not $script:States[$_].applied })
-    $level = if ($Preset -eq 'max') { 2 } else { 1 }
+    $level = if ($Preset -eq 'max') { 2 } elseif ($Preset -eq 'piki') { 0 } else { 1 }
     $svc = @($script:SvcRows | Where-Object { $_.Entry.Level -ge 1 -and $_.Entry.Level -le $level -and -not $_.Need -and -not $_.Applied } | ForEach-Object { $_.Id })
     return @{ tweaks = $sel; services = $svc }
 }
@@ -1021,12 +1036,14 @@ function Update-VxProcList {
 function Invoke-VxBoost {
     param([switch]$Silent)
     Show-VxBusy (T 'boost.title') (T 'busy.wait')
-    Start-VxJob -Name 'boost' -Script {
-        param($Sync)
+    $keep = @('Spotify', 'AnyDesk')
+    if ($script:Hw -and $script:Hw.CPU.IsX3DDual) { $keep += @('GameBar', 'GameBarFTServer') }
+    Start-VxJob -Name 'boost' -Arguments @(, [string[]]$keep) -Script {
+        param($Sync, $Keep)
         $before = ([VeloxPC.Native]::Memory())[2]
         $closed = @()
         foreach ($g in @(Get-VxProcessGroups)) {
-            if ($g.Risk -eq 'safe' -and $g.Name -notin @('Spotify', 'AnyDesk')) {
+            if ($g.Risk -eq 'safe' -and $g.Name -notin $Keep) {
                 if ((Stop-VxProcessGroup $g.Name) -gt 0) { $closed += $g.Name }
             }
         }
@@ -1799,7 +1816,7 @@ $ui.BtnHealthRun.add_Click({ Start-VxHealthCheck })
 
 # wizard
 $ui.WizClose.add_Click({ Hide-VxOverlay $ui.WizardOverlay })
-foreach ($n in @('WizMax', 'WizAesthetic', 'WizGaming', 'WizCompetitive', 'WizCreator', 'WizBalanced', 'WizLaptop')) {
+foreach ($n in @('WizMax', 'WizPiki', 'WizGaming', 'WizCompetitive', 'WizCreator', 'WizBalanced', 'WizLaptop')) {
     if (-not $ui[$n]) { continue }
     $ui[$n].add_Checked({ param($s, $e) Update-VxWizardSummary ([string]$s.Tag) })
 }
@@ -1812,7 +1829,7 @@ $ui.WizGo.add_Click({
 })
 
 # optimize presets
-foreach ($n in @('PresetMax', 'PresetAesthetic', 'PresetGaming', 'PresetCompetitive', 'PresetCreator', 'PresetBalanced', 'PresetLaptop')) {
+foreach ($n in @('PresetMax', 'PresetPiki', 'PresetGaming', 'PresetCompetitive', 'PresetCreator', 'PresetBalanced', 'PresetLaptop')) {
     if (-not $ui[$n]) { continue }
     $ui[$n].add_Click({ param($s, $e) Select-VxPreset ([string]$s.Tag) })
 }
@@ -1821,7 +1838,7 @@ foreach ($n in @('PresetMax', 'PresetAesthetic', 'PresetGaming', 'PresetCompetit
 $ui.BtnPendingApply.add_Click({ Invoke-VxPendingApply })
 $ui.BtnPendingReset.add_Click({
     foreach ($it in (Get-VxAllItems)) { if ($it.IsDirty) { $it.IsChecked = $it.IsApplied } }
-    foreach ($n in @('PresetMax', 'PresetAesthetic', 'PresetGaming', 'PresetCompetitive', 'PresetCreator', 'PresetBalanced', 'PresetLaptop', 'LevelLight', 'LevelBalanced', 'LevelMax')) { if ($ui[$n]) { $ui[$n].IsChecked = $false } }
+    foreach ($n in @('PresetMax', 'PresetPiki', 'PresetGaming', 'PresetCompetitive', 'PresetCreator', 'PresetBalanced', 'PresetLaptop', 'LevelLight', 'LevelBalanced', 'LevelMax')) { if ($ui[$n]) { $ui[$n].IsChecked = $false } }
     Update-VxPendingBar
 })
 
@@ -1920,7 +1937,7 @@ $ui.BtnFlushDns.add_Click({ try { Clear-DnsClientCache; Show-VxToast (T 'net.flu
 $ui.BtnNetReset.add_Click({
     Show-VxDialog -Title (T 'net.reset') -Text (T 'net.reset.q') -YesText (T 'net.reset.yes') -NoText (T 'common.cancel') -OnYes {
         Start-VxJob -Name 'netreset' -Script { param($Sync) Invoke-VxNetworkReset; return @{ ok = $true } } -OnDone {
-            Show-VxDialog -Title (T 'net.reset') -Text (T 'net.reset.done') -YesText (T 'common.rebootnow') -NoText (T 'common.later') -OnYes { Restart-Computer -Force }
+            Show-VxDialog -Title (T 'net.reset') -Text (T 'net.reset.done') -YesText (T 'common.rebootnow') -NoText (T 'common.later') -OnYes { Restart-VxPc }
         }
     }
 })
