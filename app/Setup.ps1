@@ -79,11 +79,11 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
 $xaml = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Piki Optimizer - Setup" Width="520" Height="430" WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
-        Background="#0A0C11" Foreground="#ECEFF6" FontFamily="Segoe UI Variable Text, Segoe UI">
+        Background="#000000" Foreground="#EFE9E0" FontFamily="Segoe UI Variable Text, Segoe UI">
   <Window.Resources>
-    <LinearGradientBrush x:Key="G" StartPoint="0,0" EndPoint="1,1"><GradientStop Color="#7C5CFF" Offset="0"/><GradientStop Color="#22D3EE" Offset="1"/></LinearGradientBrush>
+    <LinearGradientBrush x:Key="G" StartPoint="0,0" EndPoint="1,1"><GradientStop Color="#F7F2EA" Offset="0"/><GradientStop Color="#DDD4C6" Offset="0.45"/><GradientStop Color="#AEA495" Offset="1"/></LinearGradientBrush>
     <Style x:Key="B" TargetType="Button">
-      <Setter Property="Foreground" Value="White"/><Setter Property="Cursor" Value="Hand"/><Setter Property="FontWeight" Value="Bold"/><Setter Property="FontSize" Value="15"/>
+      <Setter Property="Foreground" Value="#15100E"/><Setter Property="Cursor" Value="Hand"/><Setter Property="FontWeight" Value="Bold"/><Setter Property="FontSize" Value="15"/>
       <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
         <Border x:Name="Bd" CornerRadius="12" Background="{StaticResource G}" Padding="26,12"><ContentPresenter HorizontalAlignment="Center"/></Border>
         <ControlTemplate.Triggers><Trigger Property="IsEnabled" Value="False"><Setter TargetName="Bd" Property="Opacity" Value="0.45"/></Trigger></ControlTemplate.Triggers>
@@ -92,13 +92,13 @@ $xaml = @"
   </Window.Resources>
   <Grid Margin="36,30">
     <StackPanel>
-      <Border Width="84" Height="84" CornerRadius="24" Background="{StaticResource G}" HorizontalAlignment="Center">
-        <TextBlock Text="P" FontSize="50" FontWeight="Black" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4,0,0,4"/>
-      </Border>
-      <TextBlock HorizontalAlignment="Center" FontSize="28" FontWeight="Bold" Margin="0,18,0,0"><Run Text="Piki "/><Run Text="Optimizer" Foreground="#22D3EE"/></TextBlock>
-      <TextBlock x:Name="Sub" HorizontalAlignment="Center" TextAlignment="Center" Foreground="#8E96AB" TextWrapping="Wrap" Margin="0,6,0,22"/>
-      <CheckBox x:Name="ChkDesk" IsChecked="True" Foreground="#ECEFF6" HorizontalAlignment="Center" Margin="0,0,0,18"/>
-      <Border Height="6" CornerRadius="3" Background="#1E2433" Margin="0,0,0,22"><Border x:Name="Bar" HorizontalAlignment="Left" Width="0" CornerRadius="3" Background="{StaticResource G}"/></Border>
+      <Grid Width="84" Height="84" HorizontalAlignment="Center"><Ellipse Stroke="{StaticResource G}" StrokeThickness="2.5"/><Ellipse Margin="9" Fill="#15100E"/>
+        <TextBlock Text="P" FontSize="36" FontWeight="Bold" Foreground="#EFE9E0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="2,0,0,3"/>
+      </Grid>
+      <TextBlock HorizontalAlignment="Center" FontSize="28" FontWeight="Bold" Margin="0,18,0,0"><Run Text="Piki "/><Run Text="Optimizer" Foreground="#D9BC8C"/></TextBlock>
+      <TextBlock x:Name="Sub" HorizontalAlignment="Center" TextAlignment="Center" Foreground="#A89F92" TextWrapping="Wrap" Margin="0,6,0,22"/>
+      <CheckBox x:Name="ChkDesk" IsChecked="True" Foreground="#EFE9E0" HorizontalAlignment="Center" Margin="0,0,0,18"/>
+      <Border Height="6" CornerRadius="3" Background="#1AEFE9E0" Margin="0,0,0,22"><Border x:Name="Bar" HorizontalAlignment="Left" Width="0" CornerRadius="3" Background="{StaticResource G}"/></Border>
       <Button x:Name="Go" Style="{StaticResource B}" HorizontalAlignment="Center"/>
     </StackPanel>
   </Grid>

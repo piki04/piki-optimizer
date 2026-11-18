@@ -61,6 +61,15 @@ try { Copy-Item -LiteralPath $used -Destination (Join-Path $data ('backup.before
 if ((Split-Path -Leaf $used) -ne 'backup.json') { try { Copy-Item -LiteralPath $used -Destination (Join-Path $data 'backup.json') -Force } catch { } }
 
 $ok = 0; $fail = 0; $full = $false
+# an unfinished Game/Render session (crash): put the previous power plan back first
+try {
+    $sf = Join-Path $data 'session.json'
+    if (Test-Path -LiteralPath $sf) {
+        $ss = [System.IO.File]::ReadAllText($sf) | ConvertFrom-Json
+        if ([string]$ss.prevScheme -match '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$') { & powercfg /setactive ([string]$ss.prevScheme) 2>&1 | Out-Null }
+        Remove-Item -LiteralPath $sf -Force -ErrorAction SilentlyContinue
+    }
+} catch { }
 # ---- 1) full restore with the app's own code (covers every kind of change)
 try {
     if (-not ('VeloxPC.Native' -as [type])) {
@@ -130,12 +139,43 @@ if ($full) {
                     }
                     'pthrottle' { if ($x.path -and (Test-Path -LiteralPath $x.path)) { & powercfg /powerthrottling reset /path "$($x.path)" 2>&1 | Out-Null } }
                     'regfile' { if ($x.file -and [string]$x.file -like '*.reg' -and (Test-Path -LiteralPath $x.file)) { & reg.exe import ([string]$x.file) 2>&1 | Out-Null } }
-                    'defender' { try { if ($x.type -eq 'path') { Remove-MpPreference -ExclusionPath ([string]$x.value) -ErrorAction Stop } } catch { } }
+                    'defender' {
+                        try {
+                            if ($x.type -eq 'path') { Remove-MpPreference -ExclusionPath ([string]$x.value) -ErrorAction Stop }
+                            elseif ($x.type -eq 'process') { Remove-MpPreference -ExclusionProcess ([string]$x.value) -ErrorAction Stop }
+                        } catch { }
+                    }
                     'appx' {
                         if ([string]$x.path -like 'HKCU:\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\SystemAppData\*') {
                             Set-ItemProperty -LiteralPath $x.path -Name State -Value ([int]$x.state) -Type DWord -ErrorAction SilentlyContinue
                         }
                     }
+                    'overlay' { if ([string]$x.prev -match $guid) { & powercfg /overlaysetactive ([string]$x.prev) 2>&1 | Out-Null } }
+                    'mmagent' { if ($x.prev) { Enable-MMAgent -MemoryCompression -ErrorAction SilentlyContinue } else { Disable-MMAgent -MemoryCompression -ErrorAction SilentlyContinue } }
+                    'tcp' {
+                        if (@('autotuninglevel', 'rss', 'ecncapability', 'timestamps', 'heuristics') -contains [string]$x.prop -and ([string]$x.value) -match '^[a-zA-Z]+$') {
+                            if ($x.prop -eq 'heuristics') { & netsh int tcp set heuristics ([string]$x.value) 2>&1 | Out-Null }
+                            else { & netsh int tcp set global "$($x.prop)=$($x.value)" 2>&1 | Out-Null }
+                        }
+                    }
+                    'nic' { Set-NetAdapterAdvancedProperty -Name ([string]$x.adapter) -RegistryKeyword ([string]$x.keyword) -RegistryValue ([string]$x.value) -NoRestart -ErrorAction Stop; $script:VxNicRestart = $true }
+                    'dns' {
+                        if ($x.dhcp) { Set-DnsClientServerAddress -InterfaceIndex ([int]$x.ifIndex) -ResetServerAddresses -ErrorAction Stop }
+                        else { Set-DnsClientServerAddress -InterfaceIndex ([int]$x.ifIndex) -ServerAddresses @($x.servers) -ErrorAction Stop }
+                    }
+                    'mouse' {
+                        $mp = 'HKCU:\Control Panel\Mouse'
+                        Set-ItemProperty -LiteralPath $mp -Name MouseSpeed -Value ([string][int]$x.accel) -ErrorAction SilentlyContinue
+                        Set-ItemProperty -LiteralPath $mp -Name MouseThreshold1 -Value ([string][int]$x.t1) -ErrorAction SilentlyContinue
+                        Set-ItemProperty -LiteralPath $mp -Name MouseThreshold2 -Value ([string][int]$x.t2) -ErrorAction SilentlyContinue
+                    }
+                    'kbd' {
+                        $kp = 'HKCU:\Control Panel\Keyboard'
+                        Set-ItemProperty -LiteralPath $kp -Name KeyboardDelay -Value ([string][int]$x.delay) -ErrorAction SilentlyContinue
+                        Set-ItemProperty -LiteralPath $kp -Name KeyboardSpeed -Value ([string][int]$x.speed) -ErrorAction SilentlyContinue
+                    }
+                    'display' { $bad++ }   # needs the app (refresh rate is set through a Windows API); takes effect at the next sign-in anyway
+                    'schedtask' { if ([string]$x.name -match '^PikiOptimizer( Clean)?$') { Unregister-ScheduledTask -TaskName ([string]$x.name) -Confirm:$false -ErrorAction SilentlyContinue } }
                     default { $bad++ }
                 }
             } catch { $bad++ }
@@ -144,6 +184,7 @@ if ($full) {
         else { $fail++; Write-Host ('  ~~  ' + [string]$e.title + (Tx " ($bad voci da rifare dall'app)" " ($bad items to redo from the app)")) -ForegroundColor Yellow }
         if ($bad -eq 0) { $backup.entries.PSObject.Properties.Remove($id) }
     }
+    if ($script:VxNicRestart) { try { Get-NetAdapter -Physical -ErrorAction Stop | Where-Object { $_.Status -eq 'Up' } | Restart-NetAdapter -Confirm:$false -ErrorAction SilentlyContinue } catch { } }
     try {
         $json = ConvertTo-Json -InputObject $backup -Depth 12
         [System.IO.File]::WriteAllText((Join-Path $data 'backup.json'), $json, (New-Object System.Text.UTF8Encoding($false)))

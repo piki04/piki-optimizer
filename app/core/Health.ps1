@@ -187,6 +187,17 @@ function Invoke-VxHealthCheck {
         }
     }
 
+    # BIOS date (read-only): very old firmware misses CPU and stability fixes
+    try {
+        if ($Hw.Board -and $Hw.Board.BiosDate -match '^(\d{2})/(\d{4})$') {
+            $bd = New-Object DateTime ([int]$Matches[2]), ([int]$Matches[1]), 1
+            $months = [int](((Get-Date) - $bd).TotalDays / 30)
+            if ($months -ge 36) {
+                [void]$f.Add((New-VxFinding 'drivers' 'info' @{ it = "BIOS di $months mesi fa"; en = "BIOS from $months months ago" } @{ it = "Versione $($Hw.Board.Bios). Gli aggiornamenti del BIOS correggono bug di stabilità, memoria e sicurezza: controlla il sito del produttore della scheda madre (aggiornalo solo se sai come fare)."; en = "Version $($Hw.Board.Bios). BIOS updates fix stability, memory and security bugs: check the motherboard maker's website (only update it if you know how)." }))
+            }
+        }
+    } catch { }
+
     # ======================= SECURITY
     & $step (L @{ it = 'Controllo antivirus e firewall...'; en = 'Checking antivirus and firewall...' }) 66
     $avOk = $false; $avNames = @()
@@ -333,7 +344,19 @@ function Invoke-VxHealthCheck {
     $crit = @($f | Where-Object { $_.sev -eq 'crit' }).Count
     $warn = @($f | Where-Object { $_.sev -eq 'warn' }).Count
     $score = [math]::Max(5, 100 - 18 * $crit - 6 * $warn)
-    return @{ time = (Get-Date -Format 'yyyy-MM-dd HH:mm'); score = $score; crit = $crit; warn = $warn; findings = @($f.ToArray()) }
+    $res = @{ time = (Get-Date -Format 'yyyy-MM-dd HH:mm'); score = $score; crit = $crit; warn = $warn; findings = @($f.ToArray()) }
+    try { Add-VxHealthTrend $res } catch { }
+    return $res
+}
+
+# last 20 check-up scores (for the trend line)
+function Add-VxHealthTrend {
+    param($Result)
+    $raw = ConvertTo-VxHashtable (Read-VxJson 'healthtrend.json' $null)   # assign first: the function returns the array as one object
+    $old = @($raw | Where-Object { $_ })
+    $list = @($old) + @(@{ time = $Result.time; score = [int]$Result.score; crit = [int]$Result.crit; warn = [int]$Result.warn })
+    if ($list.Count -gt 20) { $list = $list[($list.Count - 20)..($list.Count - 1)] }
+    Write-VxJson 'healthtrend.json' @($list)
 }
 
 function Invoke-VxToolProgress {
@@ -373,10 +396,18 @@ function Invoke-VxHealthFix {
         }
         '^fix:chkdsk$' {
             $out = @()
+            $sysL = ([string]$env:SystemDrive).TrimEnd(':')
+            # a spot fix on a data drive disconnects it for a moment: files a render, recording or game is writing
+            # there would be cut off. With such an app open, the repair of that drive is postponed (the scan still runs).
+            $busy = Test-VxProcessRunning @('AfterFX', 'aerender', 'Adobe Premiere Pro', 'Adobe Media Encoder', 'Photoshop', 'Resolve', 'obs64', 'obs32', 'Topaz Video AI', 'Topaz Video', 'HandBrake')
             foreach ($v in @(Get-Volume -ErrorAction SilentlyContinue | Where-Object { $_.DriveLetter -and $_.FileSystemType -in @('NTFS', 'ReFS') })) {
                 $l = [string]$v.DriveLetter
                 if ($Sync) { $Sync.Step = (L @{ it = "Controllo il disco $($l):"; en = "Checking drive $($l):" }) }
                 $r = [string](Repair-Volume -DriveLetter $l -Scan -ErrorAction SilentlyContinue)
+                if ($r -and $r -ne 'NoErrorsFound' -and $l -ne $sysL -and $busy) {
+                    $out += "$($l): " + (L @{ it = 'errori trovati, riparazione rimandata (chiudi i programmi di montaggio/registrazione e riprova)'; en = 'errors found, repair postponed (close editing/recording apps and try again)' })
+                    continue
+                }
                 if ($r -and $r -ne 'NoErrorsFound') {
                     $r2 = [string](Repair-Volume -DriveLetter $l -SpotFix -ErrorAction SilentlyContinue)
                     $out += "$($l): $r2"

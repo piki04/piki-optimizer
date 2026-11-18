@@ -24,7 +24,7 @@ $i = 0; $n = @($m.files).Count
 foreach ($f in $m.files) {
     $i++
     $rel = [string]$f.path
-    if ($rel -match '\.\.') { continue }
+    if ($rel -match '\.\.' -or $rel -match '[:*?"<>|]' -or $rel -match '^[\\/]' -or $rel -match '(?i)^data([\\/]|$)') { continue }
     $out = Join-Path $dest ($rel -replace '/', '\')
     $dir = Split-Path -Parent $out
     if (-not (Test-Path -LiteralPath $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }

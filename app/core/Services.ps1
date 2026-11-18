@@ -56,21 +56,21 @@ $script:VxServices = @(
         Title = @{ it = 'Programma Windows Insider'; en = 'Windows Insider Service' }
         Desc = @{ it = 'Serve solo per ricevere le versioni di prova di Windows.'; en = 'Only needed to receive Windows preview builds.' }
         Need = { param($hw) if ($hw.Ctx.IsInsider) { @{ it = 'Sei iscritto a Windows Insider'; en = 'You are a Windows Insider' } } } },
-    @{ Name = 'edgeupdate'; Pattern = 'edgeupdate*'; Level = 1; Target = 'Manual'; Risk = 'safe'
+    @{ Name = 'edgeupdate'; Pattern = 'edgeupdate*'; Level = 0; Target = 'Manual'; Risk = 'avoid'
         Title = @{ it = 'Aggiornamento Microsoft Edge'; en = 'Microsoft Edge Update' }
-        Desc = @{ it = 'Resta in attesa tutto il giorno. In "Manuale" Edge si aggiorna comunque quando lo apri.'; en = 'Waits around all day. On "Manual", Edge still updates when you open it.' } },
-    @{ Name = 'GoogleUpdater'; Pattern = 'GoogleUpdater*'; Level = 1; Target = 'Manual'; Risk = 'safe'
+        Desc = @{ it = 'Porta gli aggiornamenti di sicurezza: Piki non lo tocca. In "Manuale" o disattivato le correzioni arrivano in ritardo.'; en = 'It delivers security fixes: Piki does not touch it. On "Manual" or disabled, fixes arrive late.' } },
+    @{ Name = 'GoogleUpdater'; Pattern = 'GoogleUpdater*'; Level = 0; Target = 'Manual'; Risk = 'avoid'
         Title = @{ it = 'Aggiornamento Google Chrome'; en = 'Google Chrome Update' }
-        Desc = @{ it = 'In "Manuale" Chrome si aggiorna comunque quando lo apri.'; en = 'On "Manual", Chrome still updates when you open it.' } },
-    @{ Name = 'gupdate'; Pattern = 'gupdate*'; Level = 1; Target = 'Manual'; Risk = 'safe'
+        Desc = @{ it = 'Porta gli aggiornamenti di sicurezza: Piki non lo tocca. In "Manuale" o disattivato le correzioni arrivano in ritardo.'; en = 'It delivers security fixes: Piki does not touch it. On "Manual" or disabled, fixes arrive late.' } },
+    @{ Name = 'gupdate'; Pattern = 'gupdate*'; Level = 0; Target = 'Manual'; Risk = 'avoid'
         Title = @{ it = 'Aggiornamento Google (vecchio)'; en = 'Google Update (legacy)' }
-        Desc = @{ it = 'In "Manuale" i programmi Google si aggiornano comunque.'; en = 'On "Manual", Google apps still update.' } },
-    @{ Name = 'AdobeARMservice'; Level = 1; Target = 'Manual'; Risk = 'safe'
+        Desc = @{ it = 'Porta gli aggiornamenti di sicurezza: Piki non lo tocca. In "Manuale" o disattivato le correzioni arrivano in ritardo.'; en = 'It delivers security fixes: Piki does not touch it. On "Manual" or disabled, fixes arrive late.' } },
+    @{ Name = 'AdobeARMservice'; Level = 0; Target = 'Manual'; Risk = 'avoid'
         Title = @{ it = 'Aggiornamento Adobe Acrobat'; en = 'Adobe Acrobat Update' }
-        Desc = @{ it = 'Controlla aggiornamenti di Acrobat Reader in continuazione.'; en = 'Constantly checks for Acrobat Reader updates.' } },
-    @{ Name = 'MozillaMaintenance'; Level = 1; Target = 'Manual'; Risk = 'safe'
+        Desc = @{ it = 'Porta gli aggiornamenti di sicurezza: Piki non lo tocca. In "Manuale" o disattivato le correzioni arrivano in ritardo.'; en = 'It delivers security fixes: Piki does not touch it. On "Manual" or disabled, fixes arrive late.' } },
+    @{ Name = 'MozillaMaintenance'; Level = 0; Target = 'Manual'; Risk = 'avoid'
         Title = @{ it = 'Manutenzione Firefox'; en = 'Firefox Maintenance' }
-        Desc = @{ it = 'Aggiorna Firefox in background; in "Manuale" funziona comunque.'; en = 'Updates Firefox in the background; works on "Manual" too.' } },
+        Desc = @{ it = 'Porta gli aggiornamenti di sicurezza: Piki non lo tocca. In "Manuale" o disattivato le correzioni arrivano in ritardo.'; en = 'It delivers security fixes: Piki does not touch it. On "Manual" or disabled, fixes arrive late.' } },
     @{ Name = 'NvTelemetryContainer'; Level = 1; Target = 'Disabled'; Risk = 'safe'
         Title = @{ it = 'Telemetria NVIDIA'; en = 'NVIDIA telemetry' }
         Desc = @{ it = 'Invia dati di utilizzo a NVIDIA. I driver funzionano uguale.'; en = 'Sends usage data to NVIDIA. Drivers work the same.' } },
@@ -251,7 +251,7 @@ $script:VxStartupAdvice = @(
     @{ P = 'Overwolf|CurseForge|Medal|Outplayed|Insights|Blitz|Porofessor|Mobalytics'; Risk = 'safe'; A = @{ it = 'App companion per giochi: pesante in background.'; en = 'Gaming companion app: heavy in the background.' } },
     @{ P = 'Edge|msedge|Chrome|Opera|Brave|Firefox|Vivaldi'; Risk = 'safe'; A = @{ it = 'Browser pre-caricato: si apre comunque in un attimo.'; en = 'Pre-loaded browser: it still opens in a moment.' } },
     @{ P = 'Copilot|Cortana|YourPhone|PhoneExperience|Phone Link'; Risk = 'safe'; A = @{ it = 'Si può disattivare senza problemi.'; en = 'Safe to disable.' } },
-    @{ P = 'Update|Updater|jusched|AdobeARM|Helper'; Risk = 'safe'; A = @{ it = 'Controllo aggiornamenti: il programma si aggiorna comunque quando lo apri.'; en = 'Update checker: the app still updates when you open it.' } },
+    @{ P = 'Update|Updater|jusched|AdobeARM'; Risk = 'caution'; A = @{ it = 'Controllo aggiornamenti: se lo disattivi, il programma riceve le correzioni di sicurezza solo quando lo apri.'; en = 'Update checker: if you disable it, the app only gets security fixes when you open it.' } },
     @{ P = 'OBS|Streamlabs|XSplit'; Risk = 'safe'; A = @{ it = 'Aprilo quando registri o fai live.'; en = 'Open it when you record or stream.' } },
     @{ P = 'Docker|WSL|VirtualBox|VMware'; Risk = 'caution'; A = @{ it = 'Virtualizzazione: disattivalo se non lavori con container o macchine virtuali.'; en = 'Virtualisation: disable it if you do not work with containers or VMs.' } }
 )
@@ -322,11 +322,88 @@ function Get-VxStartupItems {
             }
         }
     }
+    $impact = Get-VxStartupImpactMap
     foreach ($i in $items) {
         $adv = Get-VxStartupAdvice ($i.Name + ' ' + $i.Command)
         $i | Add-Member -NotePropertyName Advice -NotePropertyValue $adv -Force
+        $exe = Get-VxStartupExe $i
+        $imp = $null
+        if ($exe -and $impact.ContainsKey($exe.ToLowerInvariant())) { $imp = $impact[$exe.ToLowerInvariant()] }
+        elseif ($i.Kind -eq 'appx') { foreach ($k in $impact.Keys) { if ($impact[$k].path -like "*\WindowsApps\$($i.Command)*") { $imp = $impact[$k]; break } } }
+        $i | Add-Member -NotePropertyName Impact -NotePropertyValue $(if ($imp) { Get-VxImpactLevel $imp.cpuMs $imp.disk } else { '' }) -Force
+        $i | Add-Member -NotePropertyName ImpactCpuMs -NotePropertyValue $(if ($imp) { [int]$imp.cpuMs } else { -1 }) -Force
+        $i | Add-Member -NotePropertyName ImpactDisk -NotePropertyValue $(if ($imp) { [int64]$imp.disk } else { -1 }) -Force
+        $pub = ''
+        try { if ($exe -and (Test-Path -LiteralPath $exe)) { $pub = [string][System.Diagnostics.FileVersionInfo]::GetVersionInfo($exe).CompanyName } } catch { }
+        $i | Add-Member -NotePropertyName Publisher -NotePropertyValue $pub.Trim() -Force
     }
-    return @($items | Sort-Object @{ Expression = { if ($_.Enabled) { 0 } else { 1 } } }, Name)
+    $rank = @{ high = 0; medium = 1; low = 2; '' = 3 }
+    return @($items | Sort-Object @{ Expression = { if ($_.Enabled) { 0 } else { 1 } } }, @{ Expression = { $rank[[string]$_.Impact] } }, Name)
+}
+
+# ---- startup impact: same source Task Manager uses (CPU time and disk read by each startup app at the last boots)
+function Get-VxImpactLevel {
+    # Task Manager thresholds: High > 1 s CPU or > 3 MB disk; Medium > 300 ms or > 300 KB; otherwise Low
+    param([double]$CpuMs, [double]$DiskBytes)
+    if ($CpuMs -gt 1000 -or $DiskBytes -gt 3MB) { return 'high' }
+    if ($CpuMs -gt 300 -or $DiskBytes -gt 300KB) { return 'medium' }
+    return 'low'
+}
+
+function ConvertFrom-VxStartupInfoXml {
+    # one StartupInfo XML -> list of @{ exe; path; cpuMs; disk }
+    param([string]$Xml)
+    $out = @()
+    try {
+        $doc = New-Object System.Xml.XmlDocument
+        $doc.LoadXml($Xml)
+        foreach ($p in @($doc.SelectNodes('//Process'))) {
+            $path = [string]$p.GetAttribute('Name')
+            if (-not $path) { continue }
+            $cpuUs = 0.0; $disk = 0.0
+            $c = $p.SelectSingleNode('CpuUsage'); if ($c) { [void][double]::TryParse($c.InnerText, [ref]$cpuUs) }
+            $d = $p.SelectSingleNode('DiskUsage'); if ($d) { [void][double]::TryParse($d.InnerText, [ref]$disk) }
+            $out += @{ exe = [IO.Path]::GetFileName($path); path = $path; cpuMs = $cpuUs / 1000; disk = $disk }
+        }
+    } catch { }
+    return $out
+}
+
+function Get-VxStartupImpactMap {
+    # exe file name (lower case) -> worst values seen in the last boots of this user
+    $map = @{}
+    $dir = Join-Path $env:SystemRoot 'System32\wdi\LogFiles\StartupInfo'
+    try {
+        $sid = ([Security.Principal.WindowsIdentity]::GetCurrent()).User.Value
+        $files = @(Get-ChildItem -LiteralPath $dir -Filter '*.xml' -File -ErrorAction Stop | Where-Object { $_.Name -like "$sid*" } | Sort-Object LastWriteTime -Descending | Select-Object -First 3)
+        if ($files.Count -eq 0) { $files = @(Get-ChildItem -LiteralPath $dir -Filter '*.xml' -File -ErrorAction Stop | Sort-Object LastWriteTime -Descending | Select-Object -First 3) }
+        foreach ($f in $files) {
+            foreach ($r in (ConvertFrom-VxStartupInfoXml ([System.IO.File]::ReadAllText($f.FullName)))) {
+                $k = $r.exe.ToLowerInvariant()
+                if (-not $map.ContainsKey($k)) { $map[$k] = @{ cpuMs = 0.0; disk = 0.0; path = $r.path } }
+                $map[$k].cpuMs = [math]::Max($map[$k].cpuMs, $r.cpuMs)
+                $map[$k].disk = [math]::Max($map[$k].disk, $r.disk)
+            }
+        }
+    } catch { }
+    return $map
+}
+
+function Get-VxStartupExe {
+    # the program a startup entry runs (Run key command line or a shortcut in the Startup folder)
+    param($Item)
+    $cmd = [string]$Item.Command
+    if ($Item.Kind -eq 'appx') { return '' }
+    try {
+        if ($cmd -like '*.lnk' -and (Test-Path -LiteralPath $cmd)) {
+            $sh = New-Object -ComObject WScript.Shell
+            $cmd = [string]$sh.CreateShortcut($cmd).TargetPath
+        }
+    } catch { }
+    $cmd = [Environment]::ExpandEnvironmentVariables($cmd)
+    if ($cmd -match '^\s*"([^"]+)"') { return $Matches[1] }
+    if ($cmd -match '^\s*(.+?\.exe)\b') { return $Matches[1] }
+    return ($cmd -split '\s+')[0]
 }
 
 function Set-VxStartupEnabled {
@@ -359,10 +436,15 @@ $script:VxProcDb = @(
     @{ P = '^(Nexus|NexusDock|WinstepXP|Winstep.*)$'; Risk = 'avoid'; A = @{ it = 'Dock Winstep Nexus: protetta, non chiuderla.'; en = 'Winstep Nexus dock: protected, do not close it.' } },
     @{ P = '^(System|Idle|Registry|smss|csrss|wininit|winlogon|services|lsass|LsaIso|svchost|fontdrvhost|Memory Compression|dwm|sihost|ctfmon|conhost|dllhost|taskhostw|WmiPrvSE|spoolsv|audiodg|SgrmBroker|MsMpEng|NisSrv|SecurityHealthService|SecurityHealthSystray|MpDefenderCoreService|WUDFHost|wlanext|unsecapp|SearchIndexer|smartscreen|TextInputHost|ShellExperienceHost|StartMenuExperienceHost|SearchHost|SearchApp|explorer|RuntimeBroker|ApplicationFrameHost|SystemSettingsBroker|ShellHost|AggregatorHost|dasHost|WindowsTerminal|OpenConsole|powershell|pwsh|LockApp|UserOOBEBroker|CompPkgSrv|vmmem|vmmemWSL|Secure System|MemCompression|atiesrxx|atieclxx|amdfendrsr|nvcontainer|NVDisplay\.Container|igfxEM|IntelCpHDCPSvc|RtkAudUService64|SecurityHealthHost|wudfhost|crss|winlogon|lsm|WmiApSrv|MoUsoCoreWorker|TiWorker|TrustedInstaller|msiexec|mobsync|PresentationFontCache|SppExtComObj|sppsvc|ngen|ngentask|backgroundTaskHost|smss|CrossDeviceResume|Widgets?Board)$'
         Risk = 'avoid'; A = @{ it = 'Parte di Windows o di un driver: non chiuderlo.'; en = 'Part of Windows or a driver: do not close it.' } },
-    @{ P = '^(Widgets|WidgetService|PhoneExperienceHost|YourPhone|GameBar|GameBarFTServer|Cortana|Copilot|M365Copilot|msedgewebview2|OneDriveStandaloneUpdater|GoogleUpdate|MicrosoftEdgeUpdate|AdobeCollabSync|CCXProcess|AdobeIPCBroker|Creative Cloud|Creative Cloud Helper|Overwolf|OverwolfBrowser|Medal|steamwebhelper|EpicWebHelper|jusched|SkypeApp|SkypeBackgroundHost|ms-teams|Teams|msteams|Spotify|EADesktop|EABackgroundService|upc|UplayWebCore|RockstarService|Launcher|Battle\.net|GalaxyClient|AnyDesk)$'
+    # updaters are never "safe to close": killed halfway they can leave a broken install (Edge/WebView2, OneDrive...)
+    @{ P = '^(OneDriveStandaloneUpdater|GoogleUpdate|GoogleUpdater|updater|MicrosoftEdgeUpdate|jusched|AdobeARM|MozillaMaintenance)$'
+        Risk = 'caution'; A = @{ it = 'Sta forse installando un aggiornamento: chiuderlo a metà può rovinarlo. Lascialo finire, si chiude da solo.'; en = 'It may be installing an update: closing it halfway can break it. Let it finish, it closes by itself.' } },
+    @{ P = '^(AnyDesk|TeamViewer|Parsec|parsecd|rustdesk)$'
+        Risk = 'caution'; A = @{ it = 'Accesso remoto: se qualcuno è collegato al PC, la connessione cade.'; en = 'Remote access: if someone is connected to this PC, the connection drops.' } },
+    @{ P = '^(Widgets|WidgetService|PhoneExperienceHost|YourPhone|GameBar|GameBarFTServer|Cortana|Copilot|M365Copilot|AdobeCollabSync|CCXProcess|AdobeIPCBroker|Creative Cloud|Creative Cloud Helper|Overwolf|OverwolfBrowser|Medal|EpicWebHelper|SkypeApp|SkypeBackgroundHost|Spotify|EADesktop|EABackgroundService|upc|UplayWebCore|RockstarService|Battle\.net|GalaxyClient)$'
         Risk = 'safe'; A = @{ it = 'App o helper in background: si può chiudere senza problemi.'; en = 'Background app or helper: safe to close.' } },
     @{ P = '^(msedge|chrome|firefox|opera|brave|vivaldi)$'; Risk = 'caution'; A = @{ it = 'È un browser: chiudendolo perdi le schede aperte non salvate.'; en = 'It is a browser: closing it loses unsaved open tabs.' } },
-    @{ P = '^(Discord|Telegram|WhatsApp|Slack|Zoom)$'; Risk = 'caution'; A = @{ it = 'Se sei in chiamata la chiamata si interrompe.'; en = 'If you are on a call, the call drops.' } },
+    @{ P = '^(Discord|Telegram|WhatsApp|Slack|Zoom|ms-teams|Teams|msteams|msedgewebview2|steamwebhelper|Launcher)$'; Risk = 'caution'; A = @{ it = 'Se sei in chiamata la chiamata si interrompe.'; en = 'If you are on a call, the call drops.' } },
     @{ P = '^(OneDrive|MEGAsync|Dropbox|GoogleDriveFS|iCloudDrive|CoreSync)$'; Risk = 'caution'; A = @{ it = 'Sincronizzazione cloud: si interrompe finché non lo riapri.'; en = 'Cloud sync: stops until you reopen it.' } },
     @{ P = '^(wallpaper32|wallpaper64|wallpaperservice32|webwallpaper32|lively)$'; Risk = 'caution'; A = @{ it = 'Sfondo animato: chiudendolo liberi GPU.'; en = 'Animated wallpaper: closing it frees GPU.' } },
     @{ P = '^(obs64|obs32|Streamlabs OBS|XSplit)$'; Risk = 'caution'; A = @{ it = 'Attenzione: potrebbe star registrando o trasmettendo.'; en = 'Careful: it may be recording or streaming.' } },
@@ -409,12 +491,40 @@ function Stop-VxProcessGroup {
     $n = 0
     # never close the shell, the Winstep Nexus dock or After Effects / its renders (unsaved work) from here
     if ($Name -match '(?i)^(explorer|Nexus|NexusDock|Winstep.*|AfterFX|aerender)$') { Write-VxLog "Not closing $Name (protected)"; return 0 }
+    # parts of Windows and drivers (csrss, wininit, lsass, dwm...) are refused here too, not only greyed out in the list:
+    # killing some of them crashes Windows on the spot
+    if ((Get-VxProcAdvice $Name 1).Risk -eq 'avoid') { Write-VxLog "Not closing $Name (part of Windows)"; return 0 }
     foreach ($p in @(Get-Process -Name $Name -ErrorAction SilentlyContinue)) {
         if ($p.Id -eq $PID) { continue }
         try { $p.Kill(); $n++ } catch { }
     }
     Write-VxLog "Closed process group $Name ($n)"
     return $n
+}
+
+# Boost: what it WOULD close (shown to the user first, closed only after one confirmation)
+$script:VxBoostNever = '^(msedgewebview2|steamwebhelper|steam|Launcher|ms-teams|Teams|msteams|Discord|Zoom|explorer|AfterFX|aerender|Adobe Media Encoder)$'
+function Get-VxBoostPlan {
+    param([string[]]$Keep = @())
+    $plan = @()
+    foreach ($g in @(Get-VxProcessGroups)) {
+        if ($g.Risk -ne 'safe' -or $g.Name -in $Keep -or $g.Name -match $script:VxBoostNever) { continue }
+        $plan += [pscustomobject]@{ Name = $g.Name; Count = $g.Count; Mem = [int64]$g.Mem; Description = $g.Description }
+    }
+    return @($plan | Sort-Object Mem -Descending)
+}
+
+function Invoke-VxBoostClose {
+    param([string[]]$Names)
+    $closed = @(); $freed = [int64]0
+    $groups = @{}; foreach ($g in @(Get-VxProcessGroups)) { $groups[$g.Name] = $g }
+    foreach ($n in $Names) {
+        if ($n -match $script:VxBoostNever) { continue }
+        $g = $groups[$n]
+        if (-not $g -or $g.Risk -ne 'safe') { continue }
+        if ((Stop-VxProcessGroup $n) -gt 0) { $closed += $n; $freed += [int64]$g.Mem }
+    }
+    return @{ closed = $closed; freed = $freed }
 }
 
 function Get-VxSystemCounts {

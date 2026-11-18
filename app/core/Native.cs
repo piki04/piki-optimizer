@@ -542,6 +542,58 @@ namespace VeloxPC
             return freed;
         }
 
+        /// <summary>Like DeleteContents, but only files (and empty folders) older than `hours` (both created and
+        /// last written before that): temp files an installer or a running app is still using are left alone.</summary>
+        public static long DeleteOlderThan(string path, double hours)
+        {
+            long freed = 0;
+            if (String.IsNullOrEmpty(path) || !Directory.Exists(path)) return 0;
+            DateTime limit = DateTime.UtcNow.AddHours(-hours);
+            DirectoryInfo root = new DirectoryInfo(path);
+            try
+            {
+                foreach (FileInfo f in root.GetFiles())
+                {
+                    try
+                    {
+                        if (f.LastWriteTimeUtc >= limit || f.CreationTimeUtc >= limit) continue;
+                        long l = f.Length; f.Attributes = FileAttributes.Normal; f.Delete(); freed += l;
+                    }
+                    catch { }
+                }
+                foreach (DirectoryInfo d in root.GetDirectories())
+                {
+                    if ((d.Attributes & FileAttributes.ReparsePoint) != 0) continue;
+                    freed += DeleteOlderThan(d.FullName, hours);
+                    try { if (d.CreationTimeUtc < limit && d.GetFileSystemInfos().Length == 0) d.Delete(false); } catch { }
+                }
+            }
+            catch { }
+            return freed;
+        }
+
+        /// <summary>Bytes in a folder tree that DeleteOlderThan would remove.</summary>
+        public static long OldSize(string path, double hours)
+        {
+            long bytes = 0;
+            if (String.IsNullOrEmpty(path) || !Directory.Exists(path)) return 0;
+            DateTime limit = DateTime.UtcNow.AddHours(-hours);
+            Stack<string> stack = new Stack<string>();
+            stack.Push(path);
+            while (stack.Count > 0)
+            {
+                string dir = stack.Pop();
+                try
+                {
+                    DirectoryInfo di = new DirectoryInfo(dir);
+                    foreach (FileInfo f in di.GetFiles()) { try { if (f.LastWriteTimeUtc < limit && f.CreationTimeUtc < limit) bytes += f.Length; } catch { } }
+                    foreach (DirectoryInfo d in di.GetDirectories()) { if ((d.Attributes & FileAttributes.ReparsePoint) == 0) stack.Push(d.FullName); }
+                }
+                catch { }
+            }
+            return bytes;
+        }
+
         /// <summary>12-byte StartupApproved value (disabled = 0x03 + FILETIME).</summary>
         public static byte[] StartupApprovedValue(bool enabled)
         {

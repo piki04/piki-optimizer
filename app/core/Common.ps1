@@ -33,6 +33,11 @@ function Write-VxLog {
         if (-not $script:VxLogs) { return }
         $line = '{0} [{1}] {2}{3}' -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $Level, $Message, [Environment]::NewLine
         $file = Join-Path $script:VxLogs 'veloxpc.log'
+        # log rotation: at most 2 x 512 KB (veloxpc.log + veloxpc.1.log)
+        try {
+            $fi = New-Object System.IO.FileInfo $file
+            if ($fi.Exists -and $fi.Length -gt 524288) { [System.IO.File]::Copy($file, (Join-Path $script:VxLogs 'veloxpc.1.log'), $true); [System.IO.File]::WriteAllText($file, '') }
+        } catch { }
         for ($i = 0; $i -lt 5; $i++) {
             try { [System.IO.File]::AppendAllText($file, $line, [System.Text.Encoding]::UTF8); break } catch { Start-Sleep -Milliseconds 40 }
         }
@@ -87,9 +92,55 @@ function ConvertTo-VxHashtable {
 function Get-VxSettings {
     $s = ConvertTo-VxHashtable (Read-VxJson 'settings.json' $null)
     if (-not $s) { $s = @{} }
-    $defaults = @{ lang = ''; firstRunDone = $false; autoUpdate = $true; expert = $false; lastHealth = ''; profile = ''; logo = ''; bg = ''; bgLevel = 2; tray = $true; autostart = $false; glass = $true; shortcutDone = $false }
-    foreach ($k in $defaults.Keys) { if (-not $s.ContainsKey($k)) { $s[$k] = $defaults[$k] } }
-    return $s
+    return (Update-VxSettingsSchema $s)
+}
+
+# 2.0: new installs are light by default (closing the window exits, no tray, no autostart, no glass).
+# Existing settings.json files keep every value the user chose; only missing keys get a default.
+function Update-VxSettingsSchema {
+    param([hashtable]$S)
+    $isNew = ($S.Count -eq 0)
+    $defaults = @{
+        lang = ''; firstRunDone = $false; autoUpdate = $true; expert = $false; lastHealth = ''; profile = ''; logo = ''; bg = ''; bgLevel = 2
+        tray = $false; autostart = $false; glass = $false; shortcutDone = $false
+        reducedMotion = $false; retiredSeen = @(); lostSeen = ''; cleanSchedule = ''; lastUpdateCheck = ''
+    }
+    if (-not $isNew -and -not $S.ContainsKey('tray')) { $defaults.tray = $true }   # 1.x default
+    foreach ($k in $defaults.Keys) { if (-not $S.ContainsKey($k)) { $S[$k] = $defaults[$k] } }
+    if ($S.profile -eq 'aesthetic' -or $S.profile -eq 'max') { $S.profile = 'piki' }
+    $S.retiredSeen = @($S.retiredSeen | Where-Object { $_ })
+    $S['schema'] = 2
+    return $S
+}
+
+# ---------------------------------------------------------------- dry run ("show what would change")
+# While $script:VxDryRun is on, every Set-Vx*/Remove-Vx* helper and every external command that changes the
+# system only records "would change X from A to B" and does nothing.
+$script:VxDryRun = $false
+$script:VxDryLog = New-Object System.Collections.ArrayList
+function Start-VxDryRun { $script:VxDryRun = $true; $script:VxDryLog = New-Object System.Collections.ArrayList }
+function Stop-VxDryRun {
+    $script:VxDryRun = $false
+    $out = @($script:VxDryLog.ToArray())
+    try { if ($script:VxData) { Write-VxJson 'dryrun.json' @{ time = (Get-Date -Format 'yyyy-MM-dd HH:mm'); changes = $out } } } catch { }
+    return $out
+}
+function Add-VxDryRecord {
+    param([string]$What, $From = $null, $To = $null)
+    $tx = if ($script:VxTx) { [string]$script:VxTx.Id } else { '' }
+    [void]$script:VxDryLog.Add(@{ id = $tx; what = $What; from = [string]$From; to = [string]$To })
+}
+# external commands that change the system (powercfg, netsh, reg...): one place, so dry run can skip them
+function Invoke-VxExe {
+    param([string]$Exe, [string[]]$ArgList)
+    if ($script:VxDryRun) { Add-VxDryRecord ("$Exe " + ($ArgList -join ' ')); return '' }
+    return (& $Exe @ArgList 2>&1)
+}
+# any other change (cmdlets): described in words for the dry run
+function Invoke-VxDo {
+    param([string]$What, [scriptblock]$Do)
+    if ($script:VxDryRun) { Add-VxDryRecord $What; return $null }
+    return (& $Do)
 }
 
 function Save-VxSettings {
@@ -163,8 +214,11 @@ function Add-VxTxItem {
 
 function Complete-VxTx {
     if (-not $script:VxTx) { return }
+    if ($script:VxDryRun) { $script:VxTx = $null; return }
     $b = Get-VxBackup
     $id = $script:VxTx.Id
+    # a change that touched nothing leaves no entry (no fake "applied" states, nothing to undo)
+    if ($script:VxTx.Items.Count -eq 0 -and -not $b.entries.ContainsKey($id)) { $script:VxTx = $null; return }
     if ($b.entries.ContainsKey($id)) {
         $e = $b.entries[$id]
         $items = @($e.items) + @($script:VxTx.Items.ToArray())
@@ -252,10 +306,27 @@ function Set-VxReg {
     param([string]$Path, [string]$Name, [string]$Type, $Value)
     if (Test-VxProtectedReg $Path $Name) { throw (L @{ it = 'Impostazione protetta: Winstep Nexus'; en = 'Protected setting: Winstep Nexus' }) }
     $prev = Get-VxRegState -Path $Path -Name $Name
+    # already exactly this value: nothing to change, nothing to save
+    if ($prev.existed -and $prev.type -eq $Type -and (Test-VxSameRegValue $prev.type $prev.value $Value)) { return }
+    if ($script:VxDryRun) { Add-VxDryRecord "reg $Path\$Name" $(if ($prev.existed) { $prev.value } else { '(none)' }) $Value; return }
     Add-VxTxItem @{ key = "reg|$Path|$Name"; kind = 'reg'; path = $Path; name = $Name; existed = $prev.existed; keyExisted = $prev.keyExisted; type = $prev.type; value = $prev.value }
     if (-not (Test-Path -LiteralPath $Path)) { New-Item -Path $Path -Force -ErrorAction Stop | Out-Null }
     if ($Type -eq 'Binary' -and $Value -is [string]) { $Value = [Convert]::FromBase64String($Value) }
     New-ItemProperty -LiteralPath $Path -Name $Name -PropertyType $Type -Value $Value -Force -ErrorAction Stop | Out-Null
+}
+
+function Test-VxSameRegValue {
+    param([string]$Type, $Old, $New)
+    try {
+        if ($Type -eq 'DWord' -or $Type -eq 'QWord') {
+            $a = [int64]$Old; $b = [int64]$New
+            if ($Type -eq 'DWord') { if ($a -lt 0) { $a += 4294967296 }; if ($b -lt 0) { $b += 4294967296 } }
+            return ($a -eq $b)
+        }
+        if ($Type -eq 'Binary') { $nb = if ($New -is [byte[]]) { [Convert]::ToBase64String($New) } else { [string]$New }; return ([string]$Old -eq $nb) }
+        if ($Type -eq 'MultiString') { return ((@($Old) -join "`n") -eq (@($New) -join "`n")) }
+        return ([string]$Old -ceq [string]$New)
+    } catch { return $false }
 }
 
 function Remove-VxReg {
@@ -263,6 +334,7 @@ function Remove-VxReg {
     if (Test-VxProtectedReg $Path $Name) { return }
     $prev = Get-VxRegState -Path $Path -Name $Name
     if (-not $prev.existed) { return }
+    if ($script:VxDryRun) { Add-VxDryRecord "reg $Path\$Name" $prev.value '(removed)'; return }
     Add-VxTxItem @{ key = "reg|$Path|$Name"; kind = 'reg'; path = $Path; name = $Name; existed = $true; keyExisted = $true; type = $prev.type; value = $prev.value }
     Remove-ItemProperty -LiteralPath $Path -Name $Name -Force -ErrorAction SilentlyContinue
 }
@@ -291,8 +363,11 @@ function Set-VxSvc {
     param([string]$Name, [ValidateSet('Automatic', 'Manual', 'Disabled')][string]$StartType)
     $prev = Get-VxSvcStart $Name
     if (-not $prev) { return $false }
-    Add-VxTxItem @{ key = "svc|$Name"; kind = 'svc'; name = $Name; start = $prev.start; delayed = $prev.delayed }
+    if (Test-VxProtectedService $Name) { Write-VxLog "Service $Name is protected (security/updates): not changed" 'WARN'; return $false }
     $map = @{ Automatic = 2; Manual = 3; Disabled = 4 }
+    if ($prev.start -eq $map[$StartType]) { return $true }
+    if ($script:VxDryRun) { Add-VxDryRecord "service $Name start" $prev.start $map[$StartType]; return $true }
+    Add-VxTxItem @{ key = "svc|$Name"; kind = 'svc'; name = $Name; start = $prev.start; delayed = $prev.delayed }
     $p = "HKLM:\SYSTEM\CurrentControlSet\Services\$Name"
     try { Set-ItemProperty -LiteralPath $p -Name Start -Value $map[$StartType] -Type DWord -ErrorAction Stop }
     catch {
@@ -300,6 +375,13 @@ function Set-VxSvc {
     }
     if ($StartType -eq 'Disabled') { & sc.exe stop $Name 2>&1 | Out-Null }
     return $true
+}
+
+# Services Piki never turns off or down, whatever any catalog says (security, updates, antivirus, firewall)
+function Test-VxProtectedService {
+    param([string]$Name)
+    # 2.0 review: also the services Windows needs to boot, sign in, install updates and reach the network
+    return ($Name -match '(?i)^(WinDefend|WdNisSvc|Sense|SecurityHealthService|wscsvc|mpssvc|BFE|wuauserv|UsoSvc|WaaSMedicSvc|BITS|DoSvc|TrustedInstaller|AppIDSvc|SgrmBroker|webthreatdefsvc|webthreatdefusersvc|CryptSvc|msiserver|EventLog|RpcSs|RpcEptMapper|DcomLaunch|Winmgmt|Dhcp|Dnscache|nsi|NlaSvc|Audiosrv|AudioEndpointBuilder|TextInputManagementService)$' -or $Name -match '(?i)update|updater|MozillaMaintenance|AdobeARM')
 }
 
 # ---- power settings (powercfg)
@@ -329,6 +411,8 @@ function Set-VxPower {
     $scheme = Get-VxActiveScheme
     if (-not $scheme) { return }
     $prev = Get-VxPowerValue $scheme.guid $Sub $Setting
+    if ($prev -and $prev.ac -eq $Ac -and ($null -eq $Dc -or $prev.dc -eq [int]$Dc)) { return }
+    if ($script:VxDryRun) { Add-VxDryRecord "power plan $($scheme.name) $Setting" $(if ($prev) { "$($prev.ac)/$($prev.dc)" } else { '?' }) "$Ac/$Dc"; return }
     if ($prev) {
         Add-VxTxItem @{ key = "power|$($scheme.guid)|$Setting"; kind = 'power'; scheme = $scheme.guid; sub = $Sub; setting = $Setting; ac = $prev.ac; dc = $prev.dc }
     }
@@ -442,6 +526,10 @@ function Restore-VxItem {
                 Set-ItemProperty -LiteralPath $p -Name State -Value ([int]$It.state) -Type DWord -ErrorAction SilentlyContinue
             }
         }
+        'schedtask' {
+            # a scheduled task Piki created (e.g. scheduled cleaning): only names Piki uses can be removed
+            if ([string]$It.name -match '^PikiOptimizer( Clean)?$') { Unregister-ScheduledTask -TaskName ([string]$It.name) -Confirm:$false -ErrorAction SilentlyContinue }
+        }
         default { Write-VxLog "Unknown backup item kind $($It.kind)" 'WARN' }
     }
 }
@@ -480,36 +568,63 @@ function Format-VxBytes {
     return ('{0:N0} B' -f $Bytes)
 }
 
-function New-VxRestorePoint {
-    param([string]$Description = 'VeloxPC')
-    # Windows keeps one restore point per day anyway: skip the slow attempt if Piki made one in the last 24 hours
-    $stamp = Join-Path $script:VxData 'cache\lastrp.txt'
+function Test-VxSystemRestoreOn {
+    # System Protection is on for the Windows drive (read-only check)
     try {
-        if (Test-Path -LiteralPath $stamp) {
-            $t = [DateTime]::Parse(([System.IO.File]::ReadAllText($stamp)).Trim(), [Globalization.CultureInfo]::InvariantCulture)
-            if (([DateTime]::Now - $t).TotalHours -lt 24) { Write-VxLog 'Restore point: recent one exists, skipped'; return 'recent' }
+        $k = Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore' -ErrorAction Stop
+        if ($null -ne $k.RPSessionInterval -and [int]$k.RPSessionInterval -eq 0) { return $false }
+        if ($null -ne $k.DisableSR -and [int]$k.DisableSR -eq 1) { return $false }
+    } catch { }
+    try { $rp = @(Get-ComputerRestorePoint -ErrorAction Stop); return $true } catch { return $false }
+}
+
+function New-VxRestorePoint {
+    # Returns $true (created), 'recent' (a real Windows restore point from the last 24 h exists), 'off' (System
+    # Protection is off and the user did not allow turning it on) or $false (Windows refused).
+    param([string]$Description = 'VeloxPC', [switch]$AllowEnable)
+    if ($script:VxDryRun) { Add-VxDryRecord 'Windows restore point'; return $true }
+    # Windows keeps one restore point per day anyway: skip only if a REAL point from the last 24 hours exists
+    try {
+        $last = @(Get-ComputerRestorePoint -ErrorAction Stop | Sort-Object SequenceNumber -Descending) | Select-Object -First 1
+        if ($last) {
+            $t = [Management.ManagementDateTimeConverter]::ToDateTime([string]$last.CreationTime)
+            if (([DateTime]::Now - $t).TotalHours -lt 24) { Write-VxLog 'Restore point: a recent one exists, skipped'; return 'recent' }
         }
     } catch { }
+    if (-not (Test-VxSystemRestoreOn)) {
+        if (-not $AllowEnable) { Write-VxLog 'Restore point: System Protection is off (not turned on without asking)' 'WARN'; return 'off' }
+        try { Enable-ComputerRestore -Drive "$($env:SystemDrive)\" -ErrorAction Stop; Write-VxLog 'System Protection turned on (user asked)' } catch { return $false }
+    }
+    $freqKey = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore'
+    $old = Get-VxRegState -Path $freqKey -Name 'SystemRestorePointCreationFrequency'
     try {
-        $freqKey = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore'
-        $old = Get-VxRegState -Path $freqKey -Name 'SystemRestorePointCreationFrequency'
         if (-not (Test-Path -LiteralPath $freqKey)) { New-Item -Path $freqKey -Force | Out-Null }
         New-ItemProperty -LiteralPath $freqKey -Name 'SystemRestorePointCreationFrequency' -PropertyType DWord -Value 0 -Force | Out-Null
-        try { Enable-ComputerRestore -Drive "$($env:SystemDrive)\" -ErrorAction SilentlyContinue } catch { }
         Checkpoint-Computer -Description $Description -RestorePointType MODIFY_SETTINGS -ErrorAction Stop
-        if ($old.existed) { New-ItemProperty -LiteralPath $freqKey -Name 'SystemRestorePointCreationFrequency' -PropertyType DWord -Value ([int]$old.value) -Force | Out-Null }
-        else { Remove-ItemProperty -LiteralPath $freqKey -Name 'SystemRestorePointCreationFrequency' -ErrorAction SilentlyContinue }
-        Write-VxLog 'Restore point created'
-        try {
-            $cd = Split-Path -Parent $stamp
-            if (-not (Test-Path -LiteralPath $cd)) { New-Item -ItemType Directory -Path $cd -Force | Out-Null }
-            [System.IO.File]::WriteAllText($stamp, [DateTime]::Now.ToString('o', [Globalization.CultureInfo]::InvariantCulture))
-        } catch { }
         return $true
     } catch {
         Write-VxLog "Restore point failed: $($_.Exception.Message)" 'WARN'
         return $false
+    } finally {
+        # always put the original value back, also when Windows refused the restore point
+        try {
+            if ($old.existed) { New-ItemProperty -LiteralPath $freqKey -Name 'SystemRestorePointCreationFrequency' -PropertyType DWord -Value ([int]$old.value) -Force | Out-Null }
+            else { Remove-ItemProperty -LiteralPath $freqKey -Name 'SystemRestorePointCreationFrequency' -ErrorAction SilentlyContinue }
+        } catch { }
     }
+}
+
+# Light mode (cheaper animations while the PC is saturated). Hysteresis: ON after 3 s at >= 85 % CPU,
+# OFF after 10 s below 60 %; both counters reset on every switch, so it can never flap every second.
+function Step-VxLiteMode {
+    param([hashtable]$State, [double]$Cpu)
+    $changed = $false
+    if ($Cpu -ge 85) { $State.Hot++; $State.Cool = 0 }
+    elseif ($Cpu -lt 60) { $State.Cool++; $State.Hot = 0 }
+    else { $State.Hot = 0; $State.Cool = 0 }
+    if (-not $State.Lite -and $State.Hot -ge 3) { $State.Lite = $true; $State.Hot = 0; $State.Cool = 0; $changed = $true }
+    elseif ($State.Lite -and $State.Cool -ge 10) { $State.Lite = $false; $State.Hot = 0; $State.Cool = 0; $changed = $true }
+    return $changed
 }
 
 function Test-VxProcessRunning {

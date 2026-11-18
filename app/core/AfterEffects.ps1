@@ -159,7 +159,7 @@ function Get-VxTopazTweaks {
                 foreach ($exe in (Get-VxTopazExes)) {
                     Set-VxReg 'HKCU:\Software\Microsoft\DirectX\UserGpuPreferences' $exe 'String' 'GpuPreference=2;'
                     Add-VxCustomUndo "pthrottle|$exe" @{ kind = 'pthrottle'; path = $exe }
-                    & powercfg /powerthrottling disable /path "$exe" 2>&1 | Out-Null
+                    [void](Invoke-VxExe 'powercfg' @('/powerthrottling', 'disable', '/path', "$exe"))
                 }
                 # above normal, not high: Topaz works mostly on the GPU and the PC must stay usable (After Effects, browser)
                 foreach ($n in @((Get-VxTopazApps).Apps | ForEach-Object { $_.ExeName } | Select-Object -Unique)) { Set-VxReg "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\$n\PerfOptions" 'CpuPriorityClass' 'DWord' 6 }
@@ -170,27 +170,6 @@ function Get-VxTopazTweaks {
                 foreach ($exe in $exes) { if (-not (Test-VxRegValue 'HKCU:\Software\Microsoft\DirectX\UserGpuPreferences' $exe 'GpuPreference=2;')) { return $false } }
                 foreach ($a in (Get-VxTopazApps).Apps) { if (-not (Test-VxRegValue "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\$($a.ExeName)\PerfOptions" 'CpuPriorityClass' 6)) { return $false } }
                 return $true
-            }
-        },
-        @{
-            Id = 'topaz.defender'; Cat = 'ae'; Risk = 'caution'; Presets = @('creator')
-            Title = @{ it = "Antivirus più leggero sui modelli di $($a.Name)"; en = "Lighter antivirus on $($a.Name) models" }
-            Desc = @{ it = 'Microsoft Defender smette di scansionare i modelli AI (file da diversi GB) e la cartella di anteprime di Topaz: i modelli si caricano prima e l''anteprima parte più in fretta.'; en = 'Microsoft Defender stops scanning the AI models (multi-GB files) and the Topaz preview folder: models load faster and previews start sooner.' }
-            Warn = @{ it = 'Riguarda solo le cartelle dei modelli e della cache di Topaz.'; en = 'Only affects the Topaz model and cache folders.' }
-            When = { param($hw) (@(Get-VxTopazModelDirs).Count -gt 0) -and $(try { [bool](Get-MpComputerStatus -ErrorAction Stop).AntivirusEnabled } catch { $false }) }
-            Apply = {
-                param($hw)
-                $paths = @(Get-VxTopazModelDirs)
-                $best = Get-VxBestCacheDrive $hw
-                if ($best) { $paths += (Join-Path ($best.Letter + '\') 'VeloxPC Cache\Topaz Video') }
-                $existing = @()
-                try { $existing = @((Get-MpPreference -ErrorAction Stop).ExclusionPath) } catch { }
-                foreach ($p in $paths) {
-                    if (-not (Test-Path -LiteralPath $p)) { New-Item -ItemType Directory -Path $p -Force | Out-Null }
-                    if ($existing -contains $p) { continue }
-                    Add-VxCustomUndo "defender|$p" @{ kind = 'defender'; type = 'path'; value = $p }
-                    Add-MpPreference -ExclusionPath $p -ErrorAction Stop
-                }
             }
         }
     )
@@ -223,7 +202,7 @@ function Get-VxTopazReport {
     $proc = (L @{ it = 'La scheda video dedicata'; en = 'The dedicated graphics card' })
     if ($gpu -and -not $gpu.Integrated) { $proc = $gpu.Name }
     $hasIgpu = @($Hw.GPUs | Where-Object { $_.Integrated }).Count -gt 0
-    $rows += @{ K = $pre + 'AI Processor'; V = $proc; H = ($where + ' > AI Processor. ' + $(if ($hasIgpu) { (L @{ it = 'Scegli questa e non "Auto": il tuo processore ha anche una grafica integrata, molto più lenta.'; en = 'Pick this one, not "Auto": your CPU also has integrated graphics, which is much slower.' }) } else { (L @{ it = 'Selezionala in modo esplicito.'; en = 'Select it explicitly.' }) })) }
+    $rows += @{ K = $pre + 'Processor'; V = $proc; H = ($where + ' > Processor. ' + $(if ($hasIgpu) { (L @{ it = 'Scegli questa e non "Auto": il tuo processore ha anche una grafica integrata, molto più lenta.'; en = 'Pick this one, not "Auto": your CPU also has integrated graphics, which is much slower.' }) } else { (L @{ it = 'Selezionala in modo esplicito.'; en = 'Select it explicitly.' }) })) }
 
     $mem = if ($ramGB -ge 64) { 80 } elseif ($ramGB -ge 32) { 70 } elseif ($ramGB -ge 16) { 60 } else { 50 }
     $rows += @{ K = $pre + 'Max Memory %'; V = "$mem %"; H = (L @{ it = "$where > Max Memory. Hai $ramGB GB. Se lavori insieme ad After Effects scendi a $([math]::Max(40, $mem - 20)) %, così non si contendono la RAM."; en = "$where > Max Memory. You have $ramGB GB. If you work alongside After Effects go down to $([math]::Max(40, $mem - 20)) % so they do not fight over RAM." }) }
@@ -264,12 +243,12 @@ function Get-VxAeTweaks {
     if (-not $apps.Installed -and $apps.AME.Count -eq 0 -and $apps.PR.Count -eq 0) { return @(Get-VxTopazTweaks) }
     $exeNames = @('AfterFX.exe', 'aerender.exe', 'Adobe Media Encoder.exe', 'Adobe Premiere Pro.exe')
     $prio = @()
-    foreach ($n in $exeNames) { $prio += , @("HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\$n\PerfOptions", 'CpuPriorityClass', 'DWord', 3) }
+    foreach ($n in $exeNames) { $prio += , @("HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\$n\PerfOptions", 'CpuPriorityClass', 'DWord', 6) }
     return @(
         @{
             Id = 'ae.priority'; Cat = 'ae'; Risk = 'safe'; Presets = @('creator')
-            Title = @{ it = 'Priorità CPU alta per After Effects e Media Encoder'; en = 'High CPU priority for After Effects and Media Encoder' }
-            Desc = @{ it = 'After Effects, il render da riga di comando (aerender), Media Encoder e Premiere partono sempre con priorità "Alta": anteprime e render più rapidi quando il PC fa anche altro.'; en = 'After Effects, command-line render (aerender), Media Encoder and Premiere always start with "High" priority: faster previews and renders while the PC does other things.' }
+            Title = @{ it = 'Priorità CPU più alta per After Effects e Media Encoder'; en = 'Higher CPU priority for After Effects and Media Encoder' }
+            Desc = @{ it = 'After Effects, il render da riga di comando (aerender), Media Encoder e Premiere partono sempre con priorità "Sopra il normale": anteprime e render più rapidi quando il PC fa anche altro, senza bloccare mouse, audio ed Esplora file.'; en = 'After Effects, command-line render (aerender), Media Encoder and Premiere always start with "Above normal" priority: faster previews and renders while the PC does other things, without starving the mouse, audio and File Explorer.' }
             Reg = $prio
         },
         @{
@@ -296,28 +275,7 @@ function Get-VxAeTweaks {
                 param($hw)
                 foreach ($exe in (Get-VxAdobeExes)) {
                     Add-VxCustomUndo "pthrottle|$exe" @{ kind = 'pthrottle'; path = $exe }
-                    & powercfg /powerthrottling disable /path "$exe" 2>&1 | Out-Null
-                }
-            }
-        },
-        @{
-            Id = 'ae.defender'; Cat = 'ae'; Risk = 'caution'; Presets = @('creator')
-            Title = @{ it = 'Antivirus più leggero sulle cartelle cache'; en = 'Lighter antivirus on cache folders' }
-            Desc = @{ it = 'Microsoft Defender smette di scansionare ogni file di cache che After Effects scrive e legge migliaia di volte al minuto. Anteprime e scrubbing molto più fluidi.'; en = 'Microsoft Defender stops scanning every cache file After Effects writes and reads thousands of times a minute. Much smoother previews and scrubbing.' }
-            Warn = @{ it = 'Riguarda solo le cartelle cache (non i tuoi progetti né i download).'; en = 'Only affects cache folders (not your projects or downloads).' }
-            When = { param($hw) try { [bool](Get-MpComputerStatus -ErrorAction Stop).AntivirusEnabled } catch { $false } }
-            Apply = {
-                param($hw)
-                $paths = @(Get-VxMediaCacheDirs)
-                $best = Get-VxBestCacheDrive $hw
-                if ($best) { $paths += (Join-Path ($best.Letter + '\') 'VeloxPC Cache') }
-                $existing = @()
-                try { $existing = @((Get-MpPreference -ErrorAction Stop).ExclusionPath) } catch { }
-                foreach ($p in $paths) {
-                    if (-not (Test-Path -LiteralPath $p)) { New-Item -ItemType Directory -Path $p -Force | Out-Null }
-                    if ($existing -contains $p) { continue }
-                    Add-VxCustomUndo "defender|$p" @{ kind = 'defender'; type = 'path'; value = $p }
-                    Add-MpPreference -ExclusionPath $p -ErrorAction Stop
+                    [void](Invoke-VxExe 'powercfg' @('/powerthrottling', 'disable', '/path', "$exe"))
                 }
             }
         }
@@ -401,8 +359,32 @@ function Get-VxAeReport {
     if ($pf.Count -eq 0) { $checks += @{ sev = 'crit'; t = (L @{ it = 'Il file di paging è disattivato: After Effects può chiudersi da solo quando finisce la RAM. Riattivalo dal Check-up.'; en = 'The page file is disabled: After Effects can crash when RAM runs out. Re-enable it from the Check-up.' }) } }
     $fonts = Get-VxFontCount
     if ($fonts -gt 1500) { $checks += @{ sev = 'warn'; t = (L @{ it = "Hai $fonts font installati: rallentano l'avvio di After Effects. Disinstalla quelli che non usi."; en = "You have $fonts fonts installed: they slow down After Effects startup. Uninstall the ones you do not use." }) } }
+    # 2.0: the cache folder Piki created sits on a hard disk or an almost full drive
+    foreach ($v in @($Hw.Volumes)) {
+        $cdir = Join-Path ($v.Letter + '\') 'VeloxPC Cache\After Effects Disk Cache'
+        if (-not (Test-Path -LiteralPath $cdir)) { continue }
+        $dk = @($Hw.Disks | Where-Object { $_.Number -eq $v.DiskNumber }) | Select-Object -First 1
+        if ($dk -and $dk.Media -eq 'HDD') { $checks += @{ sev = 'warn'; t = (L @{ it = "La cache disco è su un disco meccanico ($($v.Letter)): spostala su un SSD, le anteprime saranno molto più veloci."; en = "The disk cache is on a hard disk ($($v.Letter)): move it to an SSD, previews will be much faster." }) } }
+        if ([int]$v.FreePct -lt 10) { $checks += @{ sev = 'warn'; t = (L @{ it = "Il disco della cache ($($v.Letter)) è quasi pieno ($($v.FreePct)% libero): After Effects rallenta e svuota la cache di continuo."; en = "The cache drive ($($v.Letter)) is almost full ($($v.FreePct)% free): After Effects slows down and keeps purging the cache." }) } }
+    }
+    # RAM to leave to other apps also counts the browsers open right now
+    try {
+        $bm = [int64]0
+        foreach ($p in @(Get-Process -Name 'chrome', 'msedge', 'firefox', 'brave', 'opera' -ErrorAction SilentlyContinue)) { $bm += [int64]$p.WorkingSet64 }
+        $bgb = [math]::Ceiling($bm / 1GB)
+        if ($bgb -ge 2) { $rows += @{ K = (L @{ it = 'RAM per gli altri (con i browser aperti)'; en = 'RAM for other apps (with browsers open)' }); V = "$([math]::Min($ramGB - 4, $reserve + $bgb)) GB"; H = (L @{ it = "Adesso i browser usano circa $bgb GB: se li tieni aperti mentre lavori, lascia più RAM alle altre app."; en = "Browsers are using about $bgb GB right now: if you keep them open while working, leave more RAM to other apps." }) } }
+    } catch { }
     try { $tzr = Get-VxTopazReport $Hw; $rows += @($tzr.Rows); $checks += @($tzr.Checks) } catch { }
     return @{ Rows = $rows; Checks = $checks; Apps = $apps; Best = $best }
+}
+
+# 1.x set "High" priority (3). 2.0 uses "Above normal" (6): an old value is offered as an update, never changed silently.
+function Test-VxAePriorityOld {
+    if (-not (Test-VxBackupEntry 'ae.priority')) { return $false }
+    foreach ($n in @('AfterFX.exe', 'aerender.exe', 'Adobe Media Encoder.exe', 'Adobe Premiere Pro.exe')) {
+        if (Test-VxRegValue "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\$n\PerfOptions" 'CpuPriorityClass' 3) { return $true }
+    }
+    return $false
 }
 
 function Get-VxMediaCacheSize {

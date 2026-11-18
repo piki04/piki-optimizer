@@ -1,54 +1,34 @@
 {
-  "version": "1.11.2",
+  "version": "2.0.0",
   "notes": {
-    "it": "Tolto il preset \"Piki Max\": ora il preset consigliato è \"Piki\". Chi aveva scelto Piki Max passa in automatico a Piki; le modifiche già applicate restano e si possono annullare dalla pagina Ripristino.",
-    "en": "Removed the \"Piki Max\" preset: the recommended preset is now \"Piki\". If you had picked Piki Max you move to Piki automatically; changes already applied stay and can be undone from the Restore page."
+    "it": "Piki Optimizer 2.0: nuovo aspetto come il sito, pagina Misura con numeri veri prima/dopo, profilo \"PC lento\", impatto delle app all'avvio, sessioni Gioco e Render che si annullano da sole, pulizia programmata, anteprima di ogni modifica. Più leggero: animazioni a 60 fps, niente effetti pesanti, meno RAM. Tolte le eccezioni all'antivirus e le modifiche agli aggiornamenti delle app: le trovi in Ripristino per annullarle.",
+    "en": "Piki Optimizer 2.0: new look matching the site, Measure page with real before/after numbers, \"Slow PC\" profile, startup app impact, Game and Render sessions that undo themselves, scheduled cleaning, a preview of every change. Lighter: 60 fps animations, no heavy effects, less RAM. Antivirus exclusions and app-updater changes were removed: undo them from Restore."
   },
   "files": [
     {
-      "path": "Avvia Piki Optimizer.cmd",
-      "sha256": "21bf82b57e55d2763ba0a5f2da79b2bd643722b6ee4366f43bf7c933d43e6592",
-      "size": 707
+      "path": "app/assets/fonts/Inter-Bold.ttf",
+      "sha256": "412c068eab6f36e6807d630ff89127165e8e4d3e8653434cdfb56b60cdcc3a32",
+      "size": 316584
     },
     {
-      "path": "Installa Piki Optimizer.cmd",
-      "sha256": "1f24b74cbcf797aae25a8dcfba96d36fb8dcc03e8a0d835d994f9ce9004e766e",
-      "size": 393
+      "path": "app/assets/fonts/Inter-Medium.ttf",
+      "sha256": "a645f55492d1c8cdace43c72be8cbec08e680b5a86d8b4c2d1c50d6e41e9cc96",
+      "size": 315132
     },
     {
-      "path": "LICENSE",
-      "sha256": "b368a4d4404adc0bf8847be47ce5adf6595a7667fd8c8cfb2581d97131f2f50d",
-      "size": 710
+      "path": "app/assets/fonts/Inter-Regular.ttf",
+      "sha256": "3127f0b873387ee37e2040135a06e9e9c05030f509eb63689529becf28b50384",
+      "size": 310252
     },
     {
-      "path": "README.md",
-      "sha256": "d1d113bef6f5624923006d96118d08a994b7b7cd32a4a2405d0102e68b97653a",
-      "size": 2055
+      "path": "app/assets/fonts/Inter-SemiBold.ttf",
+      "sha256": "b0b540e69bf6717016e33874670e09acf4bffc2ca3f4c1cf174a4ff696308c65",
+      "size": 316220
     },
     {
-      "path": "Ripristina Piki.cmd",
-      "sha256": "8ff65903f836f48f88eaed13d7b9ee0d8daf8bdc7186ba50db8b76099a45aebb",
-      "size": 615
-    },
-    {
-      "path": "app/Restore.ps1",
-      "sha256": "fba1037d8b8f7a34233b98cce7235f8fdc1aaba8282274e7097e25ed457149cd",
-      "size": 10264
-    },
-    {
-      "path": "app/Setup.ps1",
-      "sha256": "c4eb05e138ced17894b38a91321d8e32bb17967d4a9017e612f1ba69c94eaa8d",
-      "size": 8082
-    },
-    {
-      "path": "app/Uninstall.ps1",
-      "sha256": "f6d945756a4137c6338c01cfe1c08269fc17b38d0f0810507e8fb04bd327852b",
-      "size": 2083
-    },
-    {
-      "path": "app/VeloxPC.ps1",
-      "sha256": "24e4976915081ba00c5228ef5d6d1aff12c3ed4be2673ae485775af859b8aa2b",
-      "size": 119427
+      "path": "app/assets/fonts/OFL.txt",
+      "sha256": "35295870f43459f02b9adfa3003ccd95ddc01b7a1eb8321f8d30b74e4f1168cb",
+      "size": 4432
     },
     {
       "path": "app/assets/logo.png",
@@ -62,18 +42,23 @@
     },
     {
       "path": "app/core/AfterEffects.ps1",
-      "sha256": "c33f53a192da5bb24c9c9cb00da0849b0da98d50adf9fb6ef06ed6c3f9be13a1",
-      "size": 32906
+      "sha256": "65b91de062a3713e1155cf63a5e24b5c60da33af08d03c1f612755e00f1ebaf8",
+      "size": 32007
     },
     {
       "path": "app/core/Cleanup.ps1",
-      "sha256": "6576f25cad7319c56265bf2f00ebf1dd5950ed4d4d83176e92b12b29b6975690",
-      "size": 10477
+      "sha256": "fe757b01acac762ba4f6f7af589a637a212efccbca905a34220a196657abd839",
+      "size": 16560
     },
     {
       "path": "app/core/Common.ps1",
-      "sha256": "24817baaf7c1439afd936454ff8e9d496731cc871f2f64c360e5efd1eb7d6c89",
-      "size": 24613
+      "sha256": "fadf57ba3e1cb57d31de13fd1447ea39ee7e22b690961c5a4c25050721bb728e",
+      "size": 31722
+    },
+    {
+      "path": "app/core/Extra.cs",
+      "sha256": "5f8f2f5b1974431510ba064b008a14edc1cdff499b4596933684536df207af5d",
+      "size": 6008
     },
     {
       "path": "app/core/Hardware.ps1",
@@ -82,13 +67,18 @@
     },
     {
       "path": "app/core/Health.ps1",
-      "sha256": "53530c5aeb763c550461588487d5d30ee486496f49b1d35901a7732054362edc",
-      "size": 43142
+      "sha256": "3c74ec7470a5ca5fb3a247a9b6f822bdb9072237115a04d253d8802a2c7e4baa",
+      "size": 45485
+    },
+    {
+      "path": "app/core/Measure.ps1",
+      "sha256": "c4afa6c7a1d51b99033650fe7bc644423a8b6041f344dcf9811152cfe89fe3b3",
+      "size": 10034
     },
     {
       "path": "app/core/Native.cs",
-      "sha256": "03880d569deb8f026892303a56352f0b0c10da1d011429ee8c288704f16562e0",
-      "size": 35986
+      "sha256": "1a93aab73b3f889128315009e3f0068357c09b7f9b56673eacfde470b2a32a2c",
+      "size": 38421
     },
     {
       "path": "app/core/Network.ps1",
@@ -97,73 +87,98 @@
     },
     {
       "path": "app/core/Services.ps1",
-      "sha256": "81684d6a3fb53ada9fcb466591426b043276669fb97a311a1b6f7249ada1d6bd",
-      "size": 40026
+      "sha256": "50287a7fe3350513eaa2ff341749370ff5f58bbeb6d9916b6f544f4cf1a0e034",
+      "size": 46934
+    },
+    {
+      "path": "app/core/Session.ps1",
+      "sha256": "8b27825356d3d616964c8f354486222c61a668aac76700a7c90605edfc48fd64",
+      "size": 3475
     },
     {
       "path": "app/core/Tweaks.ps1",
-      "sha256": "975cebe78fc24c108938c8ca79fabfd299f558b15ce22bef9b8d250177747ea8",
-      "size": 70260
+      "sha256": "e4f582788bae8a6185911b404e37f82cca44da76f6601d5c6737af33a280ec70",
+      "size": 73478
     },
     {
       "path": "app/core/Updater.ps1",
-      "sha256": "ee848235a66116294217663533f62744124eebb7665c9d5ca36f5f4bfb6be5fd",
-      "size": 5431
+      "sha256": "d1adf68e4e8b6a956f21b7ace8ccf50d759930266c9b675bf962e88a946ca1f5",
+      "size": 7404
     },
     {
       "path": "app/lang/de.json",
-      "sha256": "2e7f249e76ec157d597dd28c44db809d9f6f38ddf42d01cfc6631c4b60296f92",
-      "size": 22653
+      "sha256": "995b097e8c4689b29c2aeaf84a36b3bd4b2044372b26964ff1a724c38735ad42",
+      "size": 32604
     },
     {
       "path": "app/lang/en.json",
-      "sha256": "489be29c9cecf4ae0306cded186093726944fa64c3a4b39720cbac0ef5c6775e",
-      "size": 20695
+      "sha256": "5ea16c96c9fb06e1da65ffba5bb5e2b53cfa238a5efcb8dc17b25295b2f472ef",
+      "size": 29771
     },
     {
       "path": "app/lang/es.json",
-      "sha256": "d82d1d99e23d03ef4219b7d868d7b726280fdf13cdad092a03889fa5314334f5",
-      "size": 21917
+      "sha256": "9a7f4700ae877908d30a7f04f2fe49ef45755e3a55b7f00c543cf7d4afe8ee84",
+      "size": 31546
     },
     {
       "path": "app/lang/fr.json",
-      "sha256": "ce234def889a5f9917d1b532e7861d7e8650a98c1bce88baab47fc48b81b2a17",
-      "size": 23088
+      "sha256": "59ad3996d79ce82ee2cbb90338db5ebbd72639b4b3541150be31b69dce98fe47",
+      "size": 33308
     },
     {
       "path": "app/lang/it.json",
-      "sha256": "b02831c180531f3a1fd96eb679f571e47f8670159b6ed75a41ba6ac8888a4e06",
-      "size": 21855
+      "sha256": "55652941669cb6db14faea1730478355575f67a420a834d5c37cf4090422d63d",
+      "size": 31382
     },
     {
       "path": "app/lang/ja.json",
-      "sha256": "d3e1c520e786577e2ba277121f9f89250287f38893b172c4d5f97b028c09a3fa",
-      "size": 26060
+      "sha256": "41fa52dd596546289903c52152aba6c92a44abe642053ace2d4610695d2335de",
+      "size": 37921
     },
     {
       "path": "app/lang/pt.json",
-      "sha256": "f6d1592ddbce240e2c81b0a5669a6a6c1d5540af359eeae28754dcdd69cb8b99",
-      "size": 21865
+      "sha256": "42046a85810fe8be4febb7f1c4a3e2c98370d0d1d464862088c78a7b91420585",
+      "size": 31397
     },
     {
       "path": "app/lang/ru.json",
-      "sha256": "f39a56ebdd9bcc9463b2594e9cc9e332ed21769217a10997aa4af8132b128064",
-      "size": 31806
+      "sha256": "04a2ec4887ff336298ecfd651ffda1ae108244223c075b3b6c7856fc06139fd6",
+      "size": 45680
     },
     {
       "path": "app/lang/zh.json",
-      "sha256": "c9fd81a5db26f45c719c3b7c412a8c12c5378402e6517067c9310c9349005467",
-      "size": 20391
+      "sha256": "b7b6c6c026aedf1a7d2186604cded331baccbb23abeda00f8beb7955e15a60a3",
+      "size": 29381
     },
     {
-      "path": "app/ui/MainWindow.safe.xaml",
-      "sha256": "92169ef438de3857603b6f3483eebe50451517a0243dab2ee3092f9800ada652",
-      "size": 124325
+      "path": "app/Restore.ps1",
+      "sha256": "94e26980323e225760ec258a650b19e5c548d035e6d16c3f769ae910789f80a7",
+      "size": 13828
+    },
+    {
+      "path": "app/Setup.ps1",
+      "sha256": "8e509e1698e2def6ebeaaa726c524465c1ae1b13eb7449fffafacc0d84ff1cb1",
+      "size": 8174
     },
     {
       "path": "app/ui/MainWindow.xaml",
-      "sha256": "cc04d906998b5936524f9b7f7aba6d04314a659e55d4ee98d01e7ee4e91dc87b",
-      "size": 165820
+      "sha256": "6af0e0c7781137375acf1ed98281b093c4747b3441a49829a9598ef762741e43",
+      "size": 145088
+    },
+    {
+      "path": "app/Uninstall.ps1",
+      "sha256": "3c7066156b5be67682530611e5da70cb76bc7371fe422d7797d179f1d948c47e",
+      "size": 3884
+    },
+    {
+      "path": "app/VeloxPC.ps1",
+      "sha256": "33374a320910b04dcbbd5e9dd17853176e669e41bcd173ae197343315a825c9a",
+      "size": 137843
+    },
+    {
+      "path": "Avvia Piki Optimizer.cmd",
+      "sha256": "21bf82b57e55d2763ba0a5f2da79b2bd643722b6ee4366f43bf7c933d43e6592",
+      "size": 707
     },
     {
       "path": "config.json",
@@ -172,8 +187,28 @@
     },
     {
       "path": "install.ps1",
-      "sha256": "79adf51042ce588b23e6154edcb58afc126e8490ca8532d10405dc32b7943e81",
-      "size": 2197
+      "sha256": "6ccacfc01094ec46ac7d7c6c73f90cbf39e2d54af6d3d296523d8e830b37ff61",
+      "size": 2287
+    },
+    {
+      "path": "Installa Piki Optimizer.cmd",
+      "sha256": "1f24b74cbcf797aae25a8dcfba96d36fb8dcc03e8a0d835d994f9ce9004e766e",
+      "size": 393
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "b368a4d4404adc0bf8847be47ce5adf6595a7667fd8c8cfb2581d97131f2f50d",
+      "size": 710
+    },
+    {
+      "path": "README.md",
+      "sha256": "2157d9d2234434128abfa284d3c0993ec6a39bcc2dc3e6423246b349f8f28613",
+      "size": 2006
+    },
+    {
+      "path": "Ripristina Piki.cmd",
+      "sha256": "8ff65903f836f48f88eaed13d7b9ee0d8daf8bdc7186ba50db8b76099a45aebb",
+      "size": 615
     }
   ]
 }

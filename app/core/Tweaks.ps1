@@ -2,7 +2,13 @@
 # Each tweak is data: registry values (Reg) and/or a custom Apply block that only
 # uses the Set-Vx* helpers, so every change is recorded and can be undone.
 
-$script:VxPresets = @('piki', 'gaming', 'competitive', 'creator', 'balanced', 'laptop')
+$script:VxPresets = @('slowpc', 'piki', 'gaming', 'competitive', 'creator', 'balanced', 'laptop')
+
+# Removed in 2.0 (placebo, or they touched antivirus / app updates). Backup entries for them stay undoable:
+# the Ripristino page shows a one-time card for these ids. Nothing is reverted without the user's click.
+$script:VxRetiredIds = @('ae.defender', 'topaz.defender', 'storeupd', 'prioritysep', 'netthrottle', 'svchost')
+$script:VxRetiredSvc = '^svc:(edgeupdate|GoogleUpdater|gupdate|MozillaMaintenance|AdobeARMservice)'
+function Test-VxRetiredId { param([string]$Id) return ($script:VxRetiredIds -contains $Id -or $Id -match $script:VxRetiredSvc) }
 
 $script:VxTweaks = @(
     # ======================================================= GAMING & LATENCY
@@ -20,9 +26,9 @@ $script:VxTweaks = @(
         Reg = @(@('HKCU:\System\GameConfigStore', 'GameDVR_Enabled', 'DWord', 0), @('HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR', 'AppCaptureEnabled', 'DWord', 0))
     },
     @{
-        Id = 'mmcss'; Cat = 'latency'; Risk = 'safe'; Presets = @('gaming', 'competitive', 'creator')
+        Id = 'mmcss'; Cat = 'latency'; Risk = 'advanced'; Presets = @()
         Title = @{ it = 'Priorità massima a giochi e audio'; en = 'Top priority for games and audio' }
-        Desc = @{ it = 'Dice allo scheduler multimediale di Windows di riservare più CPU e GPU al gioco attivo e di non rallentare la rete mentre giochi.'; en = 'Tells the Windows multimedia scheduler to reserve more CPU/GPU for the active game and not to throttle the network while you play.' }
+        Desc = @{ it = 'Dice allo scheduler multimediale di Windows di riservare più CPU e GPU ai programmi che lo chiedono (pochi giochi e app audio). Effetto piccolo: per esperti.'; en = 'Tells the Windows multimedia scheduler to reserve more CPU/GPU for programs that ask for it (few games and audio apps). Small effect: for experts.' }
         Reg = @(
             @('HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile', 'SystemResponsiveness', 'DWord', 10),
             @('HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile', 'NetworkThrottlingIndex', 'DWord', -1),
@@ -31,13 +37,6 @@ $script:VxTweaks = @(
             @('HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games', 'Scheduling Category', 'String', 'High'),
             @('HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games', 'SFIO Priority', 'String', 'High')
         )
-    },
-    @{
-        Id = 'prioritysep'; Cat = 'latency'; Risk = 'caution'; Presets = @('gaming', 'competitive')
-        Title = @{ it = 'Più CPU alla finestra in primo piano'; en = 'More CPU for the foreground window' }
-        Desc = @{ it = 'Il programma che stai usando (il gioco) riceve turni di CPU più lunghi e frequenti: input più reattivo.'; en = 'The app you are using (the game) gets longer and more frequent CPU turns: snappier input.' }
-        Warn = @{ it = 'Le cose lasciate in secondo piano (download, render mentre fai altro) vanno un po'' più lente.'; en = 'Things left in the background (downloads, renders while you do something else) get slightly slower.' }
-        Reg = @(, @('HKLM:\SYSTEM\CurrentControlSet\Control\PriorityControl', 'Win32PrioritySeparation', 'DWord', 38))
     },
     @{
         Id = 'hags'; Cat = 'latency'; Risk = 'caution'; Reboot = $true; Presets = @('gaming', 'competitive')
@@ -57,6 +56,8 @@ $script:VxTweaks = @(
             param($hw)
             $p = 'HKCU:\Software\Microsoft\DirectX\UserGpuPreferences'
             $cur = (Get-VxRegState $p 'DirectXUserGlobalSettings').value
+            # already on: rewriting it only reordered the list (a fake change with a backup entry)
+            if (@(([string]$cur).Split(';')) -contains 'SwapEffectUpgradeEnable=1') { return }
             $parts = @()
             if ($cur) { $parts = @(([string]$cur).Split(';') | Where-Object { $_ -and $_ -notmatch '^SwapEffectUpgradeEnable=' }) }
             $parts += 'SwapEffectUpgradeEnable=1'
@@ -94,7 +95,7 @@ $script:VxTweaks = @(
         Rec = { param($hw) if ($hw.CPU.IsX3DDual) { @{ level = 'notrec'; why = @{ it = 'I Ryzen X3D a due CCD usano il parcheggio dei core per mandare i giochi sui core con la cache 3D'; en = 'Dual-CCD Ryzen X3D chips use core parking to send games to the 3D-cache cores' } } } }
         Apply = {
             param($hw)
-            & powercfg -attributes 54533251-82be-4824-96c1-47b60b740d00 0cc5b647-c1df-4637-891a-dec35c318583 -ATTRIB_HIDE 2>&1 | Out-Null
+            [void](Invoke-VxExe 'powercfg' @('-attributes', '54533251-82be-4824-96c1-47b60b740d00', '0cc5b647-c1df-4637-891a-dec35c318583', '-ATTRIB_HIDE'))
             Set-VxPower '54533251-82be-4824-96c1-47b60b740d00' '0cc5b647-c1df-4637-891a-dec35c318583' 100
         }
         Test = {
@@ -121,6 +122,9 @@ $script:VxTweaks = @(
             param($hw)
             $p = 'HKCU:\Control Panel\Mouse'
             $prev = @{ t1 = [int](Get-VxRegState $p 'MouseThreshold1').value; t2 = [int](Get-VxRegState $p 'MouseThreshold2').value; accel = [int](Get-VxRegState $p 'MouseSpeed').value }
+            # already off: no change and no backup entry
+            if ($prev.accel -eq 0 -and $prev.t1 -eq 0 -and $prev.t2 -eq 0 -and (Get-VxRegState $p 'MouseSpeed').existed) { return }
+            if ($script:VxDryRun) { Add-VxDryRecord 'mouse acceleration' $prev.accel 0; return }
             Add-VxCustomUndo 'mouse' @{ kind = 'mouse'; t1 = $prev.t1; t2 = $prev.t2; accel = $prev.accel }
             Set-VxReg $p 'MouseSpeed' 'String' '0'
             Set-VxReg $p 'MouseThreshold1' 'String' '0'
@@ -130,12 +134,15 @@ $script:VxTweaks = @(
         Test = { param($hw) Test-VxRegValue 'HKCU:\Control Panel\Mouse' 'MouseSpeed' '0' }
     },
     @{
-        Id = 'keyboard'; Cat = 'input'; Risk = 'safe'; Presets = @('gaming', 'competitive')
-        Title = @{ it = 'Tastiera più rapida'; en = 'Faster keyboard' }
-        Desc = @{ it = 'Ritardo minimo e ripetizione massima quando tieni premuto un tasto.'; en = 'Minimum delay and maximum repeat rate when holding a key.' }
+        Id = 'keyboard'; Cat = 'input'; Risk = 'safe'; Presets = @('competitive')
+        Title = @{ it = 'Tastiera più rapida (preferenza)'; en = 'Faster keyboard (preference)' }
+        Desc = @{ it = 'Ritardo minimo e ripetizione massima quando tieni premuto un tasto. È un gusto personale, non rende il PC più veloce.'; en = 'Minimum delay and maximum repeat rate when holding a key. A personal taste: it does not make the PC faster.' }
         Apply = {
             param($hw)
             $p = 'HKCU:\Control Panel\Keyboard'
+            $kd = Get-VxRegState $p 'KeyboardDelay'; $ks = Get-VxRegState $p 'KeyboardSpeed'
+            if ($kd.existed -and $ks.existed -and [string]$kd.value -eq '0' -and [string]$ks.value -eq '31') { return }
+            if ($script:VxDryRun) { Add-VxDryRecord 'keyboard delay/repeat' ("{0}/{1}" -f $kd.value, $ks.value) '0/31'; return }
             Add-VxCustomUndo 'kbd' @{ kind = 'kbd'; delay = [int](Get-VxRegState $p 'KeyboardDelay').value; speed = [int](Get-VxRegState $p 'KeyboardSpeed').value }
             Set-VxReg $p 'KeyboardDelay' 'String' '0'
             Set-VxReg $p 'KeyboardSpeed' 'String' '31'
@@ -147,11 +154,29 @@ $script:VxTweaks = @(
         Id = 'stickykeys'; Cat = 'input'; Risk = 'safe'; Reboot = $true; Presets = @('gaming', 'competitive', 'balanced')
         Title = @{ it = 'Niente popup "Tasti permanenti"'; en = 'No "Sticky Keys" pop-up' }
         Desc = @{ it = 'Premere Shift 5 volte durante una partita non farà più uscire dal gioco con la finestra dei Tasti permanenti.'; en = 'Pressing Shift 5 times mid-game will no longer kick you out with the Sticky Keys window.' }
-        Reg = @(
-            @('HKCU:\Control Panel\Accessibility\StickyKeys', 'Flags', 'String', '506'),
-            @('HKCU:\Control Panel\Accessibility\Keyboard Response', 'Flags', 'String', '122'),
-            @('HKCU:\Control Panel\Accessibility\ToggleKeys', 'Flags', 'String', '58')
-        )
+        # only the "shortcut" bit (0x4: Shift x5 / hold Shift / hold Num Lock) is cleared. A fixed value (506/122/58)
+        # also switched OFF Sticky/Filter/Toggle Keys for people who actually use them (accessibility).
+        Apply = {
+            param($hw)
+            foreach ($a in @(@('HKCU:\Control Panel\Accessibility\StickyKeys', 506), @('HKCU:\Control Panel\Accessibility\Keyboard Response', 122), @('HKCU:\Control Panel\Accessibility\ToggleKeys', 58))) {
+                $s = Get-VxRegState $a[0] 'Flags'
+                $cur = 0
+                if ($s.existed -and [int]::TryParse([string]$s.value, [ref]$cur)) {
+                    $new = $cur -band (-bnot 4)
+                    if ($new -eq $cur) { continue }
+                } else { $new = [int]$a[1] }
+                Set-VxReg $a[0] 'Flags' 'String' ([string]$new)
+            }
+        }
+        Test = {
+            param($hw)
+            foreach ($k in @('StickyKeys', 'Keyboard Response', 'ToggleKeys')) {
+                $s = Get-VxRegState "HKCU:\Control Panel\Accessibility\$k" 'Flags'
+                $cur = 0
+                if (-not $s.existed -or -not [int]::TryParse([string]$s.value, [ref]$cur) -or ($cur -band 4)) { return $false }
+            }
+            return $true
+        }
     },
 
     # ======================================================= POWER
@@ -169,6 +194,16 @@ $script:VxTweaks = @(
         Apply = {
             param($hw)
             $prev = Get-VxActiveScheme
+            if ($script:VxDryRun) { Add-VxDryRecord 'power plan' $prev.name 'Ultimate Performance (copy)'; return }
+            # re-applied after Windows switched plan: activate the copy Piki already made instead of adding one more
+            $b = Get-VxBackup
+            if ($b.entries.ContainsKey('powerplan')) {
+                $mine = @(@($b.entries['powerplan'].items) | Where-Object { $_.kind -eq 'plan' -and ([string]$_.created) -match $script:VxGuidRx }) | Select-Object -First 1
+                if ($mine -and ((& powercfg /list 2>$null) -join ' ') -match [regex]::Escape([string]$mine.created)) {
+                    & powercfg /setactive ([string]$mine.created) 2>&1 | Out-Null
+                    return
+                }
+            }
             $guidRx = '([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})'
             $out = (& powercfg /duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 2>&1) -join ' '
             if ($out -match $guidRx) {
@@ -243,6 +278,26 @@ $script:VxTweaks = @(
     },
 
     @{
+        Id = 'bestperf'; Cat = 'power'; Risk = 'safe'; Presets = @('laptop')
+        Title = @{ it = 'Portatile: "Prestazioni migliori" quando è in carica'; en = 'Laptop: "Best performance" while plugged in' }
+        Desc = @{ it = 'Quando il portatile è collegato alla corrente usa la modalità energia "Prestazioni migliori" di Windows: CPU più pronta, nessun effetto sulla batteria quando è scollegato.'; en = 'When the laptop is plugged in it uses the Windows "Best performance" power mode: a readier CPU, no effect on the battery when unplugged.' }
+        When = { param($hw) $hw.IsLaptop -and -not $hw.OnBattery }
+        Apply = {
+            param($hw)
+            $ov = Get-VxRegState 'HKLM:\SYSTEM\CurrentControlSet\Control\Power\User\PowerSchemes' 'ActiveOverlayAcPowerScheme'
+            $prevOv = if ($ov.existed -and $ov.value) { [string]$ov.value } else { '00000000-0000-0000-0000-000000000000' }
+            if ($prevOv -eq 'ded574b5-45a0-4f42-8737-46345c09c238') { return }
+            if ($script:VxDryRun) { Add-VxDryRecord 'power mode (plugged in)' $prevOv 'Best performance'; return }
+            Add-VxCustomUndo 'overlay' @{ kind = 'overlay'; prev = $prevOv }
+            & powercfg /overlaysetactive ded574b5-45a0-4f42-8737-46345c09c238 2>&1 | Out-Null
+        }
+        Test = {
+            param($hw)
+            $ov = Get-VxRegState 'HKLM:\SYSTEM\CurrentControlSet\Control\Power\User\PowerSchemes' 'ActiveOverlayAcPowerScheme'
+            return ([string]$ov.value -eq 'ded574b5-45a0-4f42-8737-46345c09c238')
+        }
+    },
+    @{
         Id = 'x3dfix'; Cat = 'power'; Risk = 'safe'; Presets = @('gaming', 'competitive', 'creator', 'balanced')
         Title = @{ it = 'Ryzen X3D: giochi sui core con la cache 3D'; en = 'Ryzen X3D: games on the 3D-cache cores' }
         Desc = @{ it = 'Rimette il PC come lo vuole AMD per i Ryzen X3D a due CCD: piano Bilanciato, parcheggio dei core e stato minimo del processore ai valori di Windows, servizio AMD 3D V-Cache attivo e Game Bar libera di girare. Così i giochi vanno sugli 8 core con la cache 3D: FPS più alti e frame più regolari. Annulla da sola "Prestazioni massime", "Tutti i core sempre pronti", "CPU sempre alla massima frequenza" e "Blocca le app dello Store", se li avevi attivati.'; en = 'Sets the PC up the way AMD wants it for dual-CCD Ryzen X3D chips: Balanced plan, core parking and minimum processor state at Windows defaults, AMD 3D V-Cache service running and Game Bar free to run. Games then land on the 8 cores with the 3D cache: higher FPS and steadier frames. It automatically undoes "Maximum performance", "All cores always ready", "CPU always at full clock" and "Block Store apps" if you had turned them on.' }
@@ -255,6 +310,7 @@ $script:VxTweaks = @(
         Apply = {
             param($hw)
             $bal = '381b4222-f694-41f0-9685-ff5bb260df2e'
+            if ($script:VxDryRun) { Add-VxDryRecord 'Ryzen X3D: Balanced plan, core parking defaults, AMD 3D V-Cache service on'; return }
             # settings applied earlier that fight the X3D scheduler: put back what was there before
             foreach ($old in @('powerplan', 'cpumin', 'coreparking', 'bgapps', 'svchost')) {
                 if (Test-VxBackupEntry $old) { [void](Undo-VxEntry $old); Write-VxLog "x3dfix: undone $old" }
@@ -338,6 +394,8 @@ $script:VxTweaks = @(
             param($hw)
             $prev = $true
             try { $prev = [bool](Get-MMAgent -ErrorAction Stop).MemoryCompression } catch { }
+            if (-not $prev) { return }
+            if ($script:VxDryRun) { Add-VxDryRecord 'memory compression' 'on' 'off'; return }
             Add-VxCustomUndo 'mmagent' @{ kind = 'mmagent'; prev = $prev }
             Disable-MMAgent -MemoryCompression -ErrorAction Stop
         }
@@ -442,23 +500,6 @@ $script:VxTweaks = @(
             @('HKLM:\SOFTWARE\Policies\Microsoft\Edge', 'BackgroundModeEnabled', 'DWord', 0)
         )
     },
-    @{
-        Id = 'svchost'; Cat = 'proc'; Risk = 'caution'; Reboot = $true; Presets = @('competitive')
-        Title = @{ it = 'Raggruppa i servizi di Windows (meno processi)'; en = 'Group Windows services (fewer processes)' }
-        Desc = @{ it = 'Windows avvia ogni servizio in un processo "svchost" separato. Raggrupparli può ridurre il numero di processi anche del 40-60%.'; en = 'Windows runs each service in its own "svchost" process. Grouping them can cut the process count by 40-60%.' }
-        Warn = @{ it = 'Meno isolamento: se un servizio si blocca (raro) può trascinare con sé gli altri del gruppo.'; en = 'Less isolation: if a service crashes (rare) it can take the others in its group down with it.' }
-        Apply = {
-            param($hw)
-            $kb = [int64]([math]::Floor($hw.RAM.UsableBytes / 1KB))
-            if ($kb -gt [int]::MaxValue) { $kb = [int]::MaxValue }
-            Set-VxReg 'HKLM:\SYSTEM\CurrentControlSet\Control' 'SvcHostSplitThresholdInKB' 'DWord' ([int]$kb)
-        }
-        Test = {
-            param($hw)
-            $v = (Get-VxRegState 'HKLM:\SYSTEM\CurrentControlSet\Control' 'SvcHostSplitThresholdInKB').value
-            return ($v -and [int64]$v -ge [int64]([math]::Floor($hw.RAM.UsableBytes / 1KB)) - 1024)
-        }
-    },
 
     # ======================================================= MORE (1.9.0)
     @{
@@ -477,7 +518,7 @@ $script:VxTweaks = @(
         Apply = {
             param($hw)
             Set-VxReg 'HKLM:\SYSTEM\CurrentControlSet\Control\Power' 'HibernateEnabled' 'DWord' 0
-            & powercfg /hibernate off 2>&1 | Out-Null
+            [void](Invoke-VxExe 'powercfg' @('/hibernate', 'off'))
         }
         Test = { param($hw) Test-VxRegValue 'HKLM:\SYSTEM\CurrentControlSet\Control\Power' 'HibernateEnabled' 0 }
     },
@@ -500,7 +541,7 @@ $script:VxTweaks = @(
     @{
         Id = 'recall'; Cat = 'proc'; Risk = 'safe'; Presets = @('gaming', 'competitive', 'creator', 'balanced', 'laptop')
         Title = @{ it = 'Niente Recall (istantanee dello schermo)'; en = 'No Recall (screen snapshots)' }
-        Desc = @{ it = 'Ferma Recall, che fotografa lo schermo ogni pochi secondi e lo analizza con l''AI: meno CPU, disco e spazio occupato, e più privacy.'; en = 'Stops Recall, which takes a screenshot every few seconds and analyses it with AI: less CPU, disk and space used, and more privacy.' }
+        Desc = @{ it = 'Ferma Recall, che fotografa lo schermo ogni pochi secondi e lo analizza in background: meno CPU, disco e spazio occupato, e più privacy.'; en = 'Stops Recall, which takes a screenshot every few seconds and analyses it in the background: less CPU, disk and space used, and more privacy.' }
         When = { param($hw) $hw.OS.IsWin11 -and $hw.OS.Build -ge 26100 }
         Reg = @(
             @('HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI', 'DisableAIDataAnalysis', 'DWord', 1),
@@ -518,18 +559,11 @@ $script:VxTweaks = @(
             @('HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced', 'ShowCopilotButton', 'DWord', 0)
         )
     },
-    @{
-        Id = 'storeupd'; Cat = 'proc'; Risk = 'caution'; Presets = @('competitive')
-        Title = @{ it = 'App dello Store aggiornate solo quando vuoi tu'; en = 'Store apps update only when you choose' }
-        Desc = @{ it = 'Il Microsoft Store non scarica più aggiornamenti in background mentre giochi o renderizzi: niente picchi di disco e rete. Gli aggiornamenti li fai tu dallo Store.'; en = 'The Microsoft Store no longer downloads updates in the background while you game or render: no disk and network spikes. You update from the Store yourself.' }
-        Warn = @{ it = 'Ricordati di aprire lo Store ogni tanto per aggiornare le app (anche Xbox e Game Bar).'; en = 'Remember to open the Store now and then to update apps (including Xbox and Game Bar).' }
-        Reg = @(, @('HKLM:\SOFTWARE\Policies\Microsoft\WindowsStore', 'AutoDownload', 'DWord', 2))
-    },
     # ======================================================= NETWORK (Network page)
     @{
-        Id = 'nagle'; Cat = 'net'; Risk = 'safe'; Presets = @('gaming', 'competitive')
+        Id = 'nagle'; Cat = 'net'; Risk = 'advanced'; Presets = @()
         Title = @{ it = 'Pacchetti inviati subito (no algoritmo di Nagle)'; en = 'Send packets immediately (no Nagle)' }
-        Desc = @{ it = 'Windows smette di "aspettare" per unire piccoli pacchetti: i giochi che usano TCP rispondono prima.'; en = 'Windows stops "waiting" to merge small packets: games that use TCP respond sooner.' }
+        Desc = @{ it = 'Windows smette di "aspettare" per unire piccoli pacchetti TCP. Quasi tutti i giochi usano UDP e i programmi moderni lo decidono da soli: effetto minimo, per esperti.'; en = 'Windows stops "waiting" to merge small TCP packets. Almost every game uses UDP and modern apps decide this themselves: minimal effect, for experts.' }
         Apply = {
             param($hw)
             $base = 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces'
@@ -575,9 +609,9 @@ $script:VxTweaks = @(
                 $rss = ([string]$o.ReceiveSideScaling).ToLower()
                 if ($rss) { Add-VxCustomUndo 'tcp|rss' @{ kind = 'tcp'; prop = 'rss'; value = $rss } }
             } catch { }
-            & netsh int tcp set global autotuninglevel=normal 2>&1 | Out-Null
-            & netsh int tcp set global rss=enabled 2>&1 | Out-Null
-            & netsh int tcp set heuristics disabled 2>&1 | Out-Null
+            [void](Invoke-VxExe 'netsh' @('int', 'tcp', 'set', 'global', 'autotuninglevel=normal'))
+            [void](Invoke-VxExe 'netsh' @('int', 'tcp', 'set', 'global', 'rss=enabled'))
+            [void](Invoke-VxExe 'netsh' @('int', 'tcp', 'set', 'heuristics', 'disabled'))
         }
         Test = {
             param($hw)
@@ -591,80 +625,61 @@ $script:VxTweaks = @(
     @{
         Id = 'nicsave'; Cat = 'net'; Risk = 'caution'; Presets = @('gaming', 'competitive', 'creator')
         Title = @{ it = 'Scheda di rete senza risparmio energetico'; en = 'Network card without power saving' }
-        Desc = @{ it = 'Disattiva "Ethernet a basso consumo", "Green Ethernet" e simili: la scheda di rete non rallenta mai per risparmiare corrente. Meno picchi di ping.'; en = 'Turns off "Energy-Efficient Ethernet", "Green Ethernet" and similar: the network card never slows down to save power. Fewer ping spikes.' }
+        Desc = @{ it = 'Disattiva "Ethernet a basso consumo", "Green Ethernet" e simili: la scheda di rete non rallenta mai per risparmiare corrente. Meno picchi di ping (lo vedi nel test ping).'; en = 'Turns off "Energy-Efficient Ethernet", "Green Ethernet" and similar: the network card never slows down to save power. Fewer ping spikes (you can see it in the ping test).' }
         Warn = @{ it = 'Internet si interrompe per qualche secondo mentre applica.'; en = 'Internet drops for a few seconds while applying.' }
         When = { param($hw) $hw.Network -and -not $hw.Network.IsWifi }
         Apply = {
             param($hw)
-            $keys = @('*EEE', 'EEELinkAdvertisement', 'AdvancedEEE', 'EnableGreenEthernet', 'GreenEthernet', 'PowerSavingMode', 'ULPMode', 'EnablePME', '*SelectiveSuspend', 'GigaLite', 'AutoPowerSaveModeEnabled')
-            foreach ($a in @(Get-NetAdapter -Physical -ErrorAction SilentlyContinue | Where-Object { $_.Status -eq 'Up' })) {
-                $changed = $false
-                foreach ($prop in @(Get-NetAdapterAdvancedProperty -Name $a.Name -AllProperties -ErrorAction SilentlyContinue)) {
-                    if ($keys -contains $prop.RegistryKeyword) {
-                        $cur = [string](@($prop.RegistryValue) | Select-Object -First 1)
-                        $valid = @($prop.ValidRegistryValues)
-                        if ($cur -ne '0' -and ($valid.Count -eq 0 -or $valid -contains '0')) {
-                            Add-VxCustomUndo "nic|$($a.Name)|$($prop.RegistryKeyword)" @{ kind = 'nic'; adapter = $a.Name; keyword = $prop.RegistryKeyword; value = $cur }
-                            try { Set-NetAdapterAdvancedProperty -Name $a.Name -RegistryKeyword $prop.RegistryKeyword -RegistryValue '0' -NoRestart -ErrorAction Stop; $changed = $true } catch { }
-                        }
-                    }
-                }
-                if ($changed) { Restart-NetAdapter -Name $a.Name -Confirm:$false -ErrorAction SilentlyContinue }
+            # not EnablePME: it is Wake-on-LAN (turning the PC on from the network), it has no effect on ping
+            foreach ($x in @(Get-VxNicProps @('*EEE', 'EEELinkAdvertisement', 'AdvancedEEE', 'EnableGreenEthernet', 'GreenEthernet', 'PowerSavingMode', 'ULPMode', '*SelectiveSuspend', 'GigaLite', 'AutoPowerSaveModeEnabled'))) {
+                if ($x.Value -eq '0' -or -not $x.ZeroOk) { continue }
+                Set-VxNicProp $x.Adapter $x.Keyword '0' $x.Value
             }
+            Restart-VxChangedNics
         }
-        Test = { param($hw) Test-VxBackupEntry 'nicsave' }
+        Test = {
+            param($hw)
+            foreach ($x in @(Get-VxNicProps @('*EEE', 'EEELinkAdvertisement', 'AdvancedEEE', 'EnableGreenEthernet', 'GreenEthernet', 'PowerSavingMode', 'ULPMode', '*SelectiveSuspend', 'GigaLite', 'AutoPowerSaveModeEnabled'))) { if ($x.Value -ne '0' -and $x.ZeroOk) { return $false } }
+            return $true
+        }
     },
     @{
-        Id = 'nicirq'; Cat = 'net'; Risk = 'advanced'; Presets = @('competitive')
+        Id = 'nicirq'; Cat = 'net'; Risk = 'advanced'; Presets = @()
         Title = @{ it = 'Pacchetti di rete elaborati all''istante'; en = 'Network packets processed instantly' }
-        Desc = @{ it = 'Disattiva la "moderazione degli interrupt": ogni pacchetto viene gestito subito invece di essere raggruppato. Ping un filo più basso e stabile.'; en = 'Turns off "interrupt moderation": each packet is handled immediately instead of being batched. Slightly lower, steadier ping.' }
-        Warn = @{ it = 'Usa un po'' più CPU durante download pesanti. Internet si interrompe per qualche secondo.'; en = 'Uses a bit more CPU during heavy downloads. Internet drops for a few seconds.' }
+        Desc = @{ it = 'Disattiva la "moderazione degli interrupt": ogni pacchetto viene gestito subito invece di essere raggruppato. Ping un filo più stabile, ma più lavoro per la CPU: sconsigliato sui PC deboli.'; en = 'Turns off "interrupt moderation": each packet is handled immediately instead of being batched. Slightly steadier ping, but more CPU work: not advised on weak PCs.' }
+        Warn = @{ it = 'Usa più CPU durante download pesanti. Internet si interrompe per qualche secondo.'; en = 'Uses more CPU during heavy downloads. Internet drops for a few seconds.' }
         When = { param($hw) $hw.Network -and -not $hw.Network.IsWifi }
         Apply = {
             param($hw)
-            foreach ($a in @(Get-NetAdapter -Physical -ErrorAction SilentlyContinue | Where-Object { $_.Status -eq 'Up' })) {
-                $prop = Get-NetAdapterAdvancedProperty -Name $a.Name -RegistryKeyword '*InterruptModeration' -ErrorAction SilentlyContinue
-                if ($prop) {
-                    $cur = [string](@($prop.RegistryValue) | Select-Object -First 1)
-                    if ($cur -ne '0') {
-                        Add-VxCustomUndo "nic|$($a.Name)|*InterruptModeration" @{ kind = 'nic'; adapter = $a.Name; keyword = '*InterruptModeration'; value = $cur }
-                        try { Set-NetAdapterAdvancedProperty -Name $a.Name -RegistryKeyword '*InterruptModeration' -RegistryValue '0' -ErrorAction Stop } catch { }
-                    }
-                }
-            }
+            foreach ($x in @(Get-VxNicProps @('*InterruptModeration'))) { if ($x.Value -ne '0' -and $x.ZeroOk) { Set-VxNicProp $x.Adapter $x.Keyword '0' $x.Value } }
+            Restart-VxChangedNics
         }
-        Test = { param($hw) Test-VxBackupEntry 'nicirq' }
+        Test = {
+            param($hw)
+            $p = @(Get-VxNicProps @('*InterruptModeration'))
+            if ($p.Count -eq 0) { return $false }
+            foreach ($x in $p) { if ($x.Value -ne '0') { return $false } }
+            return $true
+        }
     },
     @{
-        Id = 'netthrottle'; Cat = 'net'; Risk = 'safe'; Presets = @('gaming', 'competitive', 'creator', 'balanced')
-        Title = @{ it = 'Nessun limite alla rete durante giochi e video'; en = 'No network limit during games and video' }
-        Desc = @{ it = 'Windows di default rallenta i pacchetti di rete mentre riproduci audio/video o giochi. Questo limite viene tolto.'; en = 'By default Windows slows network packets while audio/video or games play. This limit is removed.' }
-        Reg = @(, @('HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile', 'NetworkThrottlingIndex', 'DWord', -1))
-    },
-    @{
-        Id = 'nicbuffers'; Cat = 'net'; Risk = 'safe'; Presets = @('gaming', 'competitive', 'creator')
+        Id = 'nicbuffers'; Cat = 'net'; Risk = 'advanced'; Presets = @()
         Title = @{ it = 'Buffer della scheda di rete al massimo'; en = 'Network card buffers at maximum' }
-        Desc = @{ it = 'Più memoria per i pacchetti in arrivo e in uscita: nessun pacchetto perso nei momenti di traffico intenso (download + partita).'; en = 'More memory for incoming and outgoing packets: no dropped packets during heavy traffic (download + match).' }
+        Desc = @{ it = 'Più memoria per i pacchetti in arrivo e in uscita. Utile solo se il test ping mostra pacchetti persi durante download pesanti; altrimenti può aggiungere un po'' di attesa.'; en = 'More memory for incoming and outgoing packets. Only useful if the ping test shows packet loss during heavy downloads; otherwise it can add a little queueing delay.' }
         Warn = @{ it = 'Internet si interrompe per qualche secondo mentre applica.'; en = 'Internet drops for a few seconds while applying.' }
         When = { param($hw) $hw.Network -and -not $hw.Network.IsWifi }
         Apply = {
             param($hw)
-            foreach ($a in @(Get-NetAdapter -Physical -ErrorAction SilentlyContinue | Where-Object { $_.Status -eq 'Up' })) {
-                $changed = $false
-                foreach ($kw in @('*ReceiveBuffers', '*TransmitBuffers')) {
-                    $prop = Get-NetAdapterAdvancedProperty -Name $a.Name -RegistryKeyword $kw -ErrorAction SilentlyContinue
-                    if (-not $prop -or -not $prop.NumericParameterMaxValue) { continue }
-                    $cur = [string](@($prop.RegistryValue) | Select-Object -First 1)
-                    $max = [string][int]$prop.NumericParameterMaxValue
-                    if ($cur -ne $max) {
-                        Add-VxCustomUndo "nic|$($a.Name)|$kw" @{ kind = 'nic'; adapter = $a.Name; keyword = $kw; value = $cur }
-                        try { Set-NetAdapterAdvancedProperty -Name $a.Name -RegistryKeyword $kw -RegistryValue $max -NoRestart -ErrorAction Stop; $changed = $true } catch { }
-                    }
-                }
-                if ($changed) { Restart-NetAdapter -Name $a.Name -Confirm:$false -ErrorAction SilentlyContinue }
-            }
+            foreach ($x in @(Get-VxNicProps @('*ReceiveBuffers', '*TransmitBuffers'))) { if ($x.Max -and $x.Value -ne $x.Max) { Set-VxNicProp $x.Adapter $x.Keyword $x.Max $x.Value } }
+            Restart-VxChangedNics
         }
-        Test = { param($hw) Test-VxBackupEntry 'nicbuffers' }
+        Test = {
+            param($hw)
+            $p = @(Get-VxNicProps @('*ReceiveBuffers', '*TransmitBuffers') | Where-Object { $_.Max })
+            if ($p.Count -eq 0) { return $false }
+            foreach ($x in $p) { if ($x.Value -ne $x.Max) { return $false } }
+            return $true
+        }
     },
     @{
         Id = 'wifipower'; Cat = 'net'; Risk = 'safe'; Presets = @('gaming', 'competitive', 'creator', 'balanced')
@@ -800,6 +815,35 @@ function Get-VxPowerValueAny {
     return $null
 }
 
+# ---------------------------------------------------------------- network card helpers (real values, not "a backup exists")
+function Get-VxNicProps {
+    param([string[]]$Keywords)
+    $out = @()
+    foreach ($a in @(Get-NetAdapter -Physical -ErrorAction SilentlyContinue | Where-Object { $_.Status -eq 'Up' })) {
+        foreach ($prop in @(Get-NetAdapterAdvancedProperty -Name $a.Name -AllProperties -ErrorAction SilentlyContinue)) {
+            if ($Keywords -notcontains $prop.RegistryKeyword) { continue }
+            $valid = @($prop.ValidRegistryValues)
+            $max = ''
+            if ($prop.NumericParameterMaxValue) { $max = [string][int]$prop.NumericParameterMaxValue }
+            $out += [pscustomobject]@{ Adapter = $a.Name; Keyword = [string]$prop.RegistryKeyword; Value = [string](@($prop.RegistryValue) | Select-Object -First 1); ZeroOk = ($valid.Count -eq 0 -or $valid -contains '0'); Max = $max }
+        }
+    }
+    return $out
+}
+
+$script:VxNicChanged = @{}
+function Set-VxNicProp {
+    param([string]$Adapter, [string]$Keyword, [string]$Value, [string]$Prev)
+    if ($script:VxDryRun) { Add-VxDryRecord "network card $Adapter $Keyword" $Prev $Value; return }
+    Add-VxCustomUndo "nic|$Adapter|$Keyword" @{ kind = 'nic'; adapter = $Adapter; keyword = $Keyword; value = $Prev }
+    try { Set-NetAdapterAdvancedProperty -Name $Adapter -RegistryKeyword $Keyword -RegistryValue $Value -NoRestart -ErrorAction Stop; $script:VxNicChanged[$Adapter] = $true } catch { Write-VxLog "nic $Adapter $Keyword : $($_.Exception.Message)" 'WARN' }
+}
+
+function Restart-VxChangedNics {
+    foreach ($n in @($script:VxNicChanged.Keys)) { Restart-NetAdapter -Name $n -Confirm:$false -ErrorAction SilentlyContinue }
+    $script:VxNicChanged = @{}
+}
+
 # ---------------------------------------------------------------- engine
 function Get-VxAllTweaks {
     $list = @($script:VxTweaks)
@@ -843,7 +887,7 @@ function Invoke-VxTweak {
         if ($Tweak.Reg) { foreach ($r in $Tweak.Reg) { Set-VxReg $r[0] $r[1] $r[2] $r[3] } }
         if ($Tweak.Apply) { & $Tweak.Apply $Hw }
         Complete-VxTx
-        Write-VxLog "Applied: $($Tweak.Id)"
+        Write-VxLog ($(if ($script:VxDryRun) { 'Preview: ' } else { 'Applied: ' }) + $Tweak.Id)
         return @{ ok = $true }
     } catch {
         $msg = $_.Exception.Message
@@ -854,35 +898,36 @@ function Invoke-VxTweak {
 }
 
 # Settings stored inside the active power plan (or per network interface) get lost when Windows or another
-# program switches plan / adds an interface. If the user turned them on (backup entry exists), put them back.
-$script:VxHealIds = @('powerlat', 'cpumin', 'wifipower', 'nagle', 'coreparking')
-$script:VxHealTried = @{}
-function Repair-VxLostTweaks {
-    param($Hw)
-    $fixed = @()
-    # every setting the user turned on (it has a backup entry) is put back if Windows or an update undid it
-    $ids = @($script:VxHealIds)
-    try { $b = Get-VxBackup; foreach ($k in @($b.entries.Keys)) { if ($k -notlike 'svc:*' -and $ids -notcontains $k -and (Find-VxTweak $k)) { $ids += $k } } } catch { }
-    foreach ($id in $ids) {
-        try {
-            # at most one attempt per setting every few hours (no loop if Windows keeps changing it back)
-            if ($script:VxHealTried.ContainsKey($id) -and ([DateTime]::Now - $script:VxHealTried[$id]).TotalHours -lt 6) { continue }
-            if (-not (Test-VxBackupEntry $id)) { continue }
+# program switches plan / adds an interface. 2.0: they are only DETECTED here; the app asks the user before
+# putting them back ("Windows undid 2 settings: re-apply?"). Opening the app never writes system settings.
+function Find-VxLostTweaks {
+    param($Hw, [hashtable]$States)
+    $lost = @()
+    try {
+        $b = Get-VxBackup
+        foreach ($id in @($b.entries.Keys)) {
+            if ($id -like 'svc:*' -or $id -like 'start:*' -or (Test-VxRetiredId $id)) { continue }
+            if ($id -eq 'ae.priority' -and (Get-Command Test-VxAePriorityOld -ErrorAction SilentlyContinue) -and (Test-VxAePriorityOld)) { continue }
             $t = Find-VxTweak $id
             if (-not $t -or -not (Test-VxTweakApplicable $t $Hw)) { continue }
-            if (Test-VxTweakApplied $t $Hw) { continue }
-            $script:VxHealTried[$id] = [DateTime]::Now
+            if (@($b.entries[$id].items).Count -eq 0) { continue }
+            $applied = if ($States -and $States.ContainsKey($id)) { [bool]$States[$id].applied } else { Test-VxTweakApplied $t $Hw }
+            if (-not $applied) { $lost += $id }
+        }
+    } catch { Write-VxLog "Find lost: $($_.Exception.Message)" 'WARN' }
+    return $lost
+}
+
+# Re-applies exactly the ids the user confirmed
+function Repair-VxLostTweaks {
+    param($Hw, [string[]]$Ids)
+    $fixed = @()
+    foreach ($id in @($Ids)) {
+        try {
+            $t = Find-VxTweak $id
+            if (-not $t -or -not (Test-VxTweakApplicable $t $Hw)) { continue }
             $r = Invoke-VxTweak $t $Hw
-            if ($r.ok) { $fixed += $id; Write-VxLog "Re-applied lost setting: $id" }
-            if ($r.ok -and $id -match '^(powerlat|cpumin|wifipower|coreparking)$' -and -not (Test-VxTweakApplied $t $Hw)) {
-                # still off right after applying: write what the power plan reports, to find who changes it back
-                try {
-                    $sch = Get-VxActiveScheme
-                    $u = Get-VxPowerValue $sch.guid '2a737441-1930-4402-8d77-b2bebba308a3' '48e6b7a6-50f5-4782-a5d4-53bb8f07e226'
-                    $p = Get-VxPowerValue $sch.guid '501a4d13-42af-4429-9fd1-a8218c268e20' 'ee12f906-d277-404b-b6da-e5fa1a576df5'
-                    Write-VxLog ("power check {0}: plan {1} ({2}) usb={3} pcie={4}" -f $id, $sch.guid, $sch.name, $(if ($u) { "$($u.ac)/$($u.dc)" } else { 'n/a' }), $(if ($p) { "$($p.ac)/$($p.dc)" } else { 'n/a' })) 'WARN'
-                } catch { }
-            }
+            if ($r.ok) { $fixed += $id; Write-VxLog "Re-applied (user asked): $id" }
         } catch { Write-VxLog "Repair $id : $($_.Exception.Message)" 'WARN' }
     }
     return $fixed
@@ -909,13 +954,47 @@ function Get-VxTweakStates {
 # "piki": lowest latency without touching the look (animations, transparency), File Explorer / taskbar (Winstep Nexus),
 # NVIDIA driver settings or services. Exactly these tweaks + every After Effects / Topaz item (category 'ae').
 $script:VxPikiIds = @(
-    'gamemode', 'mmcss', 'timerres', 'windowedopt', 'hags', 'prioritysep', 'gamedvr',
-    'mouseaccel', 'keyboard', 'stickykeys',
+    'gamemode', 'timerres', 'windowedopt', 'hags', 'gamedvr',
+    'mouseaccel', 'stickykeys',
     'powerlat', 'powerthrottle', 'fastboot', 'startupdelay', 'memcompress', 'menudelay',
     'telemetry', 'ads', 'websearch', 'activity', 'recall', 'edgeboost', 'delivopt',
-    'nagle', 'tcpstack', 'netthrottle', 'nicbuffers', 'nicsave',
+    'tcpstack', 'nicsave',
     'x3dfix'
 )
+
+# "PC lento" (weak PCs): only changes with a measurable effect on RAM, background CPU, disk space or ping.
+# Never power-hungry or doubtful items (no CPU at 100 %, no core parking off, no Ultimate plan, no Fast Startup off,
+# no startup delay 0, no memory compression off).
+$script:VxSlowIds = @(
+    'gamemode', 'widgets', 'edgeboost', 'copilot', 'recall', 'bgapps',
+    'telemetry', 'ads', 'websearch', 'activity', 'delivopt', 'menudelay',
+    'visualfx', 'transparency', 'nicsave', 'wifipower', 'bestperf', 'hibernate'
+)
+
+function Test-VxWeakPc {
+    # 4-8 GB RAM, 2-4 cores, Windows on a hard disk or software rendering
+    param($Hw)
+    if (-not $Hw) { return $false }
+    if ($Hw.RAM -and [int]$Hw.RAM.GB -gt 0 -and [int]$Hw.RAM.GB -le 8) { return $true }
+    if ($Hw.CPU -and [int]$Hw.CPU.Cores -gt 0 -and [int]$Hw.CPU.Cores -le 4) { return $true }
+    if ($null -ne $Hw.SystemOnSSD -and -not $Hw.SystemOnSSD) { return $true }
+    if ($null -ne $Hw.RenderTier -and [int]$Hw.RenderTier -lt 2) { return $true }
+    return $false
+}
+
+function Test-VxSlowGate {
+    param([string]$Id, $Hw)
+    switch ($Id) {
+        { $_ -in @('visualfx', 'transparency') } { return ((-not $Hw.HasDedicatedGpu) -or ([int]$Hw.RAM.GB -le 8) -or ($null -ne $Hw.RenderTier -and [int]$Hw.RenderTier -lt 2)) }
+        { $_ -in @('nicsave', 'wifipower') } { return (-not $Hw.IsLaptop) }
+        'hibernate' {
+            if ($Hw.IsLaptop) { return $false }
+            $sys = @($Hw.Volumes | Where-Object { $_.Letter -eq $env:SystemDrive }) | Select-Object -First 1
+            return ($sys -and [int]$sys.FreePct -lt 15)
+        }
+        default { return $true }
+    }
+}
 
 function Get-VxPresetSelection {
     # Which tweaks a preset turns on for this PC (skips "not recommended for you")
@@ -926,11 +1005,13 @@ function Get-VxPresetSelection {
     foreach ($t in (Get-VxAllTweaks)) {
         if ($Preset -eq 'piki') {
             if (-not ($t.Cat -eq 'ae' -or $script:VxPikiIds -contains $t.Id)) { continue }
+        } elseif ($Preset -eq 'slowpc') {
+            if ($script:VxSlowIds -notcontains $t.Id -or -not (Test-VxSlowGate $t.Id $Hw)) { continue }
         } elseif (-not ($t.Presets -contains $Preset)) { continue }
         $st = $States[$t.Id]
         if (-not $st -or -not $st.applicable) { continue }
         if ($st.rec -and $st.rec.level -eq 'notrec') { continue }
-        if ($Preset -eq 'laptop' -and $t.Risk -eq 'advanced') { continue }
+        if (($Preset -eq 'laptop' -or $Preset -eq 'slowpc') -and $t.Risk -eq 'advanced') { continue }
         $ids += $t.Id
     }
     return $ids

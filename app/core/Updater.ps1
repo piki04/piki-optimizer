@@ -2,15 +2,34 @@
 
 function Get-VxConfig {
     $file = Join-Path $script:VxRoot 'config.json'
-    $cfg = @{ repo = ''; branch = 'main' }
+    $cfg = @{ repo = ''; branch = 'main'; pubKey = '' }
     if (Test-Path -LiteralPath $file) {
         try {
             $j = [System.IO.File]::ReadAllText($file, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
             if ($j.repo) { $cfg.repo = [string]$j.repo }
             if ($j.branch) { $cfg.branch = [string]$j.branch }
+            if ($j.pubKey) { $cfg.pubKey = [string]$j.pubKey }
         } catch { }
     }
     return $cfg
+}
+
+# Signed updates: when config.json carries the public key (RSA, XML form), version.json must come with a valid
+# version.sig (base64 RSA-SHA256 signature of the exact version.json bytes), made offline with tools\Sign-Manifest.ps1.
+# Without a public key the app behaves like 1.x (per-file SHA-256 check only).
+function Test-VxManifestSignature {
+    param([string]$Raw, [string]$SigBase64, [string]$PubKeyXml)
+    try {
+        $rsa = New-Object System.Security.Cryptography.RSACryptoServiceProvider
+        try {
+            $rsa.PersistKeyInCsp = $false
+            $rsa.FromXmlString($PubKeyXml)
+            # normalised text (no BOM, LF line ends): git may change CRLF/LF, the signature must survive that
+            $data = (New-Object System.Text.UTF8Encoding($false)).GetBytes(($Raw.TrimStart([char]0xFEFF) -replace "`r", ''))
+            $sig = [Convert]::FromBase64String($SigBase64.Trim())
+            return $rsa.VerifyData($data, 'SHA256', $sig)
+        } finally { $rsa.Dispose() }
+    } catch { return $false }
 }
 
 function Get-VxLocalManifest {
@@ -58,6 +77,11 @@ function Get-VxRemoteManifest {
     $wc = New-VxWebClient
     try {
         $raw = $wc.DownloadString((Get-VxRawUrl 'version.json' $ref) + '?t=' + [DateTime]::UtcNow.Ticks)
+        if ($cfg.pubKey) {
+            $sig = ''
+            try { $sig = $wc.DownloadString((Get-VxRawUrl 'version.sig' $ref) + '?t=' + [DateTime]::UtcNow.Ticks) } catch { }
+            if (-not $sig -or -not (Test-VxManifestSignature $raw $sig $cfg.pubKey)) { Write-VxLog 'update: manifest signature missing or invalid, update refused' 'ERROR'; throw 'Update signature check failed' }
+        }
         $m = $raw | ConvertFrom-Json
         return @{ manifest = $m; raw = $raw; ref = $ref }
     } finally { $wc.Dispose() }
@@ -76,13 +100,22 @@ function Get-VxFileSha256 {
     try { return (($sha.ComputeHash($fs) | ForEach-Object { $_.ToString('x2') }) -join '') } finally { $fs.Dispose(); $sha.Dispose() }
 }
 
+function Test-VxManifestPath {
+    param([string]$Rel)
+    if (-not $Rel -or $Rel -match '\.\.' -or $Rel -match '[:*?"<>|]' -or $Rel -match '^[\\/]') { return $false }
+    if ($Rel -match '(?i)^data([\\/]|$)') { return $false }
+    try { if ([IO.Path]::IsPathRooted($Rel)) { return $false } } catch { return $false }
+    return $true
+}
+
 function Invoke-VxUpdate {
     param($Remote, $Sync)
     $m = $Remote.manifest
     $changed = @()
     foreach ($f in @($m.files)) {
         $rel = [string]$f.path
-        if (-not $rel -or $rel -match '\.\.' -or [IO.Path]::IsPathRooted($rel)) { continue }
+        # only plain relative paths inside the app; never the user's data\ folder (settings, backups of original values)
+        if (-not (Test-VxManifestPath $rel)) { Write-VxLog "update: path refused: $rel" 'WARN'; continue }
         $local = Join-Path $script:VxRoot ($rel -replace '/', '\')
         if ((Get-VxFileSha256 $local) -ne ([string]$f.sha256).ToLower()) { $changed += $f }
     }
